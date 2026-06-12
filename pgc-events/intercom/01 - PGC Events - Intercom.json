@@ -1,0 +1,560 @@
+{
+  "name": "PGC Events - Intercom",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## PGC Events - Intercom\n\n**Purpose:**\nThe purpose of this workflow is to check whether the event attendees’ names already exist in our Intercom platform. If they do, we retrieve the email address. ",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "1f2f54bd-b017-43d3-ad82-2344b6e94279",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- Use Data Miner to scrape the PGC website. Download the Data Miner browser extension. Data Miner has its own tutorial, so you can just play around with it to get familiar.\n\n- Once you successfully scrape PGC, download the CSV from Data Miner and import it into Google Sheets. Make sure to create a Google Sheet for development purposes only.\n\n- Now, in your Google Sheet, make sure you have three sheets: List (imported data from Data Miner), Intercom, and ActiveCampaign.\n\n \n\n",
+        "height": 308,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "2662bbc4-55c1-4091-8c47-04160dc6fd9e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n- This workflow will trigger when user type 'Run' in the form.",
+        "height": 296,
+        "width": 312,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "08894562-eed0-4ed1-baad-f8095636d38b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Check the name of attendees on Intercom\n- Check if the company_name of attendees if its match with publisher field on intercom",
+        "height": 280,
+        "width": 348,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1424,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "ee31de73-882a-4efe-bc41-52129676e1d9",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- now from here, we get also the data from loop node to used as reference.\n\n- we only get the email that match to attendees name and company_name.\n\n",
+        "height": 336,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "45671022-3bdc-4f77-a90c-9ccd45d95910",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Append the data in Intercom sheet and wait for 2 seconds to process another data",
+        "height": 260,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2320,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "5f09e268-d4d3-43dc-a57c-796b4c1be00d",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1200,
+        -32
+      ],
+      "id": "6ef49e1b-fe15-4f07-9d31-361454122c95",
+      "name": "Loop"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "86399cc1-158a-4e73-8225-dd29cb9cd012",
+              "leftValue": "={{ $json.Trigger }}",
+              "rightValue": "Run",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "27bbbb0e-9f5e-4ee1-b9bd-2a17cde35cdf",
+      "name": "Check Input"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the user type \"Run\" if yes get the data in sheet, if no, stop the workflow.",
+        "height": 452,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "a782703c-a0e8-49d0-9e7c-32dcc6a9d137",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Incorrect password, automation failed."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        656,
+        144
+      ],
+      "id": "95a601e9-7f26-4f08-8f51-5aa9cf76b7b2",
+      "name": "Stop"
+    },
+    {
+      "parameters": {
+        "formTitle": "PGC Events - Intercom",
+        "formDescription": "Type \"Run\" to start the workflow. Wait for the workflow to finish.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Trigger",
+              "fieldLabel": "Type 'Run' to activate the workflow.",
+              "placeholder": "Run",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "redirect",
+              "redirectUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?gid=563145277#gid=563145277"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        112,
+        -16
+      ],
+      "id": "7822db6f-b93a-48c6-bb23-55542082ca62",
+      "name": "Trigger",
+      "webhookId": "050f9844-3843-40ed-9dec-c288f94e6506"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo",
+          "mode": "list",
+          "cachedResultName": "AI Automation: PGC Events ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 563145277,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit#gid=563145277"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        -32
+      ],
+      "id": "4ab4e939-9321-491b-aebc-23b6ba1eef3f",
+      "name": "Get List",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the current loop item (this runs once per item in loop)\nconst loopItem = $('Loop').item.json;\n\n// Get the Intercom response for this iteration\n// The Intercom node returns the entire array structure directly\nconst intercomResponse = $('Intercom - Search Name and Publisher').item.json;\n\n// Extract the name from loop item to use as reference\nconst refName = loopItem.name;\n\n// Find the matching contact in the Intercom response\nlet matchedContact = null;\n\n// The intercomResponse is already the array of list objects\nif (Array.isArray(intercomResponse)) {\n  // Loop through each list object in the response\n  for (const listObj of intercomResponse) {\n    if (listObj.data && Array.isArray(listObj.data) && listObj.data.length > 0) {\n      // Try to find a match by name (case-insensitive)\n      matchedContact = listObj.data.find(contact => \n        contact.name && contact.name.toLowerCase() === refName.toLowerCase()\n      );\n      if (matchedContact) break;\n    }\n  }\n}\n\n// If no match found, also check if intercomResponse itself has a data property\nif (!matchedContact && intercomResponse.data && Array.isArray(intercomResponse.data)) {\n  matchedContact = intercomResponse.data.find(contact => \n    contact.name && contact.name.toLowerCase() === refName.toLowerCase()\n  );\n}\n\n// Return the formatted output\nreturn {\n  json: {\n    row_number: loopItem.row_number,\n    ref_name: refName,\n    full_name: matchedContact?.name || \"-\",\n    email: matchedContact?.email || \"-\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        336
+      ],
+      "id": "5ba7f956-cd98-453a-9924-f941884963aa",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo",
+          "mode": "list",
+          "cachedResultName": "AI Automation: PGC Events ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 786449784,
+          "mode": "list",
+          "cachedResultName": "Intercom",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit#gid=786449784"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ref_name": "={{ $json.ref_name }}",
+            "full_name": "={{ $json.full_name }}",
+            "email": "={{ $json.email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ref_name",
+              "displayName": "ref_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2400,
+        336
+      ],
+      "id": "fa7b65c5-a6dd-4dc4-8078-b67a84e91f83",
+      "name": "Intercom Result",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?gid=563145277#gid=563145277\n\n**Production URL**\nhttps://neightn.indie-demo.com/form/050f9844-3843-40ed-9dec-c288f94e6506",
+        "height": 216,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "b977de30-a8aa-4835-b974-c514c8acea7d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2656,
+        336
+      ],
+      "id": "aa79e7c8-4343-446f-8368-4069a0da4c68",
+      "name": "Wait",
+      "webhookId": "68cb775d-1294-43da-976a-433877fd11e0"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Read the List sheet from your google sheets.\n- Make sure you configured your account\n- Loop through list batchsize 10 (Don't change the name node 'Loop')",
+        "height": 296,
+        "width": 540,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        848,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "dce516ef-8d67-45b2-89f9-7f0d3eeba11b",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.intercom.io/contacts/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": {\n    \"operator\": \"AND\",\n    \"value\": [\n      {\n        \"field\": \"name\",\n        \"operator\": \"=\",\n        \"value\": \"{{ $json.name }}\"\n      },\n      {\n        \"field\": \"custom_attributes.Publishers\",\n        \"operator\": \"=\",\n        \"value\": \"{{ $json.company_name }}\"\n      }\n    ]\n  }\n}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1536,
+        272
+      ],
+      "id": "5a0c6168-3061-4c88-820e-15bdb5a11553",
+      "name": "Intercom - Search Name and Publisher",
+      "credentials": {
+        "intercomApi": {
+          "id": "wlgMrlAFTSVnO66r",
+          "name": "Intercom account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Intercom - Search Name and Publisher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Input": {
+      "main": [
+        [
+          {
+            "node": "Get List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get List": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Intercom Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intercom Result": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intercom - Search Name and Publisher": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "adfc5ef3-179b-47d6-91c1-3b14ea700f80",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "HeB6iFwUdAPy77Ea",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    },
+    {
+      "updatedAt": "2026-01-28T08:42:42.077Z",
+      "createdAt": "2026-01-28T08:42:42.077Z",
+      "id": "FLfzpF4zREJtkaBr",
+      "name": "PGC"
+    }
+  ]
+}

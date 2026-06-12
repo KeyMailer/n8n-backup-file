@@ -1,0 +1,3057 @@
+{
+  "name": "SimilarWeb v1",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        816,
+        240
+      ],
+      "id": "07b1cc87-f79a-4870-94f3-68f0c6c99061",
+      "name": "Loop Over Items",
+      "retryOnFail": false,
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "- Loop through the data received from Google Sheets. I set the batch size to 10 because the API limit allows a maximum of 10 requests per second. If we exceed this limit, we will receive a 429 status code.\n\n- Do not rename this node. If you do rename it, make sure to update line 2 in the JavaScript node: const originalItem = $('Loop Over Items').item.json;"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 232,
+        "width": 268,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "2f0829e2-592d-4061-b24e-beb124c0c07d",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Similarweb v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 742617815,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU/edit#gid=742617815"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        512,
+        240
+      ],
+      "id": "1c6adcb5-a84b-4baa-a2c2-797073ac6d3f",
+      "name": "Get CSV data",
+      "notesInFlow": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "- Read the CSV data and make sure it contains an updated_similarweb_api_data column."
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 228,
+        "width": 308,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "5c6e5bda-61dc-41ee-b414-cb73e58da511",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the original row data from the item that triggered the HTTP request\nconst originalItem = $('Loop Over Items').item.json;\nconst gamer_id = originalItem.gamer_id;\nconst approved_domain = originalItem.approved_domain;\nconst row_number = originalItem.row_number;\n\n// Get the HTTP response data from the HTTP Request node\nlet responseData = $input.item.json;\n\n// Initialize the value to store\nlet visitsValue = null;\nlet status = 'success';\n\ntry {\n  // Handle network-level errors wrapped by n8n (e.g., Axios ENOTFOUND)\n  if (responseData.error && typeof responseData.error === 'object') {\n    status = 'error';\n    const err = responseData.error;\n    \n    // Only extract title and status\n    if (err.title && err.status) {\n      visitsValue = `0 - ${err.status} - ${err.title}`;\n    } else if (err.status) {\n      visitsValue = `0 - ${err.status}`;\n    } else {\n      visitsValue = `0 - Error`;\n    }\n  } \n  // Handle API-level errors returned in the JSON\n  else if (responseData.error || responseData.errorMessage) {\n    status = 'error';\n    let errObj = responseData.error || responseData.errorMessage;\n    \n    // If error is a string, try parsing as JSON\n    if (typeof errObj === 'string') {\n      try {\n        const parsed = JSON.parse(errObj);\n        \n        // Only extract title and status\n        if (parsed.title && parsed.status) {\n          visitsValue = `0 - ${parsed.status} - ${parsed.title}`;\n        } else if (parsed.status) {\n          visitsValue = `0 - ${parsed.status}`;\n        } else {\n          visitsValue = `0 - Error`;\n        }\n      } catch {\n        // If parsing fails, use generic error\n        visitsValue = `0 - Error`;\n      }\n    } else if (errObj && errObj.title && errObj.status) {\n      visitsValue = `0 - ${errObj.status} - ${errObj.title}`;\n    } else if (errObj && errObj.status) {\n      visitsValue = `0 - ${errObj.status}`;\n    } else {\n      visitsValue = `0 - Error`;\n    }\n  } \n  else {\n    let data = Array.isArray(responseData) ? responseData[0] : responseData;\n    \n    // Try Engagements.Visits first\n    if (data.Engagments && data.Engagments.Visits !== undefined && data.Engagments.Visits !== null) {\n      visitsValue = parseInt(data.Engagments.Visits);\n    } \n    // Fallback to latest EstimatedMonthlyVisits\n    else if (data.EstimatedMonthlyVisits && typeof data.EstimatedMonthlyVisits === 'object') {\n      const dates = Object.keys(data.EstimatedMonthlyVisits).sort().reverse();\n      if (dates.length > 0) {\n        const latestDate = dates[0];\n        visitsValue = data.EstimatedMonthlyVisits[latestDate];\n      }\n    }\n    \n    // Treat 0, \"0\", null, or undefined as no data\n    if (visitsValue === 0 || visitsValue === \"0\" || visitsValue === null || visitsValue === undefined) {\n      status = 'no_data';\n      visitsValue = `${visitsValue || 0} - No visits data available`;\n    }\n  }\n} catch (error) {\n  status = 'error';\n  visitsValue = `0 - Error`;\n}\n\n// Return the value to update in the sheet, including row_number for matching\nreturn {\n  json: {\n    row_number: row_number,\n    gamer_id: gamer_id,\n    approved_domain: approved_domain,\n    updated_similarweb_api_data: visitsValue,\n    processing_status: status,\n    last_updated: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        256
+      ],
+      "id": "4cef5da2-feef-4c5a-8931-b89a3c2b15ff",
+      "name": "Javascript",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "- Get the original data from previous node its like \"remember which row and domain triggered this api request\"\n\n- Get the response from the http request\n\n- Return data such as row_number, gamer_id, approved_domain, updated_similarweb_api_data, processing_status, last_updated\n\n- If there's a data it will return raw data, if no data it return 0 - no visits data available, if there's an error it will return 0 - status_code"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1376,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "e7db761b-b940-4496-a16c-2c4db07e7ff2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "=https://data.similarweb.com/api/v1/data?domain={{ $json.approved_domain }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ (() => { const agents = [ 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.1 Safari/537.36', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.4; rv:124.0) Gecko/20100101 Firefox/124.0', 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.15', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0', 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.86 Mobile Safari/537.36', 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.86 Mobile Safari/537.36', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1' ]; return agents[Math.floor(Math.random() * agents.length)]; })() }}"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.5"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, br"
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.similarweb.com/"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1472,
+        576
+      ],
+      "id": "f99c0b89-4854-4a06-aed5-d9f08260b67b",
+      "name": "Get: SimilarWeb Data",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "notesInFlow": true,
+      "onError": "continueRegularOutput",
+      "notes": "- We use the Similarweb API data and send parameters with the request. Since Similarweb is protected by Cloudflare, it does not allow bots to scrape its data.\n\n- We also use the approved_domain column as a parameter when calling the Similarweb endpoint.\n\n- Randomize user-agent"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transformation Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2336,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "d2cd2d67-86e0-4c75-9d76-39e7b20a2788",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Similarweb v1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 742617815,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU/edit#gid=742617815"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "updated_similarweb_api_data": "={{ $json.updated_similarweb_api_data }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "gamer_id",
+              "displayName": "gamer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nickname",
+              "displayName": "nickname",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "country",
+              "displayName": "country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "use_press_name",
+              "displayName": "use_press_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "press_nickname",
+              "displayName": "press_nickname",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "approved_domain",
+              "displayName": "approved_domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "full_url",
+              "displayName": "full_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "press_audience",
+              "displayName": "press_audience",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "medium",
+              "displayName": "medium",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "focus",
+              "displayName": "focus",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "favourite_genres",
+              "displayName": "favourite_genres",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "region",
+              "displayName": "region",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sample_content",
+              "displayName": "sample_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_similarweb_api_data",
+              "displayName": "updated_similarweb_api_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2752,
+        256
+      ],
+      "id": "879b2821-17d2-401c-9831-5c38b9d31653",
+      "name": "Update CSV data",
+      "notesInFlow": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "- I used row_number for match on since it’s the only unique field.\n\n- update the updated_similarweb_api_data column based on what we get from http request "
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 268,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2656,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "21506352-7682-46e4-86b4-1f4a1c9413c0",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 244,
+        "width": 260,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2960,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "cc6afb79-6c1b-404b-b5d7-76bbecf08542",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## SimilarWeb\n\n**Purpose:**\n- This workflow automation removes the need for manual checking of domain visit data in Similarweb. The process automatically retrieves the approved_domain from a CSV file, uses it to search data in Similarweb, and extracts the visit metrics such as Visits or EstimatedMonthlyVisits. The retrieved data is then used to update the CSV file, ensuring accurate and efficient domain traffic tracking without manual input.\n\n\n**Developer:** Justin Peligro \n**Date:** January 2026",
+        "height": 352,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "58403078-76be-4f5c-bacd-a6bae467656a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 248,
+        "width": 296,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -400,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "e0f94f33-e3cb-4671-af37-8d2d75aed6be",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU/edit?gid=742617815#gid=742617815\n\n**Production URL**\nhttps://neightn.indie-demo.com/form/2aaf597c-b175-438e-b2d6-a6bcbbfc9504",
+        "height": 216,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "273905b3-a43c-43a7-8438-e6a11d594c0b",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow will only trigger when the user types Run in the input field of the form.\n\n- Import the data in google sheet and add a column updated_similarweb_api_data\n\n- \n\n \n\n",
+        "height": 164,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -880,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "7c493abf-8a26-4347-b519-137e328d1986",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "formTitle": "Similarweb v1",
+        "formDescription": "Type “Run” to start the workflow. Wait for the workflow to finish, it will automatically populate the updated_similarweb_api_data column in your sheet.\n",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Trigger",
+              "fieldLabel": "Type ‘Run’ to activate the workflow.",
+              "placeholder": "Run",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "redirect",
+              "redirectUrl": "https://docs.google.com/spreadsheets/d/13zGM11fO-TbN_ayA4tQ4oZmlWZZQ-jCC42kDjK1vhNU/edit?gid=742617815#gid=742617815"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -304,
+        256
+      ],
+      "id": "12009c85-db8d-41be-b92e-07ea44e2cfa3",
+      "name": "Trigger",
+      "webhookId": "2aaf597c-b175-438e-b2d6-a6bcbbfc9504",
+      "notesInFlow": true,
+      "notes": "- This workflow will trigger when user type 'Run'"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "86399cc1-158a-4e73-8225-dd29cb9cd012",
+              "leftValue": "={{ $json.Trigger }}",
+              "rightValue": "Run",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -16,
+        256
+      ],
+      "id": "fbb33421-fe5f-46cd-9e5a-f39c4b52f39c",
+      "name": "Check Input"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the user type \"Run\" if yes get the data in sheet, if no, stop the workflow.",
+        "height": 356,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "70585392-7b10-4069-bd4a-3c70fa195f7e",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Incorrect password, automation failed."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        224,
+        336
+      ],
+      "id": "05086b8e-ee31-4ad3-8dab-e67565581296",
+      "name": "Stop"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a0eee8a-a10a-44fb-9583-647e2ab00403",
+              "name": "approved_domain",
+              "value": "={{ $json.approved_domain.replace(/^(https?:\\/\\/)?([^\\/\\r\\n]+).*/, '$1$2') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1152,
+        256
+      ],
+      "id": "f36b8f4f-bfea-4a70-8e49-4ef0aa1bf6c4",
+      "name": "Edit Fields",
+      "notesInFlow": true,
+      "notes": "- Implement a regex for approved_domain column to avoid bad api request.\n\n**Regex Requirements:**\n- Remove subdomains\n- Remove the trailing slash \"/\" from approved_domain\n- Keep http at the beginning"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node",
+        "height": 240,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1056,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "68c72a14-d810-4a8c-99ef-e5325ad78205",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (15 - 5 + 1)) + 5 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3040,
+        256
+      ],
+      "id": "ce40f80d-4581-4a34-a963-8d0a55aa62d0",
+      "name": "RANDOMIZE WAIT",
+      "webhookId": "7e5c655b-ae50-4b76-aaeb-be8d98215e90",
+      "notesInFlow": true,
+      "notes": "- Wait for 5-15 seconds before we process another batch of data"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        448,
+        624
+      ],
+      "id": "4fcad776-2663-4512-a02e-dc8deea8f275",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from previous node\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  // Get the raw response HTML string\n  const rawResponse = item.json.solution.response;\n  \n  // Extract JSON from inside the <pre> tag\n  const preMatch = rawResponse.match(/<pre>([\\s\\S]*?)<\\/pre>/);\n  \n  if (preMatch && preMatch[1]) {\n    try {\n      // Decode HTML entities and parse JSON\n      const decoded = preMatch[1]\n        .replace(/&amp;/g, '&')\n        .replace(/&lt;/g, '<')\n        .replace(/&gt;/g, '>')\n        .replace(/&quot;/g, '\"')\n        .replace(/&#039;/g, \"'\");\n      \n      const parsed = JSON.parse(decoded);\n      results.push({ json: parsed });\n    } catch (e) {\n      results.push({ json: { error: 'Failed to parse JSON', details: e.message } });\n    }\n  } else {\n    results.push({ json: { error: 'No <pre> tag found in response' } });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        256
+      ],
+      "id": "e00064a1-ba03-4ef9-8e3f-e45440ba3204",
+      "name": "Response Formatting Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3427536-7475-42a4-adc5-cd80c9f2710b",
+              "name": "solution.status",
+              "value": "={{ $json.solution.status }}",
+              "type": "number"
+            },
+            {
+              "id": "e15011b6-e2f8-4456-b232-434bcdfface8",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "7584f9ba-c8b1-44e6-9ab2-473d06200e2c",
+              "name": "solution.response",
+              "value": "={{ $json.solution.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        256
+      ],
+      "id": "e5403b83-5c04-47a4-a4fd-461ac5e40507",
+      "name": "Get Necessary Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://flaresolverr:8191/v1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ (() => { const agents = [ 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.1 Safari/537.36', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14.4; rv:124.0) Gecko/20100101 Firefox/124.0', 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_3_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Safari/605.1.15', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 Edg/122.0.0.0', 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.86 Mobile Safari/537.36', 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.86 Mobile Safari/537.36', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1' ]; return agents[Math.floor(Math.random() * agents.length)]; })() }}"
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.similarweb.com/"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"cmd\": \"request.get\",\n    \"url\": \"https://data.similarweb.com/api/v1/data?domain={{$json.approved_domain}}\",\n    \"maxTimeout\": 60000\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1408,
+        256
+      ],
+      "id": "4e3ea56d-cf70-41d9-9282-f5831618d15f",
+      "name": "Request: Flaresolverr",
+      "notes": "request to flaresolverr, eduardo set this up to solve the 403 issue"
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "row_number": 17,
+          "gamer_id": 1074395,
+          "nickname": "ScreenRant",
+          "country": "CA",
+          "use_press_name": false,
+          "press_nickname": "ScreenRant",
+          "approved_domain": "screenrant.com",
+          "full_url": "http://screenrant.com",
+          "press_audience": 44500000,
+          "role": "Other",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "Indie | RPG | Simulation",
+          "region": "CA",
+          "language": "eng",
+          "sample_content": "",
+          "email": "cody@screenrant.com",
+          "first_name": "Cody",
+          "last_name": "Gravelle",
+          "last_login": "2024-07-01 16:06:29 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "gamer_id": 1268485,
+          "nickname": "VRT NWS",
+          "country": "BE",
+          "use_press_name": true,
+          "press_nickname": "VRT NWS",
+          "approved_domain": "vrt.be",
+          "full_url": "",
+          "press_audience": 41381995,
+          "role": "Features Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_BEN",
+          "language": "nld",
+          "sample_content": "https://www.vrt.be/vrtnws/nl/2026/03/10/pokopia-review/",
+          "email": "nils.schillewaert@vrt.be",
+          "first_name": "Nils",
+          "last_name": "Schillewaert",
+          "last_login": "2026-05-06 15:33:46 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "gamer_id": 1055821,
+          "nickname": "GameSpot",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "GameSpot",
+          "approved_domain": "gamespot.com",
+          "full_url": "",
+          "press_audience": 40100000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "3D Platformer | FPS | RPG",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.gamespot.com/profile/billygivens/",
+          "email": "billygivens@gmail.com",
+          "first_name": "Billy",
+          "last_name": "Givens",
+          "last_login": "2026-04-17 15:52:53 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "gamer_id": 1250154,
+          "nickname": "GameSpot",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "GameSpot",
+          "approved_domain": "gamespot.com",
+          "full_url": "",
+          "press_audience": 40100000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.gamespot.com/profile/cherifaulkner/",
+          "email": "cfaulkner@fandom.com",
+          "first_name": "Cheri",
+          "last_name": "Faulkner",
+          "last_login": "2025-10-28 15:45:01 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 21,
+          "gamer_id": 1231369,
+          "nickname": "Filmweb",
+          "country": "PL",
+          "use_press_name": true,
+          "press_nickname": "Filmweb.pl",
+          "approved_domain": "filmweb.pl",
+          "full_url": "",
+          "press_audience": 36900000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "PL",
+          "language": "pol",
+          "sample_content": "https://www.filmweb.pl/reviews/recenzja-gry-Doom%3A+The+Dark+Ages-26047",
+          "email": "kuba.karas@filmweb.com",
+          "first_name": "Kuba",
+          "last_name": "Karas",
+          "last_login": "2026-03-30 08:19:26 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 22,
+          "gamer_id": 1148850,
+          "nickname": "Game8 News & Reviews",
+          "country": "JP",
+          "use_press_name": false,
+          "press_nickname": "Game8 News & Reviews",
+          "approved_domain": "game8.co",
+          "full_url": "",
+          "press_audience": 35600000,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Action | Adventure | Indie",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://game8.co/articles/featured/813",
+          "email": "jimmy@game8.co",
+          "first_name": "Jimmy",
+          "last_name": "Doan",
+          "last_login": "2026-05-17 14:45:15 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 23,
+          "gamer_id": 1197386,
+          "nickname": "Financial Times",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "Financial Times",
+          "approved_domain": "ft.com/stream/d0731fa3-4418-38bd-bbdc-104457410459",
+          "full_url": "",
+          "press_audience": 34300000,
+          "role": "Freelance writer",
+          "medium": "Newspaper",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.ft.com/content/b9e419c6-acf1-420b-8ae6-908feb52c94e",
+          "email": "nedbeauman@gmail.com",
+          "first_name": "Ned",
+          "last_name": "Beauman",
+          "last_login": "2025-01-29 11:58:11 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 24,
+          "gamer_id": 1191663,
+          "nickname": "Frankfurter Allgemeine Sonntagszeitung",
+          "country": "DE",
+          "use_press_name": false,
+          "press_nickname": "Frankfurter Allgemeine Sonntagszeitung",
+          "approved_domain": "faz.net/aktuell",
+          "full_url": "",
+          "press_audience": 33500000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Newspaper",
+          "focus": "General",
+          "favourite_genres": "",
+          "region": "DE",
+          "language": "deu",
+          "sample_content": "https://www.faz.net/aktuell/wirtschaft/unternehmen/die-gaming-welt-spaltet-sich-ein-flop-kann-das-ende-bedeuten-19924354.html",
+          "email": "a.wulfers@faz.de",
+          "first_name": "Alexander",
+          "last_name": "Wulfers",
+          "last_login": "2026-03-18 17:28:08 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 25,
+          "gamer_id": 1268276,
+          "nickname": "Bonusweb.cz",
+          "country": "CZ",
+          "use_press_name": false,
+          "press_nickname": "Bonusweb.cz",
+          "approved_domain": "idnes.cz/hry",
+          "full_url": "",
+          "press_audience": 31792643,
+          "role": "Columnist (Reviewer/Critic)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_EEURxRU",
+          "language": "ces",
+          "sample_content": "https://www.idnes.cz/novinari/ondrej-martinu.N3338",
+          "email": "ondrej.martinu@idnes.cz",
+          "first_name": "Ondrej",
+          "last_name": "Martinu",
+          "last_login": "2026-05-16 10:46:27 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 26,
+          "gamer_id": 1202978,
+          "nickname": "Gamerant",
+          "country": "PK",
+          "use_press_name": true,
+          "press_nickname": "Gamerant",
+          "approved_domain": "gamerant.com",
+          "full_url": "",
+          "press_audience": 31600000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_EMEA | GB | US",
+          "language": "eng",
+          "sample_content": "https://gamerant.com/author/ayyoun-ali/",
+          "email": "ayyoun.a@gamerant.com",
+          "first_name": "Ayyoun",
+          "last_name": "Ali",
+          "last_login": "2024-11-07 19:04:41 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 27,
+          "gamer_id": 1194616,
+          "nickname": "GameRant.com",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "GameRant.com",
+          "approved_domain": "gamerant.com",
+          "full_url": "",
+          "press_audience": 31600000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "",
+          "email": "greysun.m@gamerant.com",
+          "first_name": "Greysun",
+          "last_name": "Morales",
+          "last_login": "2024-09-16 11:32:25 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 28,
+          "gamer_id": 889618,
+          "nickname": "Gamerant.com | Editor in Chief",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "Gamerant.com | Editor in Chief",
+          "approved_domain": "gamerant.com",
+          "full_url": "",
+          "press_audience": 31600000,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://gamerant.com/author/tao/",
+          "email": "anthony@gamerant.com",
+          "first_name": "Anthony",
+          "last_name": "Taormina",
+          "last_login": "2025-12-18 10:20:20 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 29,
+          "gamer_id": 1242663,
+          "nickname": "Index",
+          "country": "HU",
+          "use_press_name": true,
+          "press_nickname": "Index",
+          "approved_domain": "index.hu",
+          "full_url": "",
+          "press_audience": 31300000,
+          "role": "Columnist (Reviewer/Critic)",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "",
+          "language": "hun",
+          "sample_content": "https://index.hu/tech/godmode/2025/08/17/mafia-the-old-country-videojatek-teszt-2k-mafia-franchise/",
+          "email": "lunad@index.inda.hu",
+          "first_name": "David",
+          "last_name": "Luna Szasz",
+          "last_login": "2026-05-18 09:14:33 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 30,
+          "gamer_id": 1270892,
+          "nickname": "Mobalytics",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "Mobalytics",
+          "approved_domain": "mobalytics.gg",
+          "full_url": "",
+          "press_audience": 30185217,
+          "role": "Features Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.linkedin.com/in/danfoxdropwyatt/",
+          "email": "daniel.wyatt@mobalyticshq.com",
+          "first_name": "Daniel",
+          "last_name": "Wyatt",
+          "last_login": "2026-05-15 21:17:37 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 31,
+          "gamer_id": 1242123,
+          "nickname": "Beebom.com",
+          "country": "IN",
+          "use_press_name": false,
+          "press_nickname": "Beebom.com",
+          "approved_domain": "beebom.com",
+          "full_url": "",
+          "press_audience": 29800000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Action | FPS | Open World",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://beebom.com/author/rishabhsabarwal/",
+          "email": "rishabh@beebom.com",
+          "first_name": "Rishabh",
+          "last_name": "Sabarwal",
+          "last_login": "2026-05-05 03:28:03 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 32,
+          "gamer_id": 1194652,
+          "nickname": "Tom's Guide",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "Tom's Guide",
+          "approved_domain": "tomsguide.com",
+          "full_url": "",
+          "press_audience": 25600000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.tomsguide.com/gaming/astro-bot-review",
+          "email": "rory.mellon@futurenet.com",
+          "first_name": "Rory",
+          "last_name": "Mellon",
+          "last_login": "2026-04-08 15:48:00 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 33,
+          "gamer_id": 1252641,
+          "nickname": "Tom's Guide",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "Tom's Guide",
+          "approved_domain": "tomsguide.com",
+          "full_url": "",
+          "press_audience": 25600000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.tomsguide.com/author/dave-leclair",
+          "email": "dave.leclair@futurenet.com",
+          "first_name": "Dave",
+          "last_name": "LeClair",
+          "last_login": "2026-02-20 12:48:40 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 34,
+          "gamer_id": 1194949,
+          "nickname": "Tom's Guide",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "Tom's Guide",
+          "approved_domain": "tomsguide.com",
+          "full_url": "",
+          "press_audience": 25600000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "_UKI",
+          "language": "eng",
+          "sample_content": "https://www.tomsguide.com/gaming/xbox/senuas-saga-hellblade-2-review",
+          "email": "jason.england@futurenet.com",
+          "first_name": "Jason",
+          "last_name": "England",
+          "last_login": "2024-10-13 22:39:13 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 35,
+          "gamer_id": 1271746,
+          "nickname": "Revista Oeste",
+          "country": "BR",
+          "use_press_name": false,
+          "press_nickname": "Revista Oeste",
+          "approved_domain": "revistaoeste.com/cultura/",
+          "full_url": "",
+          "press_audience": 25514192,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_LA",
+          "language": "por",
+          "sample_content": "https://revistaoeste.com/autor/matheus-fragata/",
+          "email": "matheusfragata@revistaoeste.com",
+          "first_name": "Matheus",
+          "last_name": "Fragata",
+          "last_login": "2026-04-16 17:13:50 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 36,
+          "gamer_id": 1138213,
+          "nickname": "billbil-kun",
+          "country": "FR",
+          "use_press_name": false,
+          "press_nickname": "Dealabs Magazine",
+          "approved_domain": "dealabs.com",
+          "full_url": "",
+          "press_audience": 24800000,
+          "role": "Freelance writer",
+          "medium": "Blog",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "_EMEA",
+          "language": "fra",
+          "sample_content": "https://www.dealabs.com/magazine/decouvrez-lidentite-du-prochain-jeu-inde-delectronic-arts-qui-sortira-en-2024-35983",
+          "email": "billbil-kun@protonmail.com",
+          "first_name": "Bilal",
+          "last_name": "Messaoudi",
+          "last_login": "2025-10-17 17:29:02 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 37,
+          "gamer_id": 1232324,
+          "nickname": "PlayGround.ru",
+          "country": "RU",
+          "use_press_name": true,
+          "press_nickname": "PlayGround.ru",
+          "approved_domain": "playground.ru",
+          "full_url": "",
+          "press_audience": 24500000,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "BY | RU | UA",
+          "language": "rus",
+          "sample_content": "https://www.playground.ru/opinion/editorial",
+          "email": "team@playground.ru",
+          "first_name": "Nikolai",
+          "last_name": "",
+          "last_login": "2026-05-17 19:32:25 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 38,
+          "gamer_id": 1210576,
+          "nickname": "Playground.ru",
+          "country": "RU",
+          "use_press_name": true,
+          "press_nickname": "Playground.ru",
+          "approved_domain": "playground.ru",
+          "full_url": "",
+          "press_audience": 24500000,
+          "role": "Columnist (Reviewer/Critic)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "",
+          "sample_content": "https://users.playground.ru/3534105/",
+          "email": "kirprimakov@gmail.com",
+          "first_name": "Kirill",
+          "last_name": "Primakov",
+          "last_login": "2026-05-14 11:27:57 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 39,
+          "gamer_id": 1195164,
+          "nickname": "Men's Journal",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "Men's Journal",
+          "approved_domain": "mensjournal.com",
+          "full_url": "",
+          "press_audience": 22704705,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.mensjournal.com/author/brandon-key",
+          "email": "c-bkey@thearenagroup.net",
+          "first_name": "Brandon",
+          "last_name": "Key",
+          "last_login": "2025-12-31 04:45:57 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 40,
+          "gamer_id": 1270575,
+          "nickname": "AngusHoeschen",
+          "country": "DE",
+          "use_press_name": true,
+          "press_nickname": "TAG24 News",
+          "approved_domain": "tag24.de",
+          "full_url": "",
+          "press_audience": 22664443,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "DE",
+          "language": "deu",
+          "sample_content": "https://www.tag24.de/unternehmen/redaktionen/muenchen/marco-schimpfhauser",
+          "email": "marco.schimpfhauser@tag24.de",
+          "first_name": "Marco",
+          "last_name": "Schimpfhauser",
+          "last_login": "2026-04-18 05:06:39 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 41,
+          "gamer_id": 1131549,
+          "nickname": "PC Gamer",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "PC Gamer",
+          "approved_domain": "pcgamer.com",
+          "full_url": "https://www.pcgamer.com/",
+          "press_audience": 22535766,
+          "role": "Assistant Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Action | Adventure | MOBA",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "",
+          "email": "tylercolp@gmail.com",
+          "first_name": "Tyler",
+          "last_name": "Colp",
+          "last_login": "2026-02-19 21:27:09 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 42,
+          "gamer_id": 1172132,
+          "nickname": "Platzkart",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "PC Gamer",
+          "approved_domain": "pcgamer.com",
+          "full_url": "",
+          "press_audience": 22500000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "PC",
+          "favourite_genres": "Open World | RPG | Sandbox",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.pcgamer.com/games/fighting/tekken-8-boss-katsuhiro-harada-helps-bereaved-fan-preserve-ai-ghost-of-their-dead-brother/",
+          "email": "joshua.wolens@futurenet.com",
+          "first_name": "Joshua",
+          "last_name": "Wolens",
+          "last_login": "2025-09-03 14:57:21 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 43,
+          "gamer_id": 1207068,
+          "nickname": "PC Gamer",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "PC Gamer",
+          "approved_domain": "pcgamer.com",
+          "full_url": "",
+          "press_audience": 22500000,
+          "role": "Social Media Specialist",
+          "medium": "Website",
+          "focus": "PC",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.pcgamer.com/meet-the-team/",
+          "email": "natanaelppa@gmail.com",
+          "first_name": "Natanael",
+          "last_name": "Albuquerque",
+          "last_login": "2024-12-19 20:59:43 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 44,
+          "gamer_id": 1238915,
+          "nickname": "CNET",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "CNET",
+          "approved_domain": "cnet.com",
+          "full_url": "",
+          "press_audience": 22300000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.cnet.com/profiles/david.lumb/",
+          "email": "dlumb@cnet.com",
+          "first_name": "David",
+          "last_name": "Lumb",
+          "last_login": "2025-07-25 00:15:20 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 45,
+          "gamer_id": 1205019,
+          "nickname": "CNET",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "CNET",
+          "approved_domain": "cnet.com",
+          "full_url": "",
+          "press_audience": 22300000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.cnet.com/profiles/ogonzalez/",
+          "email": "oscarfgonzalez@gmail.com",
+          "first_name": "Oscar",
+          "last_name": "Gonzalez",
+          "last_login": "2026-05-05 18:43:13 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 46,
+          "gamer_id": 1239000,
+          "nickname": "CNET",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "CNET",
+          "approved_domain": "cnet.com",
+          "full_url": "",
+          "press_audience": 22300000,
+          "role": "Host/Anchor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "",
+          "language": "",
+          "sample_content": "https://www.cnet.com/profiles/sebooker/",
+          "email": "sean.booker@cnet.com",
+          "first_name": "Sean",
+          "last_name": "Booker",
+          "last_login": "2025-07-25 16:09:42 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 47,
+          "gamer_id": 1199659,
+          "nickname": "GamesRadar+",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "GamesRadar+",
+          "approved_domain": "gamesradar.com",
+          "full_url": "",
+          "press_audience": 22100000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.gamesradar.com/uk/author/joe-chivers/",
+          "email": "jecchivers@gmail.com",
+          "first_name": "Joe",
+          "last_name": "Chivers",
+          "last_login": "2026-03-20 22:12:29 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 48,
+          "gamer_id": 1093245,
+          "nickname": "GamesRadar+",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "GamesRadar+",
+          "approved_domain": "gamesradar.com",
+          "full_url": "",
+          "press_audience": 22100000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "",
+          "sample_content": "https://www.gamesradar.com/uk/author/scott-mccrae/",
+          "email": "scott.mccrae9512@gmail.com",
+          "first_name": "Scott",
+          "last_name": "McCrae",
+          "last_login": "2022-05-11 15:38:39 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 49,
+          "gamer_id": 924763,
+          "nickname": "Alan Wen",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "GamesRadar+",
+          "approved_domain": "gamesradar.com",
+          "full_url": "",
+          "press_audience": 22100000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "JRPG",
+          "region": "_UKI",
+          "language": "eng",
+          "sample_content": "https://www.gamesradar.com/author/alan-wen/",
+          "email": "alan@alanwen.co.uk",
+          "first_name": "Alan",
+          "last_name": "Wen",
+          "last_login": "2025-12-22 22:53:13 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 50,
+          "gamer_id": 1183184,
+          "nickname": "GamesRadar+",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "GamesRadar+",
+          "approved_domain": "gamesradar.com",
+          "full_url": "",
+          "press_audience": 22075822,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_UKI | _ANZ | _NA",
+          "language": "eng",
+          "sample_content": "https://www.gamesradar.com/author/oscar-taylor-kent/",
+          "email": "oscar.taylor-kent@futurenet.com",
+          "first_name": "Oscar",
+          "last_name": "Taylor-Kent",
+          "last_login": "2026-03-20 17:46:18 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 51,
+          "gamer_id": 1196500,
+          "nickname": "de Volkskrant",
+          "country": "NL",
+          "use_press_name": true,
+          "press_nickname": "de Volkskrant",
+          "approved_domain": "volkskrant.nl",
+          "full_url": "",
+          "press_audience": 21900000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "",
+          "region": "NL",
+          "language": "nld",
+          "sample_content": "https://www.volkskrant.nl/games",
+          "email": "frank.rensen@volkskrant.nl",
+          "first_name": "Frank",
+          "last_name": "Rensen",
+          "last_login": "2025-11-25 16:36:26 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 52,
+          "gamer_id": 1175318,
+          "nickname": "RTÉ Gaming",
+          "country": "IE",
+          "use_press_name": false,
+          "press_nickname": "RTÉ Gaming",
+          "approved_domain": "rte.ie/culture/gaming/",
+          "full_url": "",
+          "press_audience": 21100000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_UKI | _EMEA",
+          "language": "eng",
+          "sample_content": "https://www.rte.ie/culture/2024/0604/1452881-game-on-paper-mario-the-latest-games-reviewed/",
+          "email": "barrypaulorourke@gmail.com",
+          "first_name": "Barry",
+          "last_name": "O'Rourke",
+          "last_login": "2026-04-03 11:09:49 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 53,
+          "gamer_id": 1218747,
+          "nickname": "io9",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "io9",
+          "approved_domain": "gizmodo.com",
+          "full_url": "",
+          "press_audience": 18500000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "",
+          "language": "",
+          "sample_content": "https://gizmodo.com/author/gigawattconduit",
+          "email": "jhcarter1010@gmail.com",
+          "first_name": "Justin",
+          "last_name": "Carter",
+          "last_login": "2025-03-21 17:30:08 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 54,
+          "gamer_id": 1178729,
+          "nickname": "Vandal",
+          "country": "ES",
+          "use_press_name": false,
+          "press_nickname": "Vandal",
+          "approved_domain": "vandal.elespanol.com",
+          "full_url": "",
+          "press_audience": 17700000,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_LA | ES",
+          "language": "spa",
+          "sample_content": "https://vandal.elespanol.com/analisis/ps5/astro-bot/170597#p-89",
+          "email": "sgonzalez@vandal.net",
+          "first_name": "Saúl",
+          "last_name": "González",
+          "last_login": "2026-05-14 16:22:22 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 55,
+          "gamer_id": 1262395,
+          "nickname": "Eneba",
+          "country": "SI",
+          "use_press_name": true,
+          "press_nickname": "Eneba",
+          "approved_domain": "eneba.com",
+          "full_url": "",
+          "press_audience": 17675500,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "US",
+          "language": "eng",
+          "sample_content": "https://www.eneba.com/hub/news/id-love-to-see-a-true-creative-breakthrough-an-interview-with-techlands-franchise-director-for-dying-light/",
+          "email": "wayne.goodchild@eneba.com",
+          "first_name": "Wayne",
+          "last_name": "Goodchild",
+          "last_login": "2026-05-15 13:51:09 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 56,
+          "gamer_id": 1080444,
+          "nickname": "Gaming Federation",
+          "country": "CH",
+          "use_press_name": "",
+          "press_nickname": "Gaming Federation",
+          "approved_domain": "bluewin.ch",
+          "full_url": "http://bluewin.ch",
+          "press_audience": 17300000,
+          "role": "",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "3D Platformer | Action | Adventure",
+          "region": "CH",
+          "language": "ger",
+          "sample_content": "",
+          "email": "julien-chevalley@bluewin.ch",
+          "first_name": "julien",
+          "last_name": "Chevalley",
+          "last_login": "2026-05-06 15:32:30 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 57,
+          "gamer_id": 1233905,
+          "nickname": "mr_r0smen",
+          "country": "CZ",
+          "use_press_name": false,
+          "press_nickname": "Deník",
+          "approved_domain": "denik.cz",
+          "full_url": "",
+          "press_audience": 17200000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "CZ",
+          "language": "ces",
+          "sample_content": "https://www.denik.cz/autor/tomas-rosa-5281.html",
+          "email": "tomas.rosa@denik.cz",
+          "first_name": "Tomas",
+          "last_name": "Rosa",
+          "last_login": "2026-02-19 15:51:11 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 58,
+          "gamer_id": 1198178,
+          "nickname": "CBR",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "CBR",
+          "approved_domain": "cbr.com",
+          "full_url": "",
+          "press_audience": 16500000,
+          "role": "Columnist (Reviewer/Critic)",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "US",
+          "language": "eng",
+          "sample_content": "https://www.cbr.com/author/mark-o-callaghan/",
+          "email": "markocallaghan25@gmail.com",
+          "first_name": "Mark",
+          "last_name": "OCallaghan",
+          "last_login": "2026-02-06 19:52:50 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 59,
+          "gamer_id": 1218112,
+          "nickname": "ComicBook",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "ComicBook",
+          "approved_domain": "comicbook.com",
+          "full_url": "",
+          "press_audience": 15400000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "",
+          "language": "",
+          "sample_content": "https://comicbook.com/author/michael-murphy/",
+          "email": "murf7220@gmail.com",
+          "first_name": "Michael",
+          "last_name": "Murphy",
+          "last_login": "2025-08-12 16:34:16 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 60,
+          "gamer_id": 1198169,
+          "nickname": "Rheinische Post",
+          "country": "DE",
+          "use_press_name": true,
+          "press_nickname": "Rheinische Post",
+          "approved_domain": "rp-online.de/digitales/games/",
+          "full_url": "",
+          "press_audience": 15400000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "",
+          "language": "deu",
+          "sample_content": "",
+          "email": "katharina.gilles@rheinische-post.de",
+          "first_name": "Katharina",
+          "last_name": "Gilles",
+          "last_login": "2024-10-07 14:19:25 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 61,
+          "gamer_id": 779122,
+          "nickname": "Jazz Stewart",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "Polygon",
+          "approved_domain": "polygon.com",
+          "full_url": "",
+          "press_audience": 15300000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "",
+          "sample_content": "https://www.polygon.com/authors/cedric-stewart",
+          "email": "jazz.dev@outlook.com",
+          "first_name": "Jazz",
+          "last_name": "Stewart",
+          "last_login": "2025-05-25 02:38:23 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 62,
+          "gamer_id": 795691,
+          "nickname": "billyjaden",
+          "country": "DE",
+          "use_press_name": "",
+          "press_nickname": "billyjaden",
+          "approved_domain": "giga.de",
+          "full_url": "http://giga.de",
+          "press_audience": 15100000,
+          "role": "",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "Adventure | Indie | RPG",
+          "region": "DE",
+          "language": "deu",
+          "sample_content": "",
+          "email": "marina.haensel@giga.de",
+          "first_name": "Marina",
+          "last_name": "Hänsel",
+          "last_login": "2018-10-22 13:26:24 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 63,
+          "gamer_id": 1120660,
+          "nickname": "LenMariken",
+          "country": "NL",
+          "use_press_name": "",
+          "press_nickname": "NRC",
+          "approved_domain": "nrc.nl",
+          "full_url": "https://www.nrc.nl",
+          "press_audience": 14900000,
+          "role": "",
+          "medium": "Newspaper",
+          "focus": "General",
+          "favourite_genres": "3D Platformer | 2D Platformer | Action",
+          "region": "NL",
+          "language": "nld",
+          "sample_content": "",
+          "email": "l.maessen@nrc.nl",
+          "first_name": "Len",
+          "last_name": "Maessen",
+          "last_login": "2025-01-29 12:10:44 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 64,
+          "gamer_id": 1176448,
+          "nickname": "Rolling Stone",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "Rolling Stone",
+          "approved_domain": "rollingstone.com",
+          "full_url": "",
+          "press_audience": 14300000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "2D Fighter | Action | Roguelite",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.rollingstone.com/author/christopher-cruz/",
+          "email": "christopher.cruz@rollingstone.com",
+          "first_name": "Christopher",
+          "last_name": "Cruz",
+          "last_login": "2024-08-01 14:41:01 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 65,
+          "gamer_id": 1149731,
+          "nickname": "The Verge",
+          "country": "ZA",
+          "use_press_name": false,
+          "press_nickname": "The Verge",
+          "approved_domain": "theverge.com",
+          "full_url": "",
+          "press_audience": 13400000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "_EMEA",
+          "language": "eng",
+          "sample_content": "",
+          "email": "tauriqplaystation@gmail.com",
+          "first_name": "Tauriq",
+          "last_name": "Moosa",
+          "last_login": "2023-08-20 19:12:36 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 66,
+          "gamer_id": 1077187,
+          "nickname": "TheGamer",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "TheGamer",
+          "approved_domain": "thegamer.com",
+          "full_url": "http://thegamer.com",
+          "press_audience": 13200000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Action | Adventure | Indie",
+          "region": "GB",
+          "language": "eng",
+          "sample_content": "https://www.thegamer.com/category/tg-originals/",
+          "email": "meg.p@thegamer.com",
+          "first_name": "Meg",
+          "last_name": "Pelliccio",
+          "last_login": "2026-04-18 04:55:07 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 67,
+          "gamer_id": 1194699,
+          "nickname": "TheGamer",
+          "country": "GB",
+          "use_press_name": false,
+          "press_nickname": "TheGamer",
+          "approved_domain": "thegamer.com",
+          "full_url": "",
+          "press_audience": 13200000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.thegamer.com/no-mans-sky-nms-difficulty-approachable-difficulty-debate-doesnt-care/",
+          "email": "david.d@thegamer.com",
+          "first_name": "David",
+          "last_name": "Duffy",
+          "last_login": "2024-10-22 08:45:14 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 68,
+          "gamer_id": 1201002,
+          "nickname": "peterspittech",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "TheGamer",
+          "approved_domain": "thegamer.com",
+          "full_url": "",
+          "press_audience": 13200000,
+          "role": "Other",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.youtube.com/channel/UCX77Km4pLRsU9OFYEMdIvew",
+          "email": "peter.szpytek@gmail.com",
+          "first_name": "Peter",
+          "last_name": "Hunt Szpytek",
+          "last_login": "2025-04-23 14:33:04 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 69,
+          "gamer_id": 1192537,
+          "nickname": "TheGamer",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "TheGamer",
+          "approved_domain": "thegamer.com",
+          "full_url": "",
+          "press_audience": 13200000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "",
+          "email": "sheadonfinley@icloud.com",
+          "first_name": "Joshua",
+          "last_name": "Robertson",
+          "last_login": "2026-05-01 22:28:16 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 70,
+          "gamer_id": 1250302,
+          "nickname": "TheGamer",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "TheGamer",
+          "approved_domain": "thegamer.com",
+          "full_url": "",
+          "press_audience": 13200000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Horror | Indie | RPG",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.thegamer.com/author/kaitlyn-peterson/",
+          "email": "bykaitlynpeterson@gmail.com",
+          "first_name": "Kaitlyn",
+          "last_name": "Peterson",
+          "last_login": "2025-11-20 17:55:31 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 71,
+          "gamer_id": 1178751,
+          "nickname": "Mashable",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "Mashable",
+          "approved_domain": "mashable.com",
+          "full_url": "",
+          "press_audience": 13200000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://mashable.com/review/sand-land",
+          "email": "aperry@mashable.com",
+          "first_name": "Alex",
+          "last_name": "Perry",
+          "last_login": "2024-04-24 20:33:14 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 72,
+          "gamer_id": 854499,
+          "nickname": "Mashable",
+          "country": "AU",
+          "use_press_name": "",
+          "press_nickname": "Mashable",
+          "approved_domain": "mashable.com",
+          "full_url": "https://mashable.com/",
+          "press_audience": 13200000,
+          "role": "",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "Action | Adventure | Shooter",
+          "region": "_US",
+          "language": "eng",
+          "sample_content": "",
+          "email": "ayeo@mashable.com",
+          "first_name": "Amanda",
+          "last_name": "Yeo",
+          "last_login": "2023-04-30 05:20:23 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 73,
+          "gamer_id": 1222130,
+          "nickname": "Terra Game On",
+          "country": "BR",
+          "use_press_name": false,
+          "press_nickname": "Terra Game On",
+          "approved_domain": "terra.com.br/gameon",
+          "full_url": "",
+          "press_audience": 13000000,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Adventure | Card Game | Sports",
+          "region": "BR",
+          "language": "por",
+          "sample_content": "https://www.terra.com.br/gameon/plataformas-e-consoles/marathon-bungie-revela-gameplay-e-mostra-que-ainda-sabe-fazer-fps-com-estilo-e-proposito,a5064b7949d058d971299a631684b83apca4ttj9.html",
+          "email": "gameon@terra.com.br",
+          "first_name": "Sammy",
+          "last_name": "Anderson",
+          "last_login": "2026-02-18 15:17:42 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 74,
+          "gamer_id": 1271426,
+          "nickname": "Frandroid",
+          "country": "FR",
+          "use_press_name": false,
+          "press_nickname": "Frandroid",
+          "approved_domain": "frandroid.com",
+          "full_url": "",
+          "press_audience": 12528368,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "FPS | JRPG",
+          "region": "FR",
+          "language": "fra",
+          "sample_content": "https://www.frandroid.com/author/cassim",
+          "email": "cassim@humanoid.fr",
+          "first_name": "Cassim",
+          "last_name": "Montilla-Ruz",
+          "last_login": "2026-04-17 06:52:49 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 75,
+          "gamer_id": 781437,
+          "nickname": "DTF",
+          "country": "RU",
+          "use_press_name": "",
+          "press_nickname": "DTF",
+          "approved_domain": "dtf.ru",
+          "full_url": "https://dtf.ru/",
+          "press_audience": 12200000,
+          "role": "",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "Action | Indie | RPG",
+          "region": "RU",
+          "language": "rus",
+          "sample_content": "",
+          "email": "play@dtf.ru",
+          "first_name": "DTF",
+          "last_name": "Editorial",
+          "last_login": "2021-04-17 20:04:50 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 76,
+          "gamer_id": 1220473,
+          "nickname": "Technopat",
+          "country": "TR",
+          "use_press_name": false,
+          "press_nickname": "Technopat",
+          "approved_domain": "technopat.net",
+          "full_url": "",
+          "press_audience": 12200000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "FPS | Roguelike | RPG",
+          "region": "_EMEA | TR",
+          "language": "tur",
+          "sample_content": "https://www.technopat.net/author/umutyilmaz/",
+          "email": "umuterdemyilmaz@technopat.net",
+          "first_name": "Umut",
+          "last_name": "Erdem Yılmaz",
+          "last_login": "2026-04-19 10:43:20 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 77,
+          "gamer_id": 1181930,
+          "nickname": "VICE Waypoint",
+          "country": "US",
+          "use_press_name": false,
+          "press_nickname": "VICE Waypoint",
+          "approved_domain": "vice.com/en/section/waypoint/",
+          "full_url": "",
+          "press_audience": 12000000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_NA",
+          "language": "eng",
+          "sample_content": "https://www.vice.com/en/contributor/matt-vatankhah/",
+          "email": "mattvatgames@gmail.com",
+          "first_name": "Matt",
+          "last_name": "Vatankhah",
+          "last_login": "2025-02-27 16:26:37 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 78,
+          "gamer_id": 1199053,
+          "nickname": "SME",
+          "country": "SK",
+          "use_press_name": false,
+          "press_nickname": "SME",
+          "approved_domain": "sme.sk/tech/hry",
+          "full_url": "",
+          "press_audience": 11224223,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "_EEURxRU",
+          "language": "slk",
+          "sample_content": "https://www.sme.sk/aut/322/matus-paculik",
+          "email": "matus.paculik@petitpress.sk",
+          "first_name": "Matus",
+          "last_name": "Paculik",
+          "last_login": "2026-04-16 13:47:43 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 79,
+          "gamer_id": 1256405,
+          "nickname": "Sudinfo SA",
+          "country": "BE",
+          "use_press_name": false,
+          "press_nickname": "Sudinfo SA",
+          "approved_domain": "sudinfo.be",
+          "full_url": "",
+          "press_audience": 10987406,
+          "role": "Columnist (Reviewer/Critic)",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "2D Platformer | 3D Platformer | Adventure",
+          "region": "_WEUR | _BEN",
+          "language": "fra",
+          "sample_content": "https://www.sudinfo.be/256948/dpi-authors/gregory-coppens",
+          "email": "gregory.coppens@sudinfo.be",
+          "first_name": "Grégory",
+          "last_name": "Coppens",
+          "last_login": "2026-05-01 18:14:36 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 80,
+          "gamer_id": 1054434,
+          "nickname": "Digitec",
+          "country": "CH",
+          "use_press_name": true,
+          "press_nickname": "digitec Magazin",
+          "approved_domain": "digitec.ch",
+          "full_url": "http://digitec.ch",
+          "press_audience": 10600000,
+          "role": "Features Editor",
+          "medium": "Website",
+          "focus": "Other",
+          "favourite_genres": "Action | Adventure | RPG",
+          "region": "CH",
+          "language": "eng",
+          "sample_content": "https://www.digitec.ch/de/page/starfield-nach-25-stunden-doch-nur-ein-bethesda-rollenspiel-29343",
+          "email": "philipp.rueegg@digitec.ch",
+          "first_name": "Philipp",
+          "last_name": "Rueegg",
+          "last_login": "2026-04-15 11:13:51 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 81,
+          "gamer_id": 1272584,
+          "nickname": "MetaForge Gaming",
+          "country": "ES",
+          "use_press_name": false,
+          "press_nickname": "MetaForge Gaming",
+          "approved_domain": "metaforge.app",
+          "full_url": "",
+          "press_audience": 9996563,
+          "role": "Owner",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Co-Operative | MMORPG | Survival",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://find-and-update.company-information.service.gov.uk/company/16877245/officers",
+          "email": "takyn@metaforge.app",
+          "first_name": "Sebastian",
+          "last_name": "Klier",
+          "last_login": "2026-04-26 12:08:09 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 82,
+          "gamer_id": 795644,
+          "nickname": "Famitsu.com",
+          "country": "US",
+          "use_press_name": true,
+          "press_nickname": "Famitsu.com",
+          "approved_domain": "famitsu.com",
+          "full_url": "",
+          "press_audience": 9960000,
+          "role": "Features Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "JP",
+          "language": "jpn",
+          "sample_content": "https://www.famitsu.com/article/202511/58113",
+          "email": "nthe.weird@gmail.com",
+          "first_name": "Naoki",
+          "last_name": "Yoshimura",
+          "last_login": "2026-01-08 08:05:42 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 83,
+          "gamer_id": 816308,
+          "nickname": "3DJuegos",
+          "country": "ES",
+          "use_press_name": "",
+          "press_nickname": "3DJuegos",
+          "approved_domain": "3djuegos.com",
+          "full_url": "https://www.3djuegos.com",
+          "press_audience": 9780000,
+          "role": "",
+          "medium": "Website",
+          "focus": "Other",
+          "favourite_genres": "Fighting | Shooter | Indie",
+          "region": "ES",
+          "language": "spa",
+          "sample_content": "",
+          "email": "redaccion@3djuegos.com",
+          "first_name": "Álvaro",
+          "last_name": "Castellanao",
+          "last_login": "2026-03-31 12:21:01 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 84,
+          "gamer_id": 1195671,
+          "nickname": "SVT.se",
+          "country": "SE",
+          "use_press_name": true,
+          "press_nickname": "SVT.se",
+          "approved_domain": "svt.se",
+          "full_url": "",
+          "press_audience": 9700000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "",
+          "region": "SE",
+          "language": "swe",
+          "sample_content": "https://www.svt.se/kultur/recension-the-plucky-squire-utvecklat-av-all-possible-futures",
+          "email": "daniel.wyser@svt.se",
+          "first_name": "Daniel",
+          "last_name": "Wyser",
+          "last_login": "2025-12-04 07:17:38 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 85,
+          "gamer_id": 1177166,
+          "nickname": "HobbyConsolas",
+          "country": "ES",
+          "use_press_name": false,
+          "press_nickname": "HobbyConsolas",
+          "approved_domain": "hobbyconsolas.com",
+          "full_url": "",
+          "press_audience": 9450000,
+          "role": "Editor-in-chief",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_LA | ES",
+          "language": "spa",
+          "sample_content": "https://www.hobbyconsolas.com/reviews/analisis-hades-ps4-ps5-xbox-one-xbox-series-xs-910475",
+          "email": "alberto.lloret@axelspringer.es",
+          "first_name": "Alberto",
+          "last_name": "Lloret",
+          "last_login": "2025-12-12 10:35:05 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 86,
+          "gamer_id": 1236424,
+          "nickname": "3dnews",
+          "country": "RU",
+          "use_press_name": true,
+          "press_nickname": "3dnews",
+          "approved_domain": "3dnews.ru",
+          "full_url": "",
+          "press_audience": 9390000,
+          "role": "Columnist (Reviewer/Critic)",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "Action | Narration | RPG",
+          "region": "",
+          "language": "",
+          "sample_content": "https://opencritic.com/critic/4050/-",
+          "email": "morfius354@gmail.com",
+          "first_name": "Denis",
+          "last_name": "Shchennikov",
+          "last_login": "2026-04-15 17:25:29 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 87,
+          "gamer_id": 1210502,
+          "nickname": "Cyber",
+          "country": "RU",
+          "use_press_name": true,
+          "press_nickname": "Cyber",
+          "approved_domain": "cyber.sports.ru",
+          "full_url": "",
+          "press_audience": 9370000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "RU",
+          "language": "rus",
+          "sample_content": "https://cyber.sports.ru/tribuna/blogs/gameislife/",
+          "email": "s.letskiy@sports.ru",
+          "first_name": "Svyatoslav",
+          "last_name": "Letskiy",
+          "last_login": "2026-05-17 12:03:43 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 88,
+          "gamer_id": 1101809,
+          "nickname": "StasPogorsky",
+          "country": "RU",
+          "use_press_name": "",
+          "press_nickname": "Sports.ru Video Games",
+          "approved_domain": "cyber.sports.ru",
+          "full_url": "https://cyber.sports.ru",
+          "press_audience": 9370000,
+          "role": "",
+          "medium": "Website",
+          "focus": "Entertainment",
+          "favourite_genres": "Action | Adventure | Strategy",
+          "region": "RU",
+          "language": "rus",
+          "sample_content": "",
+          "email": "stas.pogorsky@gmail.com",
+          "first_name": "Stanislav",
+          "last_name": "Pogorsky",
+          "last_login": "2024-10-12 08:02:09 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 89,
+          "gamer_id": 1214135,
+          "nickname": "CYBER",
+          "country": "RU",
+          "use_press_name": true,
+          "press_nickname": "CYBER",
+          "approved_domain": "cyber.sports.ru",
+          "full_url": "",
+          "press_audience": 9370000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_EEUR | RU",
+          "language": "rus",
+          "sample_content": "https://cyber.sports.ru/games/1116557213-artavazd-muradyan-novyj-glava-razdela-igr-i-kino-na-kibere.html",
+          "email": "a.muradyan@sports.ru",
+          "first_name": "Artavazd",
+          "last_name": "",
+          "last_login": "2025-10-06 11:25:27 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 90,
+          "gamer_id": 1032479,
+          "nickname": "elessarek90",
+          "country": "PL",
+          "use_press_name": "",
+          "press_nickname": "elessarek90",
+          "approved_domain": "gry-online.pl",
+          "full_url": "http://gry-online.pl",
+          "press_audience": 9350000,
+          "role": "",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Action | Adventure | Strategy",
+          "region": "PL",
+          "language": "pol",
+          "sample_content": "",
+          "email": "michal.manka@gry-online.pl",
+          "first_name": "Michał",
+          "last_name": "Mańka",
+          "last_login": "2024-06-14 20:36:39 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 91,
+          "gamer_id": 1254365,
+          "nickname": "GRYOnline",
+          "country": "PL",
+          "use_press_name": true,
+          "press_nickname": "GRYOnline",
+          "approved_domain": "gry-online.pl",
+          "full_url": "",
+          "press_audience": 9350000,
+          "role": "Features Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "pol",
+          "sample_content": "https://www.gry-online.pl/autor/anna-garas/",
+          "email": "anna.garas@webedia-group.com",
+          "first_name": "Anna",
+          "last_name": "Garas",
+          "last_login": "2025-12-02 13:56:41 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 92,
+          "gamer_id": 1213737,
+          "nickname": "GamePro.de / Webedia Gaming GmbH",
+          "country": "DE",
+          "use_press_name": true,
+          "press_nickname": "GamePro.de / Webedia Gaming GmbH",
+          "approved_domain": "gamepro.de",
+          "full_url": "",
+          "press_audience": 9250000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_WEUR | DE",
+          "language": "deu",
+          "sample_content": "https://www.gamepro.de/artikel/chris-werian,36231_135/",
+          "email": "chris.werian@webedia-group.com",
+          "first_name": "Chris",
+          "last_name": "Werian",
+          "last_login": "2025-12-18 17:25:08 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 93,
+          "gamer_id": 1213312,
+          "nickname": "GamePro",
+          "country": "DE",
+          "use_press_name": true,
+          "press_nickname": "GamePro",
+          "approved_domain": "gamepro.de",
+          "full_url": "",
+          "press_audience": 9250000,
+          "role": "Other",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "DE",
+          "language": "deu",
+          "sample_content": "https://www.gamepro.de/thema/sebastian-zeitz,144933_58/",
+          "email": "sebastian.zeitz@webedia-group.com",
+          "first_name": "Sebastian",
+          "last_name": "Zeitz",
+          "last_login": "2025-08-15 08:42:28 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 94,
+          "gamer_id": 1213303,
+          "nickname": "GamePro.de",
+          "country": "DE",
+          "use_press_name": false,
+          "press_nickname": "GamePro.de",
+          "approved_domain": "gamepro.de",
+          "full_url": "",
+          "press_audience": 9250000,
+          "role": "Other",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "_DACH",
+          "language": "deu",
+          "sample_content": "https://www.gamepro.de/thema/rae-grimm,144811_58/",
+          "email": "rae.grimm@webedia-group.com",
+          "first_name": "Rae",
+          "last_name": "Grimm",
+          "last_login": "2025-08-14 13:43:51 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 95,
+          "gamer_id": 1213738,
+          "nickname": "www.gamepro.de",
+          "country": "DE",
+          "use_press_name": true,
+          "press_nickname": "www.gamepro.de",
+          "approved_domain": "gamepro.de",
+          "full_url": "",
+          "press_audience": 9250000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "DE",
+          "language": "deu",
+          "sample_content": "https://www.gamepro.de/thema/maximilian-franke,144873_58/",
+          "email": "maximilian.franke@webedia-group.com",
+          "first_name": "Maximilian",
+          "last_name": "Franke",
+          "last_login": "2025-11-12 08:44:43 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 96,
+          "gamer_id": 1181769,
+          "nickname": "GamePro",
+          "country": "DE",
+          "use_press_name": false,
+          "press_nickname": "GamePro",
+          "approved_domain": "gamepro.de",
+          "full_url": "",
+          "press_audience": 9250000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "",
+          "region": "",
+          "language": "deu",
+          "sample_content": "https://www.gamepro.de/artikel/baldurs-gate-3-test-review-ps5,3400100.html",
+          "email": "kevin.itzinger@webedia-group.com",
+          "first_name": "Kevin",
+          "last_name": "Itzinger",
+          "last_login": "2026-05-11 22:10:20 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 97,
+          "gamer_id": 1150534,
+          "nickname": "Wired Italia",
+          "country": "IT",
+          "use_press_name": false,
+          "press_nickname": "Wired Italia",
+          "approved_domain": "wired.it",
+          "full_url": "",
+          "press_audience": 8880000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "2D Fighter | Action | JRPG",
+          "region": "IT",
+          "language": "ita",
+          "sample_content": "https://www.wired.it/contributor/silvio-mazzitelli/",
+          "email": "silvio.mazzitelli@gmail.com",
+          "first_name": "Silvio",
+          "last_name": "Mazzitelli",
+          "last_login": "2026-05-02 22:11:21 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 98,
+          "gamer_id": 1194573,
+          "nickname": "GAMINGbible",
+          "country": "GB",
+          "use_press_name": true,
+          "press_nickname": "GAMINGbible",
+          "approved_domain": "gamingbible.com",
+          "full_url": "",
+          "press_audience": 8740000,
+          "role": "Staff writer (Reporter)",
+          "medium": "Website",
+          "focus": "Games",
+          "favourite_genres": "Adventure | Horror | Shooter",
+          "region": "",
+          "language": "eng",
+          "sample_content": "https://www.gamingbible.com/features/silent-hill-2-remake-preview-008691-20240816",
+          "email": "richard.lee.breslin@ladbiblegroup.com",
+          "first_name": "Richard",
+          "last_name": "Breslin",
+          "last_login": "2024-09-16 10:19:31 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 99,
+          "gamer_id": 1175553,
+          "nickname": "Mario Petillo",
+          "country": "IT",
+          "use_press_name": false,
+          "press_nickname": "Everyeye",
+          "approved_domain": "everyeye.it",
+          "full_url": "",
+          "press_audience": 8530000,
+          "role": "Freelance writer",
+          "medium": "Website",
+          "focus": "General",
+          "favourite_genres": "",
+          "region": "IT",
+          "language": "ita",
+          "sample_content": "https://www.everyeye.it/staff/mario-petillo-10087/",
+          "email": "info@mariopetillo.com",
+          "first_name": "Mario",
+          "last_name": "Petillo",
+          "last_login": "2024-04-11 13:05:15 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      },
+      {
+        "json": {
+          "row_number": 100,
+          "gamer_id": 1195438,
+          "nickname": "Xataka México",
+          "country": "MX",
+          "use_press_name": true,
+          "press_nickname": "Xataka México",
+          "approved_domain": "xataka.com.mx",
+          "full_url": "",
+          "press_audience": 8510000,
+          "role": "Section Editor",
+          "medium": "Website",
+          "focus": "",
+          "favourite_genres": "",
+          "region": "_LA",
+          "language": "spa",
+          "sample_content": "https://www.xataka.com.mx/tag/silent-hill",
+          "email": "martin.pacheco.herrera@gmail.com",
+          "first_name": "Martin",
+          "last_name": "Pacheco",
+          "last_login": "2025-09-08 20:09:11 UTC",
+          "updated_similarweb_api_data": ""
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get CSV data": {
+      "main": [
+        []
+      ]
+    },
+    "Javascript": {
+      "main": [
+        [
+          {
+            "node": "Update CSV data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Get: SimilarWeb Data": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Update CSV data": {
+      "main": [
+        [
+          {
+            "node": "RANDOMIZE WAIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Input": {
+      "main": [
+        [
+          {
+            "node": "Get CSV data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Request: Flaresolverr",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RANDOMIZE WAIT": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Necessary Fields": {
+      "main": [
+        [
+          {
+            "node": "Response Formatting Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request: Flaresolverr": {
+      "main": [
+        [
+          {
+            "node": "Get Necessary Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Formatting Output": {
+      "main": [
+        [
+          {
+            "node": "Javascript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "2f818062-3b95-45ba-985a-e5fc711a4d93",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "vDQQJclc3AXrH7fi",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2026-01-10T06:54:05.064Z",
+      "createdAt": "2026-01-10T06:54:05.064Z",
+      "id": "Ot1LQWqNgibBIl66",
+      "name": "SimilarWeb"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

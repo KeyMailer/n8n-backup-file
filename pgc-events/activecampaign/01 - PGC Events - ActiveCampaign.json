@@ -1,0 +1,540 @@
+{
+  "name": "PGC Events - ActiveCampaign",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## PGC Events - ActiveCampaign\n\n**Purpose:**\nThe purpose of this workflow is to check whether the event attendees’ names already exist in our ActiveCampaign platform. If they do, we retrieve the email address. However, when attendees company doesn't match with orgname from AC we don't retrieve it. We only retrieve the email address if the attendees name is match with AC name, also if attendees company is match with AC orgname.",
+        "height": 240,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "4ecb019d-97d6-4846-b6da-b0009da6d91a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- Use Data Miner to scrape the PGC website. Download the Data Miner browser extension. Data Miner has its own tutorial, so you can just play around with it to get familiar.\n\n- Once you successfully scrape PGC, download the CSV from Data Miner and import it into Google Sheets. Make sure to create a Google Sheet for development purposes only.\n\n- Now, in your Google Sheet, make sure you have three sheets: List (imported data from Data Miner), Intercom, and ActiveCampaign.\n\n \n\n",
+        "height": 308,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "738fbdd8-26f2-49e7-8453-90688c34c65a",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n- This workflow will trigger when user type 'Run' in the form.",
+        "height": 280,
+        "width": 296,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "e1b59c71-fbef-4657-a601-85f2f07f4b93",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the current item from the Loop \nconst loopItem = $('Loop').item.json; \nconst searchName = (loopItem.name || '').toLowerCase().trim(); \nconst loopCompany = (loopItem.company_name || '').toLowerCase().trim();\n\n// Get the search result from ActiveCampaign \nconst acResult = $input.item.json;\n\n// Check if any contacts were found and name matches exactly \nlet matchedContact = null;\n\nif (acResult.contacts && acResult.contacts.length > 0) { \n  // Find exact match (case-insensitive) for both name AND company\n  matchedContact = acResult.contacts.find(contact => { \n    const fullName = `${contact.firstName || ''} ${contact.lastName || ''}`.toLowerCase().trim();\n    const acCompany = (contact.orgname || '').toLowerCase().trim(); \n    \n    // Both name and company must match \n    return fullName === searchName && acCompany === loopCompany;\n  }); \n}\n\nlet output = { \n  ref_name: loopItem.name || \"-\", \n  name: matchedContact ? `${matchedContact.firstName || ''} ${matchedContact.lastName || ''}`.trim() : \"-\", \n  //job_title: matchedContact ? (matchedContact.job_title || \"-\") : \"-\", \n  email: matchedContact ? matchedContact.email : \"-\", \n  company: matchedContact ? (matchedContact.orgname || \"-\") : \"-\" \n}; \n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        576
+      ],
+      "id": "12c47901-08eb-4cdf-b51d-4bdff442f36d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo",
+          "mode": "list",
+          "cachedResultName": "AI Automation: PGC Events ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 563145277,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit#gid=563145277"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        176
+      ],
+      "id": "ea06074d-7e9c-4317-946e-c767fcbbd0de",
+      "name": "Get List",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Read the List sheet from your google sheets.\n- Make sure you configured your account\n- Loop through list batchsize 10 (Don't change the name node 'Loop')",
+        "height": 280,
+        "width": 540,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "262248e2-70df-4d04-9e32-f8aac76f4822",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1456,
+        176
+      ],
+      "id": "eceb0f0f-9db0-435a-8906-d555a41cf168",
+      "name": "Loop",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/contacts?search={{ $json.name }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1792,
+        496
+      ],
+      "id": "02df2166-cdc3-4c06-9e6c-d68cc8f0fb5d",
+      "name": "AC - Search Name",
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "Gffzskt10H2YxYgx",
+          "name": "active-campaign-eduardo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Check the name of attendees on ActiveCampaign\n\n",
+        "height": 280,
+        "width": 316,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "06328a15-3b8a-4881-9f01-e4c13f19ea69",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- now from here, we get also the data from loop node to used as reference.\n\n- we only get the email that match to attendees name.\n\n- if the attendees company doesn't match with AC orgname, we don't retrieve that.",
+        "height": 352,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2032,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "4ba46299-0c00-4daa-b377-5dd087d86e8e",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2896,
+        576
+      ],
+      "id": "3efd1518-954f-493a-91f9-22b3a49bf67d",
+      "name": "Wait",
+      "webhookId": "a3ddf1d8-0268-419e-a429-35c2d77ae5ee"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Append the data in ActiveCampaign sheet and wait for 5 seconds to process another data",
+        "height": 260,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2544,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "1d894ae3-a8e6-44f5-b3d3-24519d2d6040",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo",
+          "mode": "list",
+          "cachedResultName": "AI Automation: PGC Events ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 632851768,
+          "mode": "list",
+          "cachedResultName": "ActiveCampaign",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit#gid=632851768"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ref_name": "={{$json.ref_name}}",
+            "name": "={{$json.name}}",
+            "email": "={{$json.email}}",
+            "company": "={{$json.company}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ref_name",
+              "displayName": "ref_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2656,
+        576
+      ],
+      "id": "8f25e3a6-6a05-4cae-9db1-fb9333766b7c",
+      "name": "ActiveCampaign Result",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "86399cc1-158a-4e73-8225-dd29cb9cd012",
+              "leftValue": "={{ $json.Trigger }}",
+              "rightValue": "Run",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        176
+      ],
+      "id": "f3c46eb9-c700-4e57-870a-91cf6724f74f",
+      "name": "Check Input"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the user type \"Run\" if yes get the data in sheet, if no, stop the workflow.",
+        "height": 452,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "37788aef-bf6c-407b-9066-81346c7e9ba4",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Incorrect password, automation failed."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        912,
+        352
+      ],
+      "id": "477a2a71-d19e-4d9b-a426-1e898e20135a",
+      "name": "Stop"
+    },
+    {
+      "parameters": {
+        "formTitle": "PGC Events - ActiveCampaign",
+        "formDescription": "Type “Run” to start the workflow. Wait for the workflow to finish.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Trigger",
+              "fieldLabel": "Type ‘Run’ to activate the workflow.",
+              "placeholder": "Run",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "redirect",
+              "redirectUrl": "https://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?gid=632851768#gid=632851768"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        384,
+        176
+      ],
+      "id": "6d142bcc-733b-4b0a-aadc-3011e588bf14",
+      "name": "Trigger",
+      "webhookId": "4f514fbf-fba3-4b09-b7c0-578599872d81"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1OnIEEPkAKocIF7mUMTQb-OWoWgwkTkxbbYQdm5xYYlo/edit?gid=563145277#gid=563145277\n\n**Production URL**\nhttps://neightn.indie-demo.com/form/4f514fbf-fba3-4b09-b7c0-578599872d81",
+        "height": 216,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "0b21ea7f-798e-4d39-96ad-4415e206f082",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "ActiveCampaign Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get List": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "AC - Search Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC - Search Name": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ActiveCampaign Result": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Input": {
+      "main": [
+        [
+          {
+            "node": "Get List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "66fffe82-296e-4f7a-afa3-f961f1731f6b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "7TGQeYNu0PpP0iGA",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2026-01-28T08:42:42.077Z",
+      "createdAt": "2026-01-28T08:42:42.077Z",
+      "id": "FLfzpF4zREJtkaBr",
+      "name": "PGC"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

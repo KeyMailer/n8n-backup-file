@@ -1,0 +1,1257 @@
+{
+  "name": "SimilarWeb v2",
+  "nodes": [
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        64
+      ],
+      "id": "530bd6cd-d8c3-4f49-bbac-2f28ad0fb59f",
+      "name": "Loop",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Similarweb v2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        64
+      ],
+      "id": "f5f9bbdc-eb91-4245-b2b1-1139fc866ed6",
+      "name": "Get Data",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the original row data from the item that triggered the HTTP request\nconst originalItem = $(\"Loop\").item.json; \nconst row_number = originalItem.row_number;\nconst gamer_id = originalItem.gamer_id;\nconst approved_domain = originalItem.approved_domain;\n\n// Get the response data\nconst responseData = { ...$json };\n\n// Remove unwanted fields\ndelete responseData.Countries;\ndelete responseData.AiTrafficDetails;\n\n// Process TopCountryShares\nconst topCountryShares = responseData.TopCountryShares || [];\nconst countrySharesFlat = {};\n\nfor (let i = 0; i < 5; i++) {\n  const position = ['one', 'two', 'three', 'four', 'five'][i];\n  if (topCountryShares[i]) {\n    countrySharesFlat[`tcp_countryCode_${position}`] = topCountryShares[i].CountryCode || '-';\n    countrySharesFlat[`tcp_value_${position}`] = topCountryShares[i].Value || '-';\n  } else {\n    countrySharesFlat[`tcp_countryCode_${position}`] = '-';\n    countrySharesFlat[`tcp_value_${position}`] = '-';\n  }\n}\n\n// Remove original TopCountryShares\ndelete responseData.TopCountryShares;\n\n// Process TopKeywords\nconst topKeywords = responseData.TopKeywords || [];\nconst keywordsFlat = {};\n\nfor (let i = 0; i < 5; i++) {\n  const position = ['one', 'two', 'three', 'four', 'five'][i];\n  if (topKeywords[i]) {\n    keywordsFlat[`tk_name_${position}`] = topKeywords[i].Name || '-';\n    keywordsFlat[`tk_estimated_value_${position}`] = topKeywords[i].EstimatedValue ?? '-';\n    keywordsFlat[`tk_volume_${position}`] = topKeywords[i].Volume ?? '-';\n    keywordsFlat[`tk_cpc_${position}`] = topKeywords[i].Cpc ?? '-';\n  } else {\n    keywordsFlat[`tk_name_${position}`] = '-';\n    keywordsFlat[`tk_estimated_value_${position}`] = '-';\n    keywordsFlat[`tk_volume_${position}`] = '-';\n    keywordsFlat[`tk_cpc_${position}`] = '-';\n  }\n}\n\n// Remove original TopKeywords\ndelete responseData.TopKeywords;\n\n// Process EstimatedMonthlyVisits\nconst estimatedMonthlyVisits = responseData.EstimatedMonthlyVisits || {};\nconst monthlyVisitsFlat = {};\n\n// Get the entries and sort them by date to maintain consistent order\nconst visitsEntries = Object.entries(estimatedMonthlyVisits).sort((a, b) => a[0].localeCompare(b[0]));\n\nfor (let i = 0; i < 3; i++) {\n  const position = ['one', 'two', 'three'][i];\n  if (visitsEntries[i]) {\n    monthlyVisitsFlat[`emv_month_${position}`] = visitsEntries[i][0] || '-';\n    monthlyVisitsFlat[`emv_data_${position}`] = visitsEntries[i][1] || '-';\n  } else {\n    monthlyVisitsFlat[`emv_month_${position}`] = '-';\n    monthlyVisitsFlat[`emv_data_${position}`] = '-';\n  }\n}\n\n// Remove original EstimatedMonthlyVisits\ndelete responseData.EstimatedMonthlyVisits;\n\n// Return the combined data\nreturn {\n  row_number, \n  gamer_id, \n  approved_domain,\n  ...responseData,\n  ...countrySharesFlat,\n  ...keywordsFlat,\n  ...monthlyVisitsFlat\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2592,
+        96
+      ],
+      "id": "984e08b5-48f8-4ef5-ae7f-d106b40dc522",
+      "name": "Javascript",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://data.similarweb.com/api/v1/data?domain={{ $json.approved_domain }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.5"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate, br"
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.similarweb.com/"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2192,
+        96
+      ],
+      "id": "d6f74228-0920-4f04-8f49-69cd3e0f0da3",
+      "name": "Similarweb API",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7a33bb0a-de41-4fb6-a6c2-be31d5a7f30f",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "bf492e49-4556-40d6-87c1-c6a4efee9e67",
+              "name": "gamer_id",
+              "value": "={{ $json.gamer_id }}",
+              "type": "number"
+            },
+            {
+              "id": "4a0eee8a-a10a-44fb-9583-647e2ab00403",
+              "name": "approved_domain",
+              "value": "={{ $json.approved_domain.replace(/^(https?:\\/\\/)?([^\\/\\r\\n]+).*/, '$1$2') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1696,
+        176
+      ],
+      "id": "ec901433-547b-44be-865c-c47589866a2f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n- This workflow will trigger when you type \"Run\" in the form.",
+        "height": 296,
+        "width": 392,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -208,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "a41e2558-688a-4653-9da9-b256d55b83f4",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Get the data from the Google Sheet you configured, make sure it’s from Madmin, and import it into your Google Sheet.",
+        "height": 296,
+        "width": 380,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "0ba646f7-33ad-468f-a284-52aec829f306",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Loop through data, make it batch size 10 to process faster.",
+        "height": 292,
+        "width": 344,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "0c167e81-8ff2-4da5-9351-83274181a6d3",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Implement a regex for approved_domain column to avoid bad api request.\n\n**Regex Requirements:**\n- Remove subdomains\n- Remove the trailing slash \"/\" from approved_domain\n- Keep http at the beginning",
+        "height": 400,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1504,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "56789e3a-d514-41b6-b796-e970b29a375e",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Start making requests to the SimilarWeb API using approved_domain and configure the headers accordingly.",
+        "height": 312,
+        "width": 380,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2048,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "b77e61e2-b8b6-48fd-a61e-c4aa4f5e7e3c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Modify the API response data to align with the Google Sheets columns. Return all items from the loop, including row_number, gamer_id, approved_domain, and the modified response JSON.",
+        "height": 320,
+        "width": 352,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2464,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "8831cc25-3734-4ebc-ba20-c2b42eba042d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Update the row in the Google Sheet using row_number to match, and wait 5 seconds before processing the next batch.",
+        "height": 276,
+        "width": 476,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2848,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "c6f7b9d2-1edf-4e3b-8e82-cfd484496f3d",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## SimilarWeb - Expansion\n\n**Purpose:**\n- Unlike the SimilarWeb workflow, which only retrieves the visits for approved_domain, this SimilarWeb expansion workflow will get all data from the API response and save it to the Google Sheet.\n\n\n**Developer:** Justin Peligro \n",
+        "height": 240,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "49dd6ebc-1f44-4f38-9bc8-150f61e08e9c",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n\n**Google Sheets (production)**: https://docs.google.com/spreadsheets/d/18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4/edit?gid=0#gid=0\n\n**Production URL**\nhttps://neightn.indie-demo.com/form/55652452-a7ae-46c3-b437-4bd81206cdb7",
+        "height": 216,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "04766dd9-4dae-410a-802b-a7369ed14f63",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow will run when the users types Run in the input field of the form.\n\n- Download the CSV from Madmin. There are many columns, but only copy the gamer_id and approved_domain columns.\n\n- I implemented a regex on approved_domain to avoid bad API requests.\n\n- We will use approved_domain in the API endpoint of the SimilarWeb API.\n\n- The response from SimilarWeb is modified to align with our Google Sheets columns.\n \n\n",
+        "height": 340,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "e14490e1-958d-459a-9f16-98a53824dd73",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3152,
+        400
+      ],
+      "id": "64cc3b2b-0a60-4981-bda0-25c43c66139d",
+      "name": "Wait: 5 seconds",
+      "webhookId": "4e64e28a-dab2-4b7b-b645-97885aed465c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "86399cc1-158a-4e73-8225-dd29cb9cd012",
+              "leftValue": "={{ $json.Trigger }}",
+              "rightValue": "Run",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        272,
+        80
+      ],
+      "id": "9703eabe-c790-44f5-8603-f3d1916138a2",
+      "name": "Check Input"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the user type \"Run\" if yes get the data in sheet, if no, stop the workflow.",
+        "height": 468,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "fa2ab88f-140b-4275-a338-bc644d13943c",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Incorrect password, automation failed."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        512,
+        256
+      ],
+      "id": "d9fefb9e-e2d1-4e24-ab26-2e8f14457b6d",
+      "name": "Stop"
+    },
+    {
+      "parameters": {
+        "formTitle": "Similarweb v2",
+        "formDescription": "Type “Run” to start the workflow. Wait for the workflow to finish.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Trigger",
+              "fieldLabel": "Type ‘Run’ to activate the workflow.",
+              "placeholder": "Run",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "respondWithOptions": {
+            "values": {
+              "respondWith": "redirect",
+              "redirectUrl": "https://docs.google.com/spreadsheets/d/18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4/edit?gid=0#gid=0"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -80,
+        80
+      ],
+      "id": "12d33bb9-0c8c-431f-8f43-fc095350e772",
+      "name": "Trigger",
+      "webhookId": "55652452-a7ae-46c3-b437-4bd81206cdb7"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Similarweb v2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18MR1ZohK-yZzKUCTU9VFD27607kdA_C6VdCS4afvqi4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "site_name": "={{ $json.SiteName }}",
+            "description": "={{ $json.Description }}",
+            "tcp_countryCode_one": "={{ $json.tcp_countryCode_one }}",
+            "tcp_value_one": "={{ $json.tcp_value_one }}",
+            "tcp_countryCode_two": "={{ $json.tcp_countryCode_two }}",
+            "tcp_value_two": "={{ $json.tcp_value_two }}",
+            "tcp_value_three": "={{ $json.tcp_value_three }}",
+            "tcp_countryCode_three": "={{ $json.tcp_countryCode_three }}",
+            "tcp_countryCode_four": "={{ $json.tcp_countryCode_four }}",
+            "tcp_value_four": "={{ $json.tcp_value_four }}",
+            "tcp_countryCode_five": "={{ $json.tcp_countryCode_five }}",
+            "tcp_value_five": "={{ $json.tcp_value_five }}",
+            "title": "={{ $json.Title }}",
+            "engagements_bounce_rate": "={{ $json.Engagments.BounceRate }}",
+            "engagements_month": "={{ $json.Engagments.Month }}",
+            "engagements_year": "={{ $json.Engagments.Year }}",
+            "engagements_page_per_visit": "={{ $json.Engagments.PagePerVisit }}",
+            "engagements_visits": "={{ $json.Engagments.Visits }}",
+            "engagements_time_on_site": "={{ $json.Engagments.TimeOnSite }}",
+            "emv_month_one": "={{ $json.emv_month_one }}",
+            "emv_data_one": "={{ $json.emv_data_one }}",
+            "emv_month_two": "={{ $json.emv_month_two }}",
+            "emv_data_two": "={{ $json.emv_data_two }}",
+            "emv_month_three": "={{ $json.emv_month_three }}",
+            "emv_data_three": "={{ $json.emv_data_three }}",
+            "gr_rank": "={{ $json.GlobalRank.Rank }}",
+            "ctryrank_country": "={{ $json.CountryRank.Country }}",
+            "ctryrank_code": "={{ $json.CountryRank.CountryCode }}",
+            "ctryrank_rank": "={{ $json.CountryRank.Rank }}",
+            "catrank_rank": "={{ $json.CategoryRank.Rank }}",
+            "catrank_cat": "={{ $json.CategoryRank.Category }}",
+            "global_category_rank": "={{ $json.GlobalCategoryRank }}",
+            "is_small": "={{ $json.IsSmall }}",
+            "ts_social": "={{ $json.TrafficSources.Social }}",
+            "ts_paid_referrals": "={{ $json.TrafficSources[\"Paid Referrals\"] }}",
+            "ts_mail": "={{ $json.TrafficSources.Mail }}",
+            "ts_referrals": "={{ $json.TrafficSources.Referrals }}",
+            "ts_search": "={{ $json.TrafficSources.Search }}",
+            "ts_direct": "={{ $json.TrafficSources.Direct }}",
+            "category": "={{ $json.Category }}",
+            "large_screenshot": "={{ $json.LargeScreenshot }}",
+            "is_data_from_ga": "={{ $json.IsDataFromGa }}",
+            "tk_name_one": "={{ $json.tk_name_one }}",
+            "tk_estimated_value_one": "={{ $json.tk_estimated_value_one }}",
+            "tk_volume_one": "={{ $json.tk_volume_one }}",
+            "tk_cpc_one": "={{ $json.tk_cpc_one }}",
+            "tk_name_two": "={{ $json.tk_name_two }}",
+            "tk_estimated_value_two": "={{ $json.tk_estimated_value_two }}",
+            "tk_volume_two": "={{ $json.tk_volume_two }}",
+            "tk_cpc_two": "={{ $json.tk_cpc_two }}",
+            "tk_name_three": "={{ $json.tk_name_three }}",
+            "tk_estimated_value_three": "={{ $json.tk_estimated_value_three }}",
+            "tk_volume_three": "={{ $json.tk_volume_three }}",
+            "tk_cpc_three": "={{ $json.tk_cpc_three }}",
+            "tk_name_four": "={{ $json.tk_name_four }}",
+            "tk_estimated_value_four": "={{ $json.tk_estimated_value_four }}",
+            "tk_volume_four": "={{ $json.tk_volume_four }}",
+            "tk_cpc_four": "={{ $json.tk_cpc_four }}",
+            "tk_name_five": "={{ $json.tk_name_five }}",
+            "tk_estimated_value_five": "={{ $json.tk_estimated_value_five }}",
+            "tk_volume_five": "={{ $json.tk_volume_five }}",
+            "tk_cpc_five": "={{ $json.tk_cpc_five }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "gamer_id",
+              "displayName": "gamer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "approved_domain",
+              "displayName": "approved_domain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "site_name",
+              "displayName": "site_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_countryCode_one",
+              "displayName": "tcp_countryCode_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_value_one",
+              "displayName": "tcp_value_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_countryCode_two",
+              "displayName": "tcp_countryCode_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_value_two",
+              "displayName": "tcp_value_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_countryCode_three",
+              "displayName": "tcp_countryCode_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_value_three",
+              "displayName": "tcp_value_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_countryCode_four",
+              "displayName": "tcp_countryCode_four",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_value_four",
+              "displayName": "tcp_value_four",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_countryCode_five",
+              "displayName": "tcp_countryCode_five",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tcp_value_five",
+              "displayName": "tcp_value_five",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "engagements_bounce_rate",
+              "displayName": "engagements_bounce_rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "engagements_month",
+              "displayName": "engagements_month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "engagements_year",
+              "displayName": "engagements_year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "engagements_page_per_visit",
+              "displayName": "engagements_page_per_visit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "engagements_visits",
+              "displayName": "engagements_visits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "engagements_time_on_site",
+              "displayName": "engagements_time_on_site",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emv_month_one",
+              "displayName": "emv_month_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emv_data_one",
+              "displayName": "emv_data_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emv_month_two",
+              "displayName": "emv_month_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emv_data_two",
+              "displayName": "emv_data_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emv_month_three",
+              "displayName": "emv_month_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emv_data_three",
+              "displayName": "emv_data_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gr_rank",
+              "displayName": "gr_rank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ctryrank_country",
+              "displayName": "ctryrank_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ctryrank_code",
+              "displayName": "ctryrank_code",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ctryrank_rank",
+              "displayName": "ctryrank_rank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "catrank_rank",
+              "displayName": "catrank_rank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "catrank_cat",
+              "displayName": "catrank_cat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "global_category_rank",
+              "displayName": "global_category_rank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_small",
+              "displayName": "is_small",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts_social",
+              "displayName": "ts_social",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts_paid_referrals",
+              "displayName": "ts_paid_referrals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts_mail",
+              "displayName": "ts_mail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts_referrals",
+              "displayName": "ts_referrals",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts_search",
+              "displayName": "ts_search",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts_direct",
+              "displayName": "ts_direct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "large_screenshot",
+              "displayName": "large_screenshot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_data_from_ga",
+              "displayName": "is_data_from_ga",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_name_one",
+              "displayName": "tk_name_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_estimated_value_one",
+              "displayName": "tk_estimated_value_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_volume_one",
+              "displayName": "tk_volume_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_cpc_one",
+              "displayName": "tk_cpc_one",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_name_two",
+              "displayName": "tk_name_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_estimated_value_two",
+              "displayName": "tk_estimated_value_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_volume_two",
+              "displayName": "tk_volume_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_cpc_two",
+              "displayName": "tk_cpc_two",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_name_three",
+              "displayName": "tk_name_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_estimated_value_three",
+              "displayName": "tk_estimated_value_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_volume_three",
+              "displayName": "tk_volume_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_cpc_three",
+              "displayName": "tk_cpc_three",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_name_four",
+              "displayName": "tk_name_four",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_estimated_value_four",
+              "displayName": "tk_estimated_value_four",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_volume_four",
+              "displayName": "tk_volume_four",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_cpc_four",
+              "displayName": "tk_cpc_four",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_name_five",
+              "displayName": "tk_name_five",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_estimated_value_five",
+              "displayName": "tk_estimated_value_five",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_volume_five",
+              "displayName": "tk_volume_five",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tk_cpc_five",
+              "displayName": "tk_cpc_five",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2928,
+        400
+      ],
+      "id": "7ba64aeb-eadd-4284-87f0-4fed1d99638b",
+      "name": "Update Data",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Loop": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Javascript": {
+      "main": [
+        [
+          {
+            "node": "Update Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Similarweb API": {
+      "main": [
+        [
+          {
+            "node": "Javascript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Similarweb API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait: 5 seconds": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Input": {
+      "main": [
+        [
+          {
+            "node": "Get Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Data": {
+      "main": [
+        [
+          {
+            "node": "Wait: 5 seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "bff6c887-9832-4fec-89f5-dc4bcb8e5e02",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "hbJQVB0Z1SJVR9Ym",
+  "tags": [
+    {
+      "updatedAt": "2026-01-10T06:54:05.064Z",
+      "createdAt": "2026-01-10T06:54:05.064Z",
+      "id": "Ot1LQWqNgibBIl66",
+      "name": "SimilarWeb"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    },
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    }
+  ]
+}

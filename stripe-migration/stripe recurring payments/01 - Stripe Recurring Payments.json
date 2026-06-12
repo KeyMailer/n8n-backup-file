@@ -1,0 +1,880 @@
+{
+  "name": "Stripe Recurring Payments",
+  "nodes": [
+    {
+      "parameters": {
+        "events": [
+          "invoice.payment_succeeded"
+        ]
+      },
+      "type": "n8n-nodes-base.stripeTrigger",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        304
+      ],
+      "id": "53e0f1fb-40ba-4a12-b5fd-1bdf08f4b5e8",
+      "name": "TRIGGER",
+      "webhookId": "f26e1c1c-1b02-4ad1-9043-2450655f7bbf",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.stripe.com/v1/prices/{{$json.data.object.lines.data[0].pricing.price_details.price}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -544,
+        304
+      ],
+      "id": "e5308cbc-d435-40e6-a3fe-a4c7382543be",
+      "name": "GET PRICE",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      },
+      "notes": "is used to retrieve detailed information about a specific Stripe Price object."
+    },
+    {
+      "parameters": {
+        "url": "=https://api.stripe.com/v1/charges?invoice={{$json.data.object.id}}&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        432,
+        32
+      ],
+      "id": "7c686df2-5bb7-475e-80d9-f215b1cfe3c2",
+      "name": "GET CHARGE",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      },
+      "notes": "This endpoint is used to retrieve the payment charge(s) associated with a specific Stripe invoice."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the TRIGGER node\nconst triggerData = $('TRIGGER').all();\n\n// Map through all items and return them\nreturn triggerData.map(item => ({\n  json: item.json\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        32
+      ],
+      "id": "bc787440-2dbd-4cfb-b486-a7e84af033c8",
+      "name": "GET TRIGGER DATA"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        576
+      ],
+      "id": "1199d207-226a-44ea-a9a1-23af024ef8d6",
+      "name": "GET ONLY THE FIRST ITEM"
+    },
+    {
+      "parameters": {
+        "resource": "customer",
+        "customerId": "={{ $json.data.object.customer }}"
+      },
+      "type": "n8n-nodes-base.stripe",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -224
+      ],
+      "id": "e1925cbc-809b-4103-9c2e-d56c3d234902",
+      "name": "GET CUSTOMER",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "dfd3ac7f-f644-4510-86ff-789234740eec",
+              "leftValue": "={{ $json.type }}",
+              "rightValue": "recurring",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -224,
+        304
+      ],
+      "id": "331f9944-b095-4eb6-93dd-8046deb903a5",
+      "name": "CHECK IF TYPE IS RECURRING"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        832,
+        544
+      ],
+      "id": "d778e832-05be-412b-aeaa-59d046460c3d",
+      "name": "MERGE",
+      "notes": "DO NOT CHANGE THE SEQUENCE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7dbd7da5-dfef-45bd-8fc8-2c31b68fb1fd",
+              "name": "status",
+              "value": "={{ $input.all()[3].json.data[0].status }}",
+              "type": "string"
+            },
+            {
+              "id": "7b352074-b714-47b3-b0fb-acab4c119c51",
+              "name": "created_formatted",
+              "value": "={{ DateTime.fromSeconds($json.created).toFormat('MMMM dd, yyyy hh:mm a') }}",
+              "type": "string"
+            },
+            {
+              "id": "1ab8c016-8641-4f86-b36a-62785904a8be",
+              "name": "invoice_number",
+              "value": "={{ $json.data.object.number }}",
+              "type": "string"
+            },
+            {
+              "id": "88a67817-d451-4ef1-a511-1dc7dcb7974f",
+              "name": "name / org",
+              "value": "={{ $input.all()[2].json.description }} ({{ $input.all()[2].json.name }})",
+              "type": "string"
+            },
+            {
+              "id": "c997d8eb-73e0-4787-bb49-4ffe7d75465d",
+              "name": "email",
+              "value": "={{ $input.all()[2].json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "d6b5f06c-baf7-457c-9d60-dc8a1f605c70",
+              "name": "country",
+              "value": "={{ $json.data.object.customer_address.city }} {{ $json.data.object.customer_address.country }}",
+              "type": "string"
+            },
+            {
+              "id": "ad336593-915c-4fe4-84d6-cb3bdd465072",
+              "name": "amount",
+              "value": "={{ Intl.NumberFormat('en-US', { style: 'currency', currency: $json.data.object.currency }).format($json.data.object.amount_paid / 100) }} - {{ $input.all()[1].json.nickname }}",
+              "type": "string"
+            },
+            {
+              "id": "edac296c-0528-4018-92e8-8720773148f0",
+              "name": "description",
+              "value": "={{ $json.data.object.lines.data[0].description }}",
+              "type": "string"
+            },
+            {
+              "id": "ccd44f76-896d-42d2-9f23-998258797b68",
+              "name": "type",
+              "value": "={{ $input.all()[1].json.type }}",
+              "type": "string"
+            },
+            {
+              "id": "2cd770e6-0a01-40f2-88f4-f52ddef2ffe7",
+              "name": "discount",
+              "value": "={{ $input.all()[2].json.discount ?? 'None' }}",
+              "type": "string"
+            },
+            {
+              "id": "a8b6e5ed-1704-4c20-b010-846cfcb9407e",
+              "name": "risk_level",
+              "value": "={{ $input.all()[3].json.data[0].outcome.risk_level }}",
+              "type": "string"
+            },
+            {
+              "id": "ae2cbbf7-2a51-4744-818e-1fa77df2845b",
+              "name": "summary",
+              "value": "={{ $json.data.object.lines.data[0].description }}, ({{ $input.all()[3].json.data[0].description }}), {{ Intl.NumberFormat('en-US', { style: 'currency', currency: $json.data.object.currency }).format($json.data.object.amount_paid / 100) }}, {{ $input.all()[1].json.nickname }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1088,
+        576
+      ],
+      "id": "0c0a7c13-9316-47d9-b3d5-db7bf1535561",
+      "name": "GET NECESSARY FIELDS"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -960,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "ec2737f6-92f9-4bf2-a1e4-02421f399060",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "d32ba522-c087-4fd6-89a2-97e69bc091d7",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 296,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -320,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "8a6bb774-b724-4c3b-9c29-e5e53fddffb5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "ba9a869d-a0b1-4e98-b859-aa285f0bd831",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 520,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "919e3ac1-e34b-4a37-9318-398212de6308",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 336,
+        "width": 800,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "d034a496-818f-4507-8a74-fc2e12ca5c83",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 504,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1568,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "942d844d-93a1-44ed-b1cf-cbd189c57e41",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "## Stripe Recurring Payments\n\n**Purpose:**\n- The purpose of this automation is to notify the team whenever a new payment is received.\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1440,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "f786a440-cd67-4b9b-bf94-84c4360db923",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This will run everytime it receive an event\n\n- Check whether the type is recurring\n\n- Regarding the stripe credentials, kevin sent an invite to my work account\n\nConfiguration:\n- Stripe Dashboard > Webhook > Add Destination >  configure an event > Add the Production Webhook URLs from n8n > done\n",
+        "height": 404,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1440,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "c438ced2-30f9-44e2-858a-bc42587299a5",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A0ZJ8TPCJ",
+          "mode": "list",
+          "cachedResultName": "n8n-notification"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"STRIPE RECURRING PAYMENT\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Client info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Name / Org*\\n{{ $json['name / org'] }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Email*\\n{{ $json.email }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Country*\\n{{ $json.country }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Invoice info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Invoice Number*\\n{{ $json.invoice_number }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Amount*\\n{{ $json.amount }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Status*\\n{{ $json.status }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Date*\\n{{ $json.created_formatted }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Discount*\\n{{ $json.discount }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Description*\\n{{ $json.description }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Type*\\n{{ $json.type }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Risk Level*\\n{{ $json.risk_level }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Summary*\\n{{ $json.summary }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1968,
+        592
+      ],
+      "id": "fd3c723c-595c-4eaa-82a1-d6a223f66fe6",
+      "name": "SEND A MESSAGE - TEST",
+      "webhookId": "4d62131c-6a8e-423b-a6a2-df2400729adb",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B8LNCG4RX",
+          "mode": "list",
+          "cachedResultName": "n8n_bot_revenue_subscriptions"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"STRIPE RECURRING PAYMENT\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Client info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Name / Org*\\n{{ $json['name / org'] }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Email*\\n{{ $json.email }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Country*\\n{{ $json.country }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Invoice info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Invoice Number*\\n{{ $json.invoice_number }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Amount*\\n{{ $json.amount }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Status*\\n{{ $json.status }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Date*\\n{{ $json.created_formatted }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Discount*\\n{{ $json.discount }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Description*\\n{{ $json.description }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Type*\\n{{ $json.type }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Risk Level*\\n{{ $json.risk_level }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Summary*\\n{{ $json.summary }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1664,
+        576
+      ],
+      "id": "3dd8cb1c-336c-416e-881b-643396f22645",
+      "name": "SEND A MESSAGE",
+      "webhookId": "b20732de-ea5d-48e1-9c8d-c3b3f7944877",
+      "credentials": {
+        "slackApi": {
+          "id": "u1HMM9M2LonokQ6T",
+          "name": "n8n-stripe-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1SU2qr0o_l2ks_9IRuvzif9vkXeKaHQW_61bsXYoxGp8",
+          "mode": "list",
+          "cachedResultName": "Account Management Tracker V2.0",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SU2qr0o_l2ks_9IRuvzif9vkXeKaHQW_61bsXYoxGp8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1394289600,
+          "mode": "list",
+          "cachedResultName": "Recurring Subscriptions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1SU2qr0o_l2ks_9IRuvzif9vkXeKaHQW_61bsXYoxGp8/edit#gid=1394289600"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.email }}",
+            "Publisher": "={{ $json[\"name / org\"].match(/\\((.*?)\\)/)?.[1] || \"\" }}",
+            "Name": "={{ $json[\"name / org\"].replace(/\\s*\\(.*?\\)\\s*/, '').trim() }}",
+            "Date Recurred": "={{ DateTime.fromFormat($json.created_formatted, 'MMMM dd, yyyy hh:mm a').toFormat('yyyy-MM-dd') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date Recurred",
+              "displayName": "Date Recurred",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date Purchased",
+              "displayName": "Date Purchased",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nth Month",
+              "displayName": "Nth Month",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Latest Promotion",
+              "displayName": "Latest Promotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Publisher",
+              "displayName": "Publisher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Publisher Madmin",
+              "displayName": "Publisher Madmin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Segment",
+              "displayName": "Segment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Product",
+              "displayName": "Product",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ProdMadmin",
+              "displayName": "ProdMadmin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subscription",
+              "displayName": "Subscription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Period",
+              "displayName": "Period",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Preparer",
+              "displayName": "Preparer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Point Person",
+              "displayName": "Point Person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Contact Date",
+              "displayName": "Contact Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PN",
+              "displayName": "PN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "IN",
+              "displayName": "IN",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Ad",
+              "displayName": "Ad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Feedback",
+              "displayName": "Feedback",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nth Month Cancelled",
+              "displayName": "Nth Month Cancelled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Entitlement",
+              "displayName": "Entitlement",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "# of Cancellations",
+              "displayName": "# of Cancellations",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1664,
+        784
+      ],
+      "id": "78ca4f25-df9f-4dfa-9fe7-8602bbc88edc",
+      "name": "RECURRING SUBSCRIPTION",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET PRICE": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF TYPE IS RECURRING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET TRIGGER DATA": {
+      "main": [
+        [
+          {
+            "node": "GET CUSTOMER",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET CHARGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CHARGE": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "GET ONLY THE FIRST ITEM": {
+      "main": [
+        [
+          {
+            "node": "SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RECURRING SUBSCRIPTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CUSTOMER": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "CHECK IF TYPE IS RECURRING": {
+      "main": [
+        [
+          {
+            "node": "GET TRIGGER DATA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MERGE": {
+      "main": [
+        [
+          {
+            "node": "GET NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "GET ONLY THE FIRST ITEM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "GET PRICE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "7ce860d9-5a99-47ab-a457-990c32c48bd0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "roC8v8ME2Y0XwTqn",
+  "tags": []
+}

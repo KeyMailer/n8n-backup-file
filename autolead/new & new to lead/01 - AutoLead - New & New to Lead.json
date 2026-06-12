@@ -1,0 +1,2724 @@
+{
+  "name": "AutoLead - New & New to Lead",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## AutoLead - New & New to Lead\n\n**Purpose:**\n- The AutoLead workflow automates the population of user fields in the Leadgen section of Madmin by retrieving data from Intercom and ActiveCampaign. It checks whether a publisher name exists on these platforms and, if found, automatically fills in the corresponding fields in Leadgen. \n",
+        "height": 208,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3216,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "e88f0313-62e0-4c9a-9996-82d6808a2dd2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?gid=1556989707#gid=1556989707\n\n**Production URL**\nhttps://neightn.indie-demo.com/form/d362e9c0-fe60-46a2-9e55-f4106376397e",
+        "height": 216,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3216,
+        1184
+      ],
+      "typeVersion": 1,
+      "id": "1bfcf950-c884-4c73-b442-a189d3350522",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow will only trigger when the user types Run in the input field of the form\n\n- In Google Sheets, it will only get rows with Active status\n\n- Using the publisher name, it will check Intercom to see if the publisher already exists. If yes, it will save the contact.\n\n- Check if publisher name exist on ActiveCampaign, if yes, get the contact, save it\n\n- If publisher name does not exist on both platform, save it in No Result\n\n \n\n",
+        "height": 324,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3216,
+        1424
+      ],
+      "typeVersion": 1,
+      "id": "d3f72d02-bd11-416d-97f8-093b43a24ee4",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "86399cc1-158a-4e73-8225-dd29cb9cd012",
+              "leftValue": "={{ $json.Trigger }}",
+              "rightValue": "Run",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2352,
+        1072
+      ],
+      "id": "743f33f4-a9f8-4258-9359-9e04f8ab8d54",
+      "name": "Check Input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ff546765-936c-40b4-8345-a1609aacb2c7",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "c630a671-f0e2-4206-8d21-14d8749779d7",
+              "name": "product_name",
+              "value": "={{ $json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "3985ced9-06ed-4548-bdac-14af87f8b694",
+              "name": "publisher_name",
+              "value": "={{ $json['publisher / developer name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "23871e3b-ea1d-4e69-95c7-3b35b5d4522a",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "54f18935-a02b-46fe-87b9-a428beb2b1ba",
+              "name": "url_web",
+              "value": "={{ $json.url_web }}",
+              "type": "string"
+            },
+            {
+              "id": "bbb54d74-9f6d-423e-84a2-acd26c04c4c7",
+              "name": "url_email",
+              "value": "={{ $json.url_email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1264,
+        1056
+      ],
+      "id": "7a159794-eac6-46ac-94d9-3c0de1c5e5aa",
+      "name": "Input Modify"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  id,\n  product_source_id,\n  publisher_name,\n  contact_product_name,\n  'match' as result_type\nFROM system_leads\nWHERE publisher_name = $1\n  AND (\n        contact_product_name = $2\n        OR $2 IS NULL\n      )\n\nUNION ALL\n\nSELECT\n  NULL as id,\n  NULL as product_source_id,\n  $1 as publisher_name,\n  $2 as contact_product_name,\n  'no_match' as result_type\nWHERE NOT EXISTS (\n  SELECT 1 FROM system_leads\n  WHERE publisher_name = $1\n    AND (\n          contact_product_name = $2\n          OR $2 IS NULL\n        )\n)\n\nLIMIT 1",
+        "options": {
+          "connectionTimeout": 20,
+          "queryReplacement": "={{ [$json.publisher_name, $json.product_name] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -912,
+        1056
+      ],
+      "id": "1663058f-aae0-41a4-9fa0-4138313d7b7e",
+      "name": "Madmin",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "This query checks if the publisher name or product name already exists in the system_leads table. If a match is found, it returns the existing record and marks it as \"match\". If no match is found, it returns a single row with empty values and marks it as \"no_match\", and it only returns one result."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.intercom.io/contacts/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": {\n    \"operator\": \"OR\",\n    \"value\": [\n      {\n        \"field\": \"custom_attributes.Publishers\",\n        \"operator\": \"~\",\n        \"value\": \"{{ $json.publisher_name }}\"\n      },\n      {\n        \"field\": \"custom_attributes.Developers\",\n        \"operator\": \"~\",\n        \"value\": \"{{ $json.publisher_name }}\"\n      }\n    ]\n  }\n}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        448
+      ],
+      "id": "645d9868-f4da-4be5-a936-ec138f995bea",
+      "name": "Intercom: Search Contacts.",
+      "notesInFlow": true,
+      "credentials": {
+        "intercomApi": {
+          "id": "wlgMrlAFTSVnO66r",
+          "name": "Intercom account"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Check if the publisher_name input is match with the custom_attributes.Publishers field from Intercom"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\n// This code processes the Intercom API response and returns all matching contacts\n// Get the current item's data\nconst item = $input.item.json;\n// Get the publisher_name from the previous node (database query result)\nconst publisherName = $('Madmin').item.json.publisher_name;\nconst productName = $('Madmin').item.json.contact_product_name;\nconst resultType = $('Madmin').item.json.result_type;\n\n// Check if Intercom returned any contacts\nlet matchingContacts = [];\nlet hasIntercomData = false;\nif (item && item.data && item.data.length > 0 && item.total_count > 0) {\n  // Filter contacts based on criteria\n  matchingContacts = item.data.filter(contact => {\n    // Check 1: external_id must start with \"p_\"\n    const hasValidExternalId = contact.external_id && contact.external_id.startsWith('p_');\n    \n    // Check 2: custom_attributes.publishers OR custom_attributes.developers must equal publisherName (case-insensitive)\n    const customAttrs = contact.custom_attributes || {};\n    const publisherNameLower = publisherName ? publisherName.toLowerCase() : '';\nconst publishersLower = customAttrs.Publishers ? customAttrs.Publishers.toLowerCase() : '';\nconst developersLower = customAttrs.Developers ? customAttrs.Developers.toLowerCase() : '';\n    \n    const publisherMatch = publishersLower === publisherNameLower || \n                          developersLower === publisherNameLower;\n    \n    return hasValidExternalId && publisherMatch;\n  }).map(contact => ({\n    id: contact.id,\n    external_id: contact.external_id,\n    email: contact.email,\n    name: contact.name,\n    created_at: contact.created_at,\n    updated_at: contact.updated_at,\n    custom_attributes: contact.custom_attributes,\n    tags: contact.tags?.data?.length || 0\n  }));\n  \n  hasIntercomData = matchingContacts.length > 0;\n}\n// Build the output object\nconst output = {\n  // Database query results\n  result_type: resultType,\n  publisher_name: publisherName,\n  product_name: productName,\n  \n  // Intercom search results\n  intercom_found: hasIntercomData,\n  intercom_total_count: item.total_count || 0,\n  intercom_matching_count: matchingContacts.length,\n  \n  // If no Intercom data, show what we searched for\n  searched_publisher: hasIntercomData ? null : publisherName,\n  \n  // All matching Intercom contacts (array)\n  intercom_contacts: hasIntercomData ? matchingContacts : []\n};\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        448
+      ],
+      "id": "6f8b8357-047a-4e7b-8c7e-e70c37485e2c",
+      "name": "Data Null",
+      "notesInFlow": true,
+      "notes": "This code checks the Intercom API results and finds contacts that match the publisher name from your database. \n\nCondition:\n1. Filters contacts to make sure their external_id(user_id) starts with \"p_\" \n2. publisher_name input must be equal to publisher / developer field on Intercom\n\nIf matching contacts are found, it returns their details and shows that Intercom has a match. \n\nIf no contacts are found, it returns an empty list and shows that no Intercom match exists, along with the publisher name that was searched."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.intercom_contacts }}",
+                    "rightValue": "match",
+                    "operator": {
+                      "type": "array",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    },
+                    "id": "415d5b96-bec8-42a0-8684-b9ff400e4037"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not Null: Intercom Contacts"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4d116a2b-79bf-4cf5-804c-f1cc77e2f380",
+                    "leftValue": "={{ $json.intercom_contacts }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "array",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Null: Intercom Contacts"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        448
+      ],
+      "id": "11045b39-79bc-4641-83c2-9508eb48d289",
+      "name": "Check Intercom Contacts"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0afbd50d-6d5d-4dd9-a2b0-6cc665e73c79",
+              "name": "publisher_name",
+              "value": "={{ $json.publisher_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9bdf966c-395f-41ab-af18-837afb3e00d6",
+              "name": "tracker",
+              "value": "not found",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1520,
+        784
+      ],
+      "id": "ae234f04-bde2-439b-a29d-562d8f8ae01a",
+      "name": "Tracker: Not Found"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1015903294,
+          "mode": "list",
+          "cachedResultName": "Intercom Output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1015903294"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_name": "={{ $json.product_name || '-' }}",
+            "publisher_name": "={{ $json.publisher_name }}",
+            "name": "={{ $json.intercom_contacts[0].name }}",
+            "email": "={{ $json.intercom_contacts[0].email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publisher_name",
+              "displayName": "publisher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1904,
+        736
+      ],
+      "id": "d6d5739d-3a46-4810-8580-d8736f953c36",
+      "name": "Append: Intercom Output",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1542018530,
+          "mode": "list",
+          "cachedResultName": "Input",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1542018530"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "publisher / developer name": "={{ $json.publisher_name }}",
+            "status": "complete - intercom"
+          },
+          "matchingColumns": [
+            "publisher / developer name"
+          ],
+          "schema": [
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "publisher / developer name",
+              "displayName": "publisher / developer name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url_web",
+              "displayName": "url_web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url_email",
+              "displayName": "url_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1888,
+        432
+      ],
+      "id": "512950e6-510f-4c31-b380-13676dba3e0d",
+      "name": "Update: Input",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        112,
+        176
+      ],
+      "id": "fdfe2afe-2c00-48d3-a3f5-34e8cbe0b372",
+      "name": "Loop Intercom",
+      "notesInFlow": true,
+      "notes": "Do not change the name of this node"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        96,
+        1520
+      ],
+      "id": "08228cbe-5959-4139-8b61-053fe729be6d",
+      "name": "Loop ActiveCampaign",
+      "notesInFlow": true,
+      "notes": "Do not change the name of this node"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/organizations?search={{ $json.publisher_name }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        1840
+      ],
+      "id": "a8f1984d-93e5-490e-b9b6-95148cc9ca73",
+      "name": "AC: Search Publisher name",
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "Gffzskt10H2YxYgx",
+          "name": "active-campaign-eduardo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get publisher_name original\nconst publisherOriginal = $node[\"Loop ActiveCampaign\"].json.publisher_name;\n\n// Lowercase version (for matching only)\nconst publisherName = publisherOriginal?.toLowerCase().trim();\n\n// Get organizations array from current item\nconst orgs = $json.organizations || [];\n\nlet match = null;\n\n// Loop and find exact match\nfor (const org of orgs) {\n  const orgName = org.name?.toLowerCase().trim();\n\n  if (orgName === publisherName) {\n    match = org;\n    break;\n  }\n}\n\n// Return result (IMPORTANT: no array wrapper)\nif (match) {\n  return {\n    json: {\n      message: \"found\",\n      ...match\n    }\n  };\n} else {\n  return {\n    json: {\n      message: \"not found\",\n      publisher_name: publisherOriginal\n    }\n  };\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        1840
+      ],
+      "id": "ccc4605d-b506-4eed-b94e-e96b2a0ccc3b",
+      "name": "Match",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "notes": "This code checks if the publisher_name input is match with the ActiveCampaign org_name\n\n\nIf a match is found, it returns the organization details and shows \"found\".\n\nIf no match is found, it returns \"not found\" and shows the original publisher name that was searched."
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message }}",
+                    "rightValue": "found",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "09a5b28e-8d2e-4ff1-b578-2d1dda32874f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Found"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d647f5a6-4160-4a93-84d2-f89a3f6311a0",
+                    "leftValue": "={{ $json.message }}",
+                    "rightValue": "not found",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Not Found"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1168,
+        1840
+      ],
+      "id": "6279f04b-8c47-4d39-9d4e-e9c957c0bf47",
+      "name": "Check Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0afbd50d-6d5d-4dd9-a2b0-6cc665e73c79",
+              "name": "publisher_name",
+              "value": "={{ $json.publisher_name }}",
+              "type": "string"
+            },
+            {
+              "id": "9bdf966c-395f-41ab-af18-837afb3e00d6",
+              "name": "tracker",
+              "value": "not found",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1536,
+        2032
+      ],
+      "id": "f517f64f-8d7a-4f86-8eb9-2a22553cb2f9",
+      "name": "Tracker: Not Found v2",
+      "notes": "- If publisher_name is not found on ActiveCampaign, get the publisher_name and add a tracker \"not found\""
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1542018530,
+          "mode": "list",
+          "cachedResultName": "Input",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1542018530"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "publisher / developer name": "={{ $json.publisher_name }}",
+            "status": "complete - not found"
+          },
+          "matchingColumns": [
+            "publisher / developer name"
+          ],
+          "schema": [
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "publisher / developer name",
+              "displayName": "publisher / developer name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url_web",
+              "displayName": "url_web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url_email",
+              "displayName": "url_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        3072
+      ],
+      "id": "8baa90ff-e79b-4cf9-bf0b-2eaaebb8e5bf",
+      "name": "Update: Input v2",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const inputPublisher = $input.item.json.publisher_name?.toLowerCase().trim();\nconst rows = $items(\"Input Modify\");\n\nlet found = null;\nfor (const item of rows) {\n  const publisher = item.json.publisher_name?.toLowerCase().trim();\n  if (publisher === inputPublisher) {\n    found = JSON.parse(JSON.stringify(item.json));\n    break;\n  }\n}\n\nif (found) {\n  return {\n    json: {\n      product_name: String(found.product_name ?? \"\"),\n      publisher_name: String(found.publisher_name ?? \"\"),\n      url_web: String(found.url_web ?? \"\"),\n      url_email: String(found.url_email ?? \"\")\n    }\n  };\n}\n\nreturn {\n  json: {\n    product_name: \"\",\n    publisher_name: String($input.item.json.publisher_name ?? \"\"),\n    url_web: \"\",\n    url_email: \"\",\n    message: \"publisher not found in Input Modify\"\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        3392
+      ],
+      "id": "a0274d51-aa83-449c-88a0-6a7ea7c5ea53",
+      "name": "Reference",
+      "notesInFlow": true,
+      "notes": "This code checks if the publisher name from the current input exists in the “Input Modify” node data. \n\nIf a match is found, it returns the product name, publisher name, and URLs from that row. \n\nIf no match is found, it returns empty values but keeps the original publisher name and shows a message that the publisher was not found.\n"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1556989707,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1556989707"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "publisher_name": "={{ $json.publisher_name }}",
+            "product_name": "={{ $json.product_name }}",
+            "url_web": "={{ $json.url_web }}",
+            "url_email": "={{ $json.url_email }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher_name",
+              "displayName": "publisher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url_web",
+              "displayName": "url_web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url_email",
+              "displayName": "url_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        3392
+      ],
+      "id": "aece321e-f960-46ec-8c85-a730abb41a12",
+      "name": "Append: No Result Output",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// flatten all accountContacts from all items\nlet result = [];\nfor (const item of $input.all()) {\n  result.push(...(item.json.accountContacts || []));\n}\nreturn result.map(contact => ({ json: contact }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        1840
+      ],
+      "id": "2a8e333e-9847-4bb9-8438-e9b89ee84d99",
+      "name": "Flatten AccountConctacts",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/contacts/{{ $json.contact }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3184,
+        1840
+      ],
+      "id": "2663722d-d267-4422-849a-eddc03901a33",
+      "name": "AC: Get Details of Single Contact",
+      "alwaysOutputData": true,
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "2zgZp83VavQKuFe2",
+          "name": "ActiveCampaign account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1542018530,
+          "mode": "list",
+          "cachedResultName": "Input",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1542018530"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "publisher / developer name": "={{ $json.accounts[0].name }}",
+            "status": "complete - both"
+          },
+          "matchingColumns": [
+            "publisher / developer name"
+          ],
+          "schema": [
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "publisher / developer name",
+              "displayName": "publisher / developer name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url_web",
+              "displayName": "url_web",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url_email",
+              "displayName": "url_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3872,
+        1920
+      ],
+      "id": "94887d17-cdf7-4b34-9111-86df51ba61c3",
+      "name": "Update: Input v3",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1829989299,
+          "mode": "list",
+          "cachedResultName": "ActiveCampaign Output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1829989299"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "publisher_name": "={{ $json.contact.orgname }}",
+            "email": "={{ $json.contact.email }}",
+            "full_name": "={{ $json.contact.firstName + \" \" + $json.contact.lastName }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "publisher_name",
+              "displayName": "publisher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3568,
+        2240
+      ],
+      "id": "73be2f1c-da2e-499e-8442-74c2237a84c6",
+      "name": "Append: ActiveCampaign Output",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n- This workflow will trigger when you type \"Run\" in the form.",
+        "height": 296,
+        "width": 296,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2736,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "a9738687-4ffe-4ae5-b897-9d5be31960e0",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the user type \"Run\" if yes get the data in sheet, if no, stop the workflow.",
+        "height": 452,
+        "width": 440,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2400,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "97f53117-f364-4575-b7a9-8b8affe6902a",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Incorrect password, automation failed."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        1248
+      ],
+      "id": "9bdcbe08-f4ad-4d3d-9b23-9aa98c74bd02",
+      "name": "Stop"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Get the data from Input sheet, AutoLead Document.\n- Check if the status is active\n",
+        "height": 280,
+        "width": 492,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1920,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "0e65cb51-81a0-4eb9-83a5-df790f00132d",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Change the publisher / developer name column into publisher_name",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1392,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "42354a21-c161-49b8-b8ba-e27a6df57b70",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Check the publisher_name and product_name in Madmin\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1024,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "c0b0c483-eca4-4eb4-b49b-9a1b67a1d191",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Loop through Madmin output",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "9aaabf49-b432-4a3c-866a-2bc24dee6314",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Check the publisher_name on Intercom\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "c8dd27b0-dad3-49cf-9d83-8fa3a9a58640",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Check the json output and implement a condition",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "49fbd4db-0210-4e1d-a556-f8f3cc83f8d8",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the intercom_contacts array field is null or not null",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "c9a7badd-634c-4f51-8ce7-ea1feb2a9e96",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- If intercom_contacts is null, get the publisher_name and add a tracker \"not found\"",
+        "height": 288,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        656
+      ],
+      "typeVersion": 1,
+      "id": "623d9736-7684-4585-a1b4-a2c4bb63c693",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Update the autolead document, input sheet, status column into 'complete'\n\n- complete means it found a contact for that publisher / developer name",
+        "height": 340,
+        "width": 588,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1776,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "0d35cdbf-5866-4aa9-95ca-4c30ddc188d9",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Append the data we get from Intercom into autolead document, intercom output sheet",
+        "height": 276,
+        "width": 364,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1776,
+        624
+      ],
+      "typeVersion": 1,
+      "id": "13054b92-e36d-4cbd-8e30-dd78d5d9b955",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Loop through tracker data.",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        1424
+      ],
+      "typeVersion": 1,
+      "id": "155ac804-2122-4680-90a5-324219effa6b",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Check the publisher_name on ActiveCampaign\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "c2b7d3fc-4bd8-4629-921e-38f7b3354c21",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Check the json output and implement a matching condition",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "e1244d1f-2232-4099-95c0-577576d3a81e",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check the message field",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "b124cac4-573a-4796-8c22-71fefdf3fc38",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 512,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1424,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "e9e2f1d3-44b8-4d32-9418-7b9d2e070651",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Update the autolead document, input sheet, status column into 'complete - not found'\n\n- complete - not found means it doesn't found a publisher_name both intercom and activecampaign\n",
+        "height": 340,
+        "width": 508,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        2896
+      ],
+      "typeVersion": 1,
+      "id": "398275eb-f7f0-41d5-b583-343f532680ce",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Create a reference from the 'Input Modify' node",
+        "height": 288,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        3264
+      ],
+      "typeVersion": 1,
+      "id": "1cb253aa-15a9-4f8b-8891-8519e63bba75",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Append the data that not exist in autolead document, no result output sheet.",
+        "height": 292,
+        "width": 540,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1040,
+        3264
+      ],
+      "typeVersion": 1,
+      "id": "6d85923d-5f9f-445c-9a98-cbb0f5dc5443",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/organizations/{{ $json.id }}/contacts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        1824
+      ],
+      "id": "60e09ae4-02ff-4014-af5e-5b9e13acc57a",
+      "name": "AC: Get Organization Id",
+      "alwaysOutputData": true,
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "2zgZp83VavQKuFe2",
+          "name": "ActiveCampaign account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Get the organization id to get the contact\n\n",
+        "height": 280,
+        "width": 300,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1792,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "86130389-7a26-457f-b29f-237500843309",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Flatten AccountContacts field",
+        "height": 544,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2768,
+        1744
+      ],
+      "typeVersion": 1,
+      "id": "0a78eed7-817a-44b2-ba21-1347052aa8d6",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Get single details of contact\n\n",
+        "height": 280,
+        "width": 300,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3088,
+        1744
+      ],
+      "typeVersion": 1,
+      "id": "38483516-579d-4a19-a221-2f9329462f94",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Update the autolead document, input sheet, status column into 'complete'\n\n- complete means it found a publisher_name on activecampaign\n",
+        "height": 340,
+        "width": 604,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3744,
+        1744
+      ],
+      "typeVersion": 1,
+      "id": "c73e7a24-9ce0-44e5-a989-d76d49155d53",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Append the data we get from ActiveCampaign into autolead document, activecampaign output sheet",
+        "height": 324,
+        "width": 604,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3424,
+        2112
+      ],
+      "typeVersion": 1,
+      "id": "e3020fce-6801-4012-8ec0-8912f8204b05",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items from the previous node\nconst allItems = $input.all();\n\n// Return everything as-is\nreturn allItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        1056
+      ],
+      "id": "be8e7df8-f944-4eb9-8e26-f0d261bb0820",
+      "name": "Output Source"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- If intercom_contacts is not null, get the publisher_name and add a tracker \"found\"",
+        "height": 288,
+        "width": 592,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2176,
+        928
+      ],
+      "typeVersion": 1,
+      "id": "791d508c-64c3-44b2-82e1-aa146f2ce47e",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c665810-5aa5-4205-a8f6-5253aaffc25c",
+              "name": "publisher_name",
+              "value": "={{ $json.publisher_name }}",
+              "type": "string"
+            },
+            {
+              "id": "2cdc9abf-a492-4f53-9936-344820388dd1",
+              "name": "tracker",
+              "value": "found",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2288,
+        1056
+      ],
+      "id": "e575458f-f935-4e63-aa50-9612aa758dce",
+      "name": "Tracker: Found"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items\nconst items = $input.all();\n\n// Filter only tracker === \"not found\"\nconst filtered = items\n  .map(item => item.json)\n  .filter(item => item.tracker === \"not found\")\n  .map(item => ({\n    json: {\n      publisher_name: item.publisher_name,\n      tracker: item.tracker\n    }\n  }));\n\nreturn filtered;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        1520
+      ],
+      "id": "b228de74-6885-4398-a484-767dcc09c63d",
+      "name": "Filter Tracker v2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all incoming items\nconst items = $input.all();\n\n// Filter only tracker === \"not found\"\nconst filtered = items\n  .map(item => item.json)\n  .filter(item => item.tracker === \"not found\")\n  .map(item => ({\n    json: {\n      publisher_name: item.publisher_name,\n      tracker: item.tracker\n    }\n  }));\n\nreturn filtered;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        160
+      ],
+      "id": "b67c8726-5f57-41e8-b368-b2a39e111163",
+      "name": "Filter Tracker v1"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        480,
+        2704
+      ],
+      "id": "124d96fd-8daa-4068-bd0f-f27b30f04c72",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Get all the data from previous node",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "0fcbae6d-7877-4055-978e-abbfc4bc83c6",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 3008,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "81636c70-a483-4130-9d4b-09dcb7616a1b",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "# Intercom Output",
+        "height": 80,
+        "width": 416,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "9665fe64-796a-4507-950f-4d186175f51c",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Get only the data who has a 'not found' in their tracker field",
+        "height": 256,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "fd469c80-3cf5-4c8d-a263-31d532c2b8eb",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "# ActiveCampaign Output",
+        "height": 80,
+        "width": 464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        1312
+      ],
+      "typeVersion": 1,
+      "id": "c575d431-8397-4a93-98ee-61be71730b18",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Get only the data who has a 'not found' in their tracker field",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        1424
+      ],
+      "typeVersion": 1,
+      "id": "c353757d-d4f4-4cc0-b486-b14209c48f3b",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "# No Result Output",
+        "height": 80,
+        "width": 464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        2480
+      ],
+      "typeVersion": 1,
+      "id": "a02be792-bd73-4b8c-8938-d64ebd8f584b",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from specific nodes\nconst v1 = $items(\"Filter Tracker v1\").map(item => item.json);\nconst v2 = $items(\"Filter Tracker v2\").map(item => item.json);\n\n// Get publisher names from v2\nconst v2Names = new Set(v2.map(item => item.publisher_name));\n\n// Find matching publisher_name in both\nconst result = v1\n  .filter(item => v2Names.has(item.publisher_name))\n  .map(item => ({\n    publisher_name: item.publisher_name,\n    tracker: \"not found\"\n  }));\n\nreturn result.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        2736
+      ],
+      "id": "8db015fa-d653-4b89-a820-470e4131ab87",
+      "name": "Get data from v1 and v2"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Get the data from Filter Tracker v1 and v2\n- Return the data only if the data not found in V1 is still not found in V2.",
+        "height": 288,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        2592
+      ],
+      "typeVersion": 1,
+      "id": "7146f6e4-e4df-49e7-97e6-8c8b333382e1",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Loop through data\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        2592
+      ],
+      "typeVersion": 1,
+      "id": "05308278-390f-4ef8-91cb-31048ad35f61",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "AutoLead – New & New-to-Lead",
+        "completionMessage": "Automation ran successfully. Please check the results.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.4,
+      "position": [
+        848,
+        2688
+      ],
+      "id": "3d8f0490-1415-4afc-9a64-df4f4e1773ae",
+      "name": "Form Response",
+      "webhookId": "eebb98eb-9444-41f4-91f1-4dff681664df"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Show Message\n\n",
+        "height": 276,
+        "width": 364,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        2592
+      ],
+      "typeVersion": 1,
+      "id": "90c44bcc-2942-4cba-9196-fb6a6836138f",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1542018530,
+          "mode": "list",
+          "cachedResultName": "Input",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1542018530"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "active"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1856,
+        1056
+      ],
+      "id": "53ea19a2-373a-4805-916a-d61fd11645ca",
+      "name": "Input",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "AutoLead - New & New to Lead",
+        "formDescription": "Type 'Run' to trigger the automation workflow",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Trigger",
+              "fieldLabel": "Type ‘Run’ to activate the workflow.",
+              "placeholder": "Run",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -2640,
+        1072
+      ],
+      "id": "245cc823-1d2b-4027-955b-b94097f3b909",
+      "name": "Trigger",
+      "webhookId": "d362e9c0-fe60-46a2-9e55-f4106376397e"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ad085b7-e53a-4516-81da-871a71f731fb",
+              "name": "message",
+              "value": "={{ $json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "f686157d-a094-4ad3-a30f-02b35fdad8d1",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "16c4a11d-aef1-4ff1-8dc1-eae00393db06",
+              "name": "created_timestamp",
+              "value": "={{ $json.created_timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "f2dc9df7-e685-464d-a264-0c0ec4f77d63",
+              "name": "updated_timestamp",
+              "value": "={{ $json.updated_timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "3894406a-280b-49d2-a3aa-a4fcd9fd1f05",
+              "name": "userid",
+              "value": "={{ $json.userid }}",
+              "type": "string"
+            },
+            {
+              "id": "0cd4dd7b-7d9e-4fc7-812c-c43b036daee8",
+              "name": "matching_enabled",
+              "value": "={{ $json.matching_enabled }}",
+              "type": "string"
+            },
+            {
+              "id": "933440f3-0f41-47cb-bcf1-5cb3b1486b37",
+              "name": "contactCount",
+              "value": "={{ $json.contactCount }}",
+              "type": "string"
+            },
+            {
+              "id": "60db8842-57b9-4ea0-a4d7-7b65fd3a9c44",
+              "name": "dealCount",
+              "value": "={{ $json.dealCount }}",
+              "type": "string"
+            },
+            {
+              "id": "140ea51d-92df-4ba7-b297-666fd3cfebda",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "48b610da-ca00-4114-ba55-3524332864ba",
+              "name": "owner",
+              "value": "={{ $json.owner }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1536,
+        1824
+      ],
+      "id": "6d178b37-4330-4e33-b05f-6aa76a84a62e",
+      "name": "Get Found Data"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2128,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "bd70f6d3-d14a-45ae-8538-74615db24a94",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the previous node (accountContacts data)\nconst accountContactsData = $input.all();\n\n// Get data from the \"Get Found Data\" node (accounts data)\nconst accountsData = $('Get Found Data').all();\n\nconst results = [];\n\nfor (const accountItem of accountsData) {\n  const account = accountItem.json;\n  const accountId = account.id;\n\n  // Find matching entry in accountContacts data\n  const matchingEntry = accountContactsData.find(item => {\n    const contacts = item.json.accountContacts;\n    // Check if any contact in this entry has account === accountId\n    return Array.isArray(contacts) && contacts.some(c => c.account === accountId);\n  });\n\n  if (!matchingEntry) {\n    // No match found OR accountContacts is empty — return name + flag\n    results.push({\n      json: {\n        name: account.name,\n        id: accountId,\n        isAccountContactsEmpty: true\n      }\n    });\n    continue;\n  }\n\n  const contacts = matchingEntry.json.accountContacts;\n  const isEmpty = !Array.isArray(contacts) || contacts.length === 0;\n\n  if (isEmpty) {\n    results.push({\n      json: {\n        id: accountId,\n        name: account.name,\n        isAccountContactsEmpty: true\n      }\n    });\n  } else {\n    // Return the full accountContacts array with the flag\n    results.push({\n      json: {\n        ...matchingEntry.json,\n        accountName: account.name,\n        isAccountContactsEmpty: false\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        1824
+      ],
+      "id": "6755104f-d664-411d-8671-6f0335ef616a",
+      "name": "Get Matching Id and Account",
+      "notesInFlow": true,
+      "notes": "match the account field and id field, if match return the data, if no match meaning the accountContacts is empty(there's an org but no contact), return it as no found"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2448,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "c5b49ee6-c207-4100-8cbf-fd610e40a8f1",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0fcd95dd-3d89-4bce-850c-157e136bf871",
+              "leftValue": "={{ $json.isAccountContactsEmpty }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2544,
+        1824
+      ],
+      "id": "80d3163f-3a39-454e-9f46-2ae9e7481f93",
+      "name": "Check isAccountContactsEmpty field"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0afbd50d-6d5d-4dd9-a2b0-6cc665e73c79",
+              "name": "publisher_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "9bdf966c-395f-41ab-af18-837afb3e00d6",
+              "name": "tracker",
+              "value": "not found",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2864,
+        2080
+      ],
+      "id": "c07eb0b2-b824-41cd-ac1d-e855e4484c16",
+      "name": "Tracker: Not Found v2."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node (contact/account data)\nconst contactItems = $input.all();\n\n// Get data from the node before that (publisher/developer data)\nconst publisherItems = $('Input').all();\n\n// Build a lookup map from publisher/developer names (lowercase for case-insensitive matching)\nconst publisherMap = {};\nfor (const item of publisherItems) {\n  const name = item.json['publisher / developer name'];\n  if (name) {\n    publisherMap[name.toLowerCase()] = name; // key: lowercase, value: original casing\n  }\n}\n\n// Process each contact item and update account names if a match is found\nconst results = [];\n\nfor (const item of contactItems) {\n  const data = JSON.parse(JSON.stringify(item.json)); // deep clone\n\n  if (data.accounts && Array.isArray(data.accounts)) {\n    data.accounts = data.accounts.map(account => {\n      if (account.name) {\n        const matchedName = publisherMap[account.name.toLowerCase()];\n        if (matchedName) {\n          return { ...account, name: matchedName };\n        }\n      }\n      return account;\n    });\n  }\n\n  results.push({ json: data });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3520,
+        1840
+      ],
+      "id": "4e6bedfe-7402-4d22-a6c6-a792eadbc031",
+      "name": "Matching Account Name",
+      "notes": "check the account.name\nmatch with publisher / developer name in Input node\nif there's a match change the account.name into publisher / developer  name casing\n\nthis will solve the issue about case sensitive in user input and active campaign response"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3424,
+        1744
+      ],
+      "typeVersion": 1,
+      "id": "7bfc6fb6-60ab-4477-a83b-c1ef9a78c363",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2144,
+        432
+      ],
+      "id": "63f650a3-2e4e-4546-8df6-7dfac4ef67f7",
+      "name": "INTERCOM: WAIT 8 SEC",
+      "webhookId": "697e1183-8b1b-4065-acc0-d7613a3d7b11"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2560,
+        1056
+      ],
+      "id": "45a936a2-5219-433b-8903-0722418246e3",
+      "name": "INTERCOM: WAIT 8 SEC.",
+      "webhookId": "697e1183-8b1b-4065-acc0-d7613a3d7b11"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4144,
+        1920
+      ],
+      "id": "debfa581-86ea-4af4-aae7-ac8c735f2210",
+      "name": "AC: WAIT 8 SEC",
+      "webhookId": "697e1183-8b1b-4065-acc0-d7613a3d7b11"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3856,
+        2240
+      ],
+      "id": "a05aa445-e9c4-4ced-a7df-6b5df52230d4",
+      "name": "AC: WAIT 8 SEC.",
+      "webhookId": "697e1183-8b1b-4065-acc0-d7613a3d7b11"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        3392
+      ],
+      "id": "53869a3d-f05d-43e1-bfac-63b3c45070cf",
+      "name": "WAIT 8 SEC.",
+      "webhookId": "697e1183-8b1b-4065-acc0-d7613a3d7b11"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        3072
+      ],
+      "id": "ceeac67c-58b6-4b84-9bb1-07a5d3dd7309",
+      "name": "WAIT 8 SEC",
+      "webhookId": "697e1183-8b1b-4065-acc0-d7613a3d7b11"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Check Input": {
+      "main": [
+        [
+          {
+            "node": "Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Modify": {
+      "main": [
+        [
+          {
+            "node": "Madmin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Madmin": {
+      "main": [
+        [
+          {
+            "node": "Output Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intercom: Search Contacts.": {
+      "main": [
+        [
+          {
+            "node": "Data Null",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Null": {
+      "main": [
+        [
+          {
+            "node": "Check Intercom Contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Intercom Contacts": {
+      "main": [
+        [
+          {
+            "node": "Append: Intercom Output",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update: Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tracker: Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tracker: Not Found": {
+      "main": [
+        [
+          {
+            "node": "Loop Intercom",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append: Intercom Output": {
+      "main": [
+        [
+          {
+            "node": "Tracker: Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Intercom": {
+      "main": [
+        [
+          {
+            "node": "Filter Tracker v1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Intercom: Search Contacts.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop ActiveCampaign": {
+      "main": [
+        [
+          {
+            "node": "Filter Tracker v2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AC: Search Publisher name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: Search Publisher name": {
+      "main": [
+        [
+          {
+            "node": "Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match": {
+      "main": [
+        [
+          {
+            "node": "Check Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Message": {
+      "main": [
+        [
+          {
+            "node": "Get Found Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tracker: Not Found v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tracker: Not Found v2": {
+      "main": [
+        [
+          {
+            "node": "Loop ActiveCampaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reference": {
+      "main": [
+        [
+          {
+            "node": "Append: No Result Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append: No Result Output": {
+      "main": [
+        [
+          {
+            "node": "WAIT 8 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten AccountConctacts": {
+      "main": [
+        [
+          {
+            "node": "AC: Get Details of Single Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: Get Details of Single Contact": {
+      "main": [
+        [
+          {
+            "node": "Append: ActiveCampaign Output",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Matching Account Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append: ActiveCampaign Output": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 8 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: Get Organization Id": {
+      "main": [
+        [
+          {
+            "node": "Get Matching Id and Account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output Source": {
+      "main": [
+        [
+          {
+            "node": "Get data from v1 and v2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop Intercom",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Loop ActiveCampaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tracker: Found": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: WAIT 8 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Form Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reference",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update: Input v2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get data from v1 and v2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Input Modify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Check Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Found Data": {
+      "main": [
+        [
+          {
+            "node": "AC: Get Organization Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Matching Id and Account": {
+      "main": [
+        [
+          {
+            "node": "Check isAccountContactsEmpty field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check isAccountContactsEmpty field": {
+      "main": [
+        [
+          {
+            "node": "Tracker: Not Found v2.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flatten AccountConctacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tracker: Not Found v2.": {
+      "main": [
+        [
+          {
+            "node": "Loop ActiveCampaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matching Account Name": {
+      "main": [
+        [
+          {
+            "node": "Update: Input v3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update: Input v3": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 8 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update: Input": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: WAIT 8 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: WAIT 8 SEC.": {
+      "main": [
+        [
+          {
+            "node": "Loop Intercom",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: WAIT 8 SEC.": {
+      "main": [
+        [
+          {
+            "node": "Loop ActiveCampaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 8 SEC.": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update: Input v2": {
+      "main": [
+        [
+          {
+            "node": "WAIT 8 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "31a4a677-5f37-4565-839f-acd4152a12b5",
+  "meta": {
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "Ea0zH2LzlEoPGmR8",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    },
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    }
+  ]
+}

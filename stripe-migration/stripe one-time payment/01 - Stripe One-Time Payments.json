@@ -1,0 +1,822 @@
+{
+  "name": "Stripe One-Time Payments",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "=https://api.stripe.com/v1/charges?invoice={{$json.data.object.id}}&limit=1",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        384
+      ],
+      "id": "e13d1267-bf0b-4271-946a-a88e136b250b",
+      "name": "GET CHARGE",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      },
+      "notes": "This endpoint is used to retrieve the payment charge(s) associated with a specific Stripe invoice."
+    },
+    {
+      "parameters": {
+        "resource": "customer",
+        "customerId": "={{ $json.data.object.customer }}"
+      },
+      "type": "n8n-nodes-base.stripe",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        -176
+      ],
+      "id": "1791bbb7-0813-46ba-9c9f-ebf320dcf547",
+      "name": "GET CUSTOMER",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.stripe.com/v1/prices/{{$json.data.object.lines.data[0].pricing.price_details.price}}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1232,
+        80
+      ],
+      "id": "ed2c37d9-8cd1-4e44-a037-bb2e315c740e",
+      "name": "GET PRICE",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      },
+      "notes": "is used to retrieve detailed information about a specific Stripe Price object."
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        672
+      ],
+      "id": "36d39dc9-b212-46bf-be76-8e25c9c91b6a",
+      "name": "TRIGGER2"
+    },
+    {
+      "parameters": {
+        "events": [
+          "invoice.payment_succeeded"
+        ]
+      },
+      "type": "n8n-nodes-base.stripeTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        384
+      ],
+      "id": "ee3e9c39-26dc-4f40-9204-5b453e0adf59",
+      "name": "TRIGGER",
+      "webhookId": "b43de9c4-513c-413d-afa9-f2b372aca1e0",
+      "credentials": {
+        "stripeApi": {
+          "id": "S1djXHwbZNC37CcP",
+          "name": "km-sk-live"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "16f7c9c6-a11c-4d10-9d80-e327dc0fad61",
+              "leftValue": "={{ $json.data[0].description }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "5cb46f41-81ad-4525-9aed-86ed3f299f68",
+              "leftValue": "={{ $json.data[0].description }}",
+              "rightValue": "=Subscription creation",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        384
+      ],
+      "id": "1dc10e58-de9a-4171-9611-58892683bf04",
+      "name": "FILTER",
+      "notes": "Check if description is EMPTY or description is equal to Subscription creation"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the TRIGGER node\nconst triggerData = $('TRIGGER').all();\n\n// Map through all items and return them\nreturn triggerData.map(item => ({\n  json: item.json\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        96
+      ],
+      "id": "221ec3d4-5cd2-4f01-8324-fcbbb3874927",
+      "name": "GET TRIGGER DATA"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1760,
+        640
+      ],
+      "id": "dd66daf4-6b08-4e6e-aadd-e4f03b26e611",
+      "name": "MERGE",
+      "notes": "DO NOT CHANGE THE SEQUENCE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88c853a7-52f9-4bad-95eb-1a8d75590c8e",
+              "name": "status",
+              "value": "={{ $input.all()[1].json.data[0].status }}",
+              "type": "string"
+            },
+            {
+              "id": "d20e04f0-7041-45dc-8475-7df50f03afb2",
+              "name": "created_formatted",
+              "value": "={{ DateTime.fromSeconds($json.created).toFormat('MMMM dd, yyyy hh:mm a') }}",
+              "type": "string"
+            },
+            {
+              "id": "4c763bcc-1e6b-4486-ab5d-5999dd578fcf",
+              "name": "invoice_number",
+              "value": "={{ $json.data.object.number }}",
+              "type": "string"
+            },
+            {
+              "id": "12d84b65-b653-4b9f-b7af-86e3093b0586",
+              "name": "name / org",
+              "value": "={{ $input.all()[2].json.description }} ({{ $input.all()[2].json.name }})",
+              "type": "string"
+            },
+            {
+              "id": "98dc7d4a-c95f-48ac-96a3-78e84598731d",
+              "name": "email",
+              "value": "={{ $input.all()[2].json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "d07790f2-ca2f-4e4f-a4a9-4c3c9b48aad9",
+              "name": "country",
+              "value": "={{ $json.data.object.customer_address.city }} {{ $json.data.object.customer_address.country }}",
+              "type": "string"
+            },
+            {
+              "id": "c2bdba2a-1b34-4b07-97e6-26d817cf63e7",
+              "name": "amount",
+              "value": "={{ Intl.NumberFormat('en-US', { style: 'currency', currency: $json.data.object.currency }).format($json.data.object.amount_paid / 100) }}",
+              "type": "string"
+            },
+            {
+              "id": "2bf040ff-8e48-4c04-9b18-795a39a6963c",
+              "name": "discount",
+              "value": "={{ $input.all()[2].json.discount ?? 'None' }}",
+              "type": "string"
+            },
+            {
+              "id": "1bb25882-70fa-49c3-ae33-60f8dc9347d4",
+              "name": "description",
+              "value": "={{ $json.data.object.lines.data[0].description }} ({{ $input.all()[3].json.nickname }})",
+              "type": "string"
+            },
+            {
+              "id": "a3f2ed20-72f1-4443-95a3-1e076b07a3f0",
+              "name": "type",
+              "value": "={{ $json.data.object.lines.data[0].parent.type }}",
+              "type": "string"
+            },
+            {
+              "id": "24679517-1872-479e-b258-01cdcbc96b8f",
+              "name": "risk_level",
+              "value": "={{ $input.all()[1].json.data[0].outcome.risk_level }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2000,
+        672
+      ],
+      "id": "9cdb6242-4fde-49a8-962f-dd8717410f10",
+      "name": "GET NECESSARY FIELDS"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        672
+      ],
+      "id": "3280911b-dd4a-4b8e-a74d-78c49687b447",
+      "name": "GET ONLY THE FIRST ITEM"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B8CG56211",
+          "mode": "list",
+          "cachedResultName": "n8n_bot_revenue"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"STRIPE ONE-TIME PAYMENT\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Client info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Name / Org*\\n{{ $json['name / org'] }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Email*\\n{{ $json.email }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Country*\\n{{ $json.country }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Invoice info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Invoice Number*\\n{{ $json.invoice_number }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Amount*\\n{{ $json.amount }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Status*\\n{{ $json.status }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Date*\\n{{ $json.created_formatted }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Discount*\\n{{ $json.discount }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Description*\\n{{ $json.description }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Type*\\n{{ $json.type }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Risk Level*\\n{{ $json.risk_level }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2624,
+        672
+      ],
+      "id": "cf9cd0e9-89e1-4159-b71a-ee5e11ae8af2",
+      "name": "SEND A MESSAGE",
+      "webhookId": "4d62131c-6a8e-423b-a6a2-df2400729adb",
+      "credentials": {
+        "slackApi": {
+          "id": "u1HMM9M2LonokQ6T",
+          "name": "n8n-stripe-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "5126002d-4e29-448b-aa5b-dd4c2fac361a",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "6cfb0010-ccaa-4eea-bb75-86c76dc3b8c3",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        496,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "3a99649b-f016-4a27-bb6b-1b0fa4671bae",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "5fc29c06-9820-43d4-8c4b-a31bab147ae6",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 520,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "6f12309d-b0af-40c1-a7a0-9243c5341e91",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 336,
+        "width": 848,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1648,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "a41c89c1-8b0d-4c77-946a-48aa24c4b919",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "71bc29e9-ac59-404a-892c-ecf4997a8ee7",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "## Stripe One-Time Payments\n\n**Purpose:**\n- The purpose of this automation is to notify the team whenever a new payment is received.\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "f2d723b7-f9b4-4046-bda3-d67a0d4a0510",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This will run everytime it receive an event\n\n- Check whether description is EMPTY or contain Subscription creation\n\n- Regarding the stripe credentials, kevin sent an invite to my work account\n\nConfiguration:\n- Stripe Dashboard > Webhook > Add Destination >  configure an event > Add the Production Webhook URLs from n8n > done\n",
+        "height": 404,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "e4f146fe-eceb-4026-8ce2-970c9e2144d5",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A0ZJ8TPCJ",
+          "mode": "list",
+          "cachedResultName": "n8n-notification"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"STRIPE ONE-TIME PAYMENT\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Client info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Name / Org*\\n{{ $json['name / org'] }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Email*\\n{{ $json.email }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Country*\\n{{ $json.country }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Invoice info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Invoice Number*\\n{{ $json.invoice_number }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Amount*\\n{{ $json.amount }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Status*\\n{{ $json.status }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Date*\\n{{ $json.created_formatted }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Discount*\\n{{ $json.discount }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Description*\\n{{ $json.description }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Type*\\n{{ $json.type }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Risk Level*\\n{{ $json.risk_level }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2624,
+        960
+      ],
+      "id": "7431c871-db84-4020-909d-2b843e6de8f8",
+      "name": "SEND A MESSAGE - TEST",
+      "webhookId": "4d62131c-6a8e-423b-a6a2-df2400729adb",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "TRIGGER2": [
+      {
+        "json": {
+          "id": "evt_1TeAQuEhbNzely85nCpvRyI8",
+          "object": "event",
+          "api_version": "2026-02-25.clover",
+          "created": 1780476346,
+          "data": {
+            "object": {
+              "id": "in_1TeAQkEhbNzely85HTL869LG",
+              "object": "invoice",
+              "account_country": "GB",
+              "account_name": "Keymailer Ltd",
+              "account_tax_ids": [
+                "atxi_1NAvSQEhbNzely85kfre0p0j"
+              ],
+              "amount_due": 24900,
+              "amount_overpaid": 0,
+              "amount_paid": 24900,
+              "amount_remaining": 0,
+              "amount_shipping": 0,
+              "application": null,
+              "attempt_count": 1,
+              "attempted": true,
+              "auto_advance": false,
+              "automatic_tax": {
+                "disabled_reason": null,
+                "enabled": true,
+                "liability": {
+                  "type": "self"
+                },
+                "provider": "stripe",
+                "status": "complete"
+              },
+              "automatically_finalizes_at": null,
+              "billing_reason": "manual",
+              "collection_method": "send_invoice",
+              "created": 1780476339,
+              "currency": "usd",
+              "custom_fields": null,
+              "customer": "cus_UdRD8WmMLZv06h",
+              "customer_account": null,
+              "customer_address": {
+                "city": "Atkár",
+                "country": "HU",
+                "line1": "Dózsa György út 39",
+                "line2": "",
+                "postal_code": "3213",
+                "state": ""
+              },
+              "customer_email": "hello@flarewingstudios.com",
+              "customer_name": "BoardGameSet Kft.",
+              "customer_phone": null,
+              "customer_shipping": null,
+              "customer_tax_exempt": "none",
+              "customer_tax_ids": [
+                {
+                  "type": "eu_vat",
+                  "value": "HU32157235"
+                }
+              ],
+              "default_payment_method": null,
+              "default_source": null,
+              "default_tax_rates": [],
+              "description": "Your purchased entitlements, and any expiry dates, will appear in the UPGRADES panel of the PRODUCT page. If you are purchasing an AD, we encourage you to create a free influencer account so you can view your ad in place on the DISCOVER Page, at https://www.keymailer.co/signup. You do not need to be an influencer to create an account, but your account will not be entitled to make requests.",
+              "discounts": [],
+              "due_date": 1780476339,
+              "effective_at": 1780476339,
+              "ending_balance": 0,
+              "footer": "Terms: Subscriptions and Plans will renew each month until cancelled. Cancellations are effective at the end of the subscription or plan period. The details of any applicable Ad Guarantees can be found in Help-Guides.",
+              "from_invoice": null,
+              "hosted_invoice_url": "https://invoice.stripe.com/i/acct_18F6EREhbNzely85/live_YWNjdF8xOEY2RVJFaGJOemVseTg1LF9VZFJKd25zb3hMSkx5dVY4WDE3WnRxN1dxOWVqNE5GLDE3MTAxNzE1Mg0200QhFIz0aR?s=ap",
+              "invoice_pdf": "https://pay.stripe.com/invoice/acct_18F6EREhbNzely85/live_YWNjdF8xOEY2RVJFaGJOemVseTg1LF9VZFJKd25zb3hMSkx5dVY4WDE3WnRxN1dxOWVqNE5GLDE3MTAxNzE1Mg0200QhFIz0aR/pdf?s=ap",
+              "issuer": {
+                "type": "self"
+              },
+              "last_finalization_error": null,
+              "latest_revision": null,
+              "lines": {
+                "object": "list",
+                "data": [
+                  {
+                    "id": "il_1TeAQkEhbNzely85HqZ5CArB",
+                    "object": "line_item",
+                    "amount": 24900,
+                    "currency": "usd",
+                    "description": "Bronze Launch Boost",
+                    "discount_amounts": [],
+                    "discountable": true,
+                    "discounts": [],
+                    "invoice": "in_1TeAQkEhbNzely85HTL869LG",
+                    "livemode": true,
+                    "metadata": {},
+                    "parent": {
+                      "invoice_item_details": {
+                        "invoice_item": "ii_1TeAQkEhbNzely85fWUFfwtu",
+                        "proration": false,
+                        "proration_details": {
+                          "credited_items": null
+                        },
+                        "subscription": null
+                      },
+                      "license_fee_subscription_details": null,
+                      "subscription_item_details": null,
+                      "type": "invoice_item_details"
+                    },
+                    "period": {
+                      "end": 1780476342,
+                      "start": 1780476342
+                    },
+                    "pretax_credit_amounts": [],
+                    "pricing": {
+                      "price_details": {
+                        "price": "price_1Rltx6EhbNzely85GfSzYncq",
+                        "product": "prod_ShIYVCSnEWj42S"
+                      },
+                      "type": "price_details",
+                      "unit_amount_decimal": "24900"
+                    },
+                    "quantity": 1,
+                    "quantity_decimal": "1",
+                    "subtotal": 24900,
+                    "taxes": [
+                      {
+                        "amount": 0,
+                        "tax_behavior": "exclusive",
+                        "tax_rate_details": {
+                          "tax_rate": "txr_1OUrn1EhbNzely85ssb7q0h0"
+                        },
+                        "taxability_reason": "reverse_charge",
+                        "taxable_amount": 0,
+                        "type": "tax_rate_details"
+                      }
+                    ]
+                  }
+                ],
+                "has_more": false,
+                "total_count": 1,
+                "url": "/v1/invoices/in_1TeAQkEhbNzely85HTL869LG/lines"
+              },
+              "livemode": true,
+              "metadata": {
+                "user_id": "47133",
+                "order_id": "15045",
+                "organisation_id": "53280",
+                "product_id": "298585"
+              },
+              "next_payment_attempt": null,
+              "number": "ZJVPN0CN-0001",
+              "on_behalf_of": null,
+              "parent": null,
+              "payment_settings": {
+                "default_mandate": null,
+                "payment_method_options": null,
+                "payment_method_types": null
+              },
+              "period_end": 1780476339,
+              "period_start": 1780476339,
+              "post_payment_credit_notes_amount": 0,
+              "pre_payment_credit_notes_amount": 0,
+              "receipt_number": "2195-2122",
+              "rendering": {
+                "amount_tax_display": "exclude_tax",
+                "pdf": {
+                  "page_size": "letter"
+                },
+                "template": null,
+                "template_version": null
+              },
+              "shipping_cost": null,
+              "shipping_details": null,
+              "starting_balance": 0,
+              "statement_descriptor": null,
+              "status": "paid",
+              "status_transitions": {
+                "finalized_at": 1780476339,
+                "marked_uncollectible_at": null,
+                "paid_at": 1780476339,
+                "voided_at": null
+              },
+              "subtotal": 24900,
+              "subtotal_excluding_tax": 24900,
+              "test_clock": null,
+              "total": 24900,
+              "total_discount_amounts": [],
+              "total_excluding_tax": 24900,
+              "total_pretax_credit_amounts": [],
+              "total_taxes": [
+                {
+                  "amount": 0,
+                  "tax_behavior": "exclusive",
+                  "tax_rate_details": {
+                    "tax_rate": "txr_1OUrn1EhbNzely85ssb7q0h0"
+                  },
+                  "taxability_reason": "reverse_charge",
+                  "taxable_amount": 0,
+                  "type": "tax_rate_details"
+                }
+              ],
+              "webhooks_delivered_at": null
+            }
+          },
+          "livemode": true,
+          "pending_webhooks": 3,
+          "request": {
+            "id": null,
+            "idempotency_key": null
+          },
+          "type": "invoice.payment_succeeded"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "GET CHARGE": {
+      "main": [
+        [
+          {
+            "node": "FILTER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET CUSTOMER": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "GET PRICE": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "TRIGGER2": {
+      "main": [
+        []
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "GET CHARGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER": {
+      "main": [
+        [
+          {
+            "node": "GET TRIGGER DATA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "GET TRIGGER DATA": {
+      "main": [
+        [
+          {
+            "node": "GET CUSTOMER",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET PRICE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE": {
+      "main": [
+        [
+          {
+            "node": "GET NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "GET ONLY THE FIRST ITEM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ONLY THE FIRST ITEM": {
+      "main": [
+        [
+          {
+            "node": "SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "e4f2ed97-8873-432a-b789-ccf79a1ea8d2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "WI142ZjaokxvM58q",
+  "tags": []
+}

@@ -1,0 +1,5954 @@
+{
+  "name": "Event Promo",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Trigger Node\n- This automation will run when the user types 'Run'\n\n- This form has two selections: how many data, and sort by",
+        "height": 360,
+        "width": 376,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -448,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "e59567fe-97de-4861-a5d5-41740a73efe4",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Check if the user type \"Run\" if yes get the data in sheet, if no, stop the workflow.",
+        "height": 308,
+        "width": 408,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -32,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "37759f70-fa7a-40ec-8c7c-b6c68475fec8",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Get the data from List tab, and only retrieve active one\n\n- If there's multiple active status, get only one, the first one, LIMIT to one",
+        "height": 312,
+        "width": 428,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "83e22a21-539d-472f-a488-9041647bf970",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n- Get popular tags from steamDB",
+        "height": 312,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        880,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "61209829-bf11-404d-a139-68b49e8552a4",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n- Get the data from the previous node (\"limit\"), match the tags with the previous node that gets popular tags, and return the results if there is a match.",
+        "height": 352,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1200,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "ed729550-1942-48d5-b36b-e153eefbe41d",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- If the **tag ID** is not null, it means there is a **match**. If the **tag ID** is null, it means there is **no match**.\n",
+        "height": 356,
+        "width": 248,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1520,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "f2b8433a-e934-4183-ba44-7226ed727a32",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n- Update list tabs of that steam_tags to error if no matching tags found",
+        "height": 276,
+        "width": 300,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        48
+      ],
+      "typeVersion": 1,
+      "id": "fbecf810-ff3c-45a9-964e-30bb7786ca43",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 1216,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2144,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "42cd27df-bad3-44e5-9540-2a83cff980d5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2480,
+        -64
+      ],
+      "id": "d1d97a7e-79cb-438b-8c55-3a1c39923f7c",
+      "name": "HR: WAIT - USER TAG",
+      "webhookId": "ad2bfdce-04c4-4a39-89c0-a2760154cbad"
+    },
+    {
+      "parameters": {
+        "content": "# SORT BY: HIGHEST RATING\n",
+        "height": 80,
+        "width": 512,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2416,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "9ff3e3d3-1d76-4a16-9c55-e53150c2fd29",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 232,
+        "width": 492,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2416,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "77cc1bb2-27c9-4b3a-bcd8-b6849664f51e",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/search/results/?tags={{ $json.tagid }}&json=1&count=100&sort_by=Reviews_DESC",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "start",
+                    "value": "=={{ $pageCount * 100 }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.items.length < 100 }} ",
+              "limitPagesFetched": true,
+              "maxRequests": "={{ Math.ceil($items(\"TRIGGER\")[0].json.limit / 100) }}",
+              "requestInterval": "={{ Math.floor(Math.random() * 4001) + 6000 }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2736,
+        -64
+      ],
+      "id": "77ff5444-58b2-4e70-8c49-610c28bde84c",
+      "name": "HR: GET GAMES BY TAG",
+      "notesInFlow": true,
+      "notes": "Use the default endpoint of SteamDB related to Steam game tags, implement pagination, pass the user's “how many data” selection, and implement a random delay.\n"
+    },
+    {
+      "parameters": {
+        "formTitle": "Event Promo – Top SteamDB Games ",
+        "formDescription": "Type 'Run' to start the automation.",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "trigger",
+              "fieldLabel": "Type ‘Run’ to activate the workflow.",
+              "placeholder": "Run",
+              "requiredField": true
+            },
+            {
+              "fieldName": "limit",
+              "fieldLabel": "How much data do you want to get?",
+              "fieldType": "dropdown",
+              "defaultValue": "100",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "100"
+                  },
+                  {
+                    "option": "200"
+                  },
+                  {
+                    "option": "300"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -320,
+        -64
+      ],
+      "id": "94b205f7-ebd5-46c2-bc78-67c0aaf3b71b",
+      "name": "TRIGGER",
+      "webhookId": "c1e81cd2-5bc4-4ed5-b83b-7d4652353d7d"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Incorrect password, automation failed."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -16
+      ],
+      "id": "72073995-dfab-4882-a8e0-49e47510806b",
+      "name": "STOP"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "86399cc1-158a-4e73-8225-dd29cb9cd012",
+              "leftValue": "={{ $json.trigger }}",
+              "rightValue": "Run",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "1d3c6a1a-4491-4d0a-bec9-a176107da208",
+      "name": "CHECK INPUT"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Event Promo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1996819789,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit#gid=1996819789"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "active"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        -80
+      ],
+      "id": "7bf0a967-d584-4daa-b1c6-d1d3c5debca4",
+      "name": "GET: LIST",
+      "credentials": {
+        "googleApi": {
+          "id": "qVMqdeBHKB7CTvN1",
+          "name": "km-tin-eventpromo"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -80
+      ],
+      "id": "1878f6e6-7803-41e1-8c49-849b042829da",
+      "name": "LIMIT"
+    },
+    {
+      "parameters": {
+        "url": "https://store.steampowered.com/tagdata/populartags/english",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        976,
+        -128
+      ],
+      "id": "d9c2af00-fc3a-46d8-9c6f-ba8d6bff0c5d",
+      "name": "GET POPULAR TAGS"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sortByData = $items(\"LIMIT\");\nconst previousNodeData = $input.all();\n\n// Get steam_tags from Retrieve One Tag Only\nconst steamTagsRaw = sortByData.map(item => item.json.steam_tags);\n\n// Normalize steam tags for comparison\nconst steamTags = new Set(\n  steamTagsRaw\n    .map(tag => tag?.toLowerCase().trim())\n    .filter(Boolean)\n);\n\n// Match against previous node (Steam tag list)\nconst matched = previousNodeData.filter(item => {\n  const name = item.json.name?.toLowerCase().trim();\n  return steamTags.has(name);\n});\n\n// Remove duplicates by tagid\nconst unique = [];\nconst seen = new Set();\n\nfor (const item of matched) {\n  if (!seen.has(item.json.tagid)) {\n    seen.add(item.json.tagid);\n    unique.push(item);\n  }\n}\n\n// ✅ If matches found → return them\nif (unique.length > 0) {\n  return unique.map(item => ({\n    json: item.json\n  }));\n}\n\n// ❗ If NO matches → return original steam_tags with note\nreturn steamTagsRaw.map(tag => ({\n  json: {\n    steam_tags: tag,\n    notes: \"no matching tags were found in SteamDB. please inform Justin  about this.\"\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -48
+      ],
+      "id": "690db484-0fa3-4b26-b12e-30b9e4d3de8c",
+      "name": "MATCHING TAG",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1bc0c693-fb8a-4c37-8d78-eed4b263a5a3",
+              "leftValue": "={{$json.tagid}}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1600,
+        -48
+      ],
+      "id": "99c9fe8b-1c47-4318-b280-e90f8399e6a8",
+      "name": "CHECK IF TAG ID IS NOT NULL"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Event Promo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1996819789,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit#gid=1996819789"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "steam_tags": "={{ $json.steam_tags }}",
+            "status": "error",
+            "automation_note": "={{ $json.notes }}",
+            "last_run": "={{ $now.toFormat('MMMM d, yyyy') }}"
+          },
+          "matchingColumns": [
+            "steam_tags"
+          ],
+          "schema": [
+            {
+              "id": "steam_tags",
+              "displayName": "steam_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_run",
+              "displayName": "last_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_note",
+              "displayName": "automation_note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1904,
+        144
+      ],
+      "id": "33342b31-cb94-47a0-93f3-0baa8ef1847f",
+      "name": "UPDATE: ERROR NO MATCHING TAGS FOUND",
+      "credentials": {
+        "googleApi": {
+          "id": "qVMqdeBHKB7CTvN1",
+          "name": "km-tin-eventpromo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 240,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2944,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "cc5b27f0-abc5-433f-989a-758adcb0cc3f",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3008,
+        -64
+      ],
+      "id": "cea60c9d-a31b-4da4-83a4-46a86da7d198",
+      "name": "HR: GET THE ITEMS FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  \n  const name = item.json.name?.trim();\n\n  // Extract appid from logo URL (after \"apps/\")\n  const logo = item.json.logo || \"\";\n  const match = logo.match(/apps\\/(\\d+)/);\n  const appid = match ? match[1] : null;\n\n  return {\n    json: {\n      name,\n      appid\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3248,
+        -64
+      ],
+      "id": "c09453da-11ab-453b-9697-e26918d893fe",
+      "name": "HR: GET APPID FROM LOGO",
+      "notesInFlow": true,
+      "notes": "Extract the app ID from the logo field to return a proper name and app ID format."
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 700,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3488,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "b0abb998-fb7d-4e8f-9fdb-50f9b1882b29",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 6) + 5 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3568,
+        -64
+      ],
+      "id": "1bc5f641-7b8d-40a8-b874-1671d1e44d27",
+      "name": "HR: RANDOM DELAY V1",
+      "webhookId": "13f2d972-541e-4630-ad05-cf74ce0df022"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/appdetails?appids={{ $json.appid }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 10,
+              "batchInterval": "={{ (Math.floor(Math.random() * 6) + 5) * 1000 }}"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4016,
+        -80
+      ],
+      "id": "ac68e395-135b-423e-a558-eb41ca4f66e3",
+      "name": "HR: GET INFO PER APPID",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "notes": "Get the information related to that appid and implement batching of 10 items per randomize delay"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 240,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4224,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "0e0fdfa1-b715-45e8-8263-21421129b2db",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "https://store.steampowered.com/search/results/?tags={{ $json.tagid }}&json=1&count=100"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2672,
+        -416
+      ],
+      "typeVersion": 1,
+      "id": "a2ba0608-ef9b-402e-bc36-06a14201276d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\n\nfor (const item of $input.all()) {\n  const rawData = item.json;\n\n  for (const appId in rawData) {\n    const entry = rawData[appId];\n\n    if (entry.success && entry.data) {\n      const { name, steam_appid, developers, publishers } = entry.data;\n      results.push({\n        game_name: name,\n        appid: steam_appid,\n        publisher_name: publishers ? publishers.join(', ') : null,\n        developer_name: developers ? developers.join(', ') : null,\n      });\n    }\n  }\n}\n\nreturn results.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4320,
+        -80
+      ],
+      "id": "600c6e37-ddcf-4d58-acb3-e96456d2f44c",
+      "name": "HR: GET GAME NAME, APPID, PUBLISHER, DEVELOPER",
+      "notesInFlow": true,
+      "notes": "Fixed the format of previous node, only retrieve the game name, app id, publisher, and developer name"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n- Loop through data",
+        "height": 244,
+        "width": 264,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4544,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "b9ffe744-594c-41a5-aa28-546f706f54bb",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4624,
+        -80
+      ],
+      "id": "6e5bc426-20b2-4eac-b31e-dbf8c91a19a5",
+      "name": "LOOP V2"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 240,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4848,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "9c0f7750-1092-4f72-928f-33178f1ba25b",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 244,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5424,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "feadfcb9-a641-45ea-9176-670c67c94e20",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the node named \"Wait: User Tag\"\nconst userTagData = $items(\"HR: WAIT - USER TAG\");\n\n// Extract the JSON data\nconst tags = userTagData.map(item => item.json);\n\n// Return it (or modify as needed)\nreturn tags.map(tag => ({\n  json: {\n    tag_id: tag.tagid,\n    tag_name: tag.name\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5200,
+        -96
+      ],
+      "id": "016223c8-7011-40b4-b04d-da59409fa4b3",
+      "name": "HR: GET DATA FROM USER TAG NODE",
+      "notesInFlow": true,
+      "notes": "Get the data from HR: WAIT - USER TAG to match with previous node, we will use the matching to update the List tab"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Event Promo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1996819789,
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit#gid=1996819789"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "complete",
+            "last_run": "={{ $now.toFormat('MMMM d, yyyy') }}",
+            "steam_tags": "={{$json.tag_name}}"
+          },
+          "matchingColumns": [
+            "steam_tags"
+          ],
+          "schema": [
+            {
+              "id": "steam_tags",
+              "displayName": "steam_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_run",
+              "displayName": "last_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5504,
+        -96
+      ],
+      "id": "0fed03b4-2b4e-4875-8768-64fc354710b0",
+      "name": "UPDATE: LIST V2",
+      "credentials": {
+        "googleApi": {
+          "id": "qVMqdeBHKB7CTvN1",
+          "name": "km-tin-eventpromo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4848,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "7675cdaf-ffe6-4dcb-9d77-d400317c7af7",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5168,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "5e65141b-bf77-43ec-91cf-7168b7b43e5b",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, name, visibility, NULL AS status\nFROM (\n  SELECT id, name, visibility\n  FROM public.catalogue_products\n  WHERE name LIKE $${{ $json.game_name }}$$\n  LIMIT 1\n) t\n\nUNION ALL\n\nSELECT \n  NULL AS id,\n  $${{ $json.game_name }}$$ AS name,\n  NULL AS visibility,\n  'game name is not found in madmin' AS status\nWHERE NOT EXISTS (\n  SELECT 1 \n  FROM public.catalogue_products \n  WHERE name LIKE $${{ $json.game_name }}$$\n);",
+        "options": {
+          "connectionTimeout": 20,
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4944,
+        208
+      ],
+      "id": "9143597e-7b1a-4e99-998f-d84a6a5f3cb3",
+      "name": "HR: CHECK IF GAME EXIST IN MADMIN",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "Check if the game from steam exist on Madmin, check in catalogue_products table, If exist, return the id, name, visibility(check if hidden or not)"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n\n  const d = item.json;\n\n  // Convert visibility\n  let visibilityText = null;\n\n  if (d.visibility === 0) {\n    visibilityText = \"Yes\";\n  } else if (d.visibility === 1) {\n    visibilityText = \"No\";\n  }\n\n  return {\n    json: {\n      product_id: d.id ?? null,\n      madmin_game_name: d.name ?? null,\n      visibility: visibilityText,\n      status: d.id ? null : \"game name is not found in madmin\",\n      madmin_link: d.id\n        ? `https://madmin.keymailer.co/catalogue/products/${d.id}`\n        : null\n    }\n  };\n\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5248,
+        208
+      ],
+      "id": "36ef364d-1850-46ae-90ea-4b4db7615f11",
+      "name": "HR: FORMAT MADMIN OUTPUT V1",
+      "notesInFlow": true,
+      "notes": "Fix the format of Madmin, return the product id, game name, convert the visibility if 0 meaning hidden, if 1 meaning not hidden, and provide product link"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 6) + 10 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5504,
+        208
+      ],
+      "id": "47dfdf42-fed7-4b60-a2e2-7531807af5c4",
+      "name": "HR: RANDOM DELAY V2",
+      "webhookId": "a459129e-af8e-49d0-92d6-15d048634643"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5728,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "8cc17119-cf83-4357-a929-3e2548b0bbb2",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 496,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6048,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "c9ce6c6e-1d31-40a7-8620-2b7c7f88f5c6",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH product_check AS (\n    SELECT \n        cp.id AS product_id,\n        cp.name AS product_name,\n        cp.has_organisation\n    FROM public.catalogue_products cp\n    WHERE cp.name LIKE $${{ $json.madmin_game_name }}$$\n    LIMIT 1\n),\n\norganisation_lookup AS (\n    SELECT DISTINCT\n        po.id,\n        po.name,\n        po.segment_id\n    FROM product_check pc\n\n    JOIN public.catalogue_product_meta_data cpm\n        ON pc.product_id = cpm.product_id\n\n    JOIN public.catalogue_meta_data cmd\n        ON cpm.meta_data_id = cmd.id\n\n    JOIN public.publisher_organisations po\n        ON cmd.publisher_organisation_id = po.id\n        AND po.active = true\n\n    WHERE pc.has_organisation = true\n\n    LIMIT 1\n),\n\ncontact_counts AS (\n    SELECT \n        pm.organisation_id,\n        COUNT(DISTINCT pu.id) AS contact_count\n    FROM public.publisher_memberships pm\n\n    JOIN public.publisher_users pu\n        ON pm.user_id = pu.id\n         AND pu.email NOT IN (\n        'proxy.admin@keymailer.co',\n        'admin@keymailer.co'\n    )\n\n    GROUP BY pm.organisation_id\n)\n\nSELECT \n    pc.product_name,\n    ol.id AS organisation_id,\n    ol.name AS organisation_name,\n    ol.segment_id,\n    COALESCE(cc.contact_count, 0) AS contact_count,\n    CASE \n        WHEN pc.has_organisation = false THEN 'no active organisation found'\n        WHEN ol.id IS NULL THEN 'no active organisation found'\n        ELSE 'active organisation found'\n    END AS status\nFROM product_check pc\nLEFT JOIN organisation_lookup ol ON true\nLEFT JOIN contact_counts cc ON ol.id = cc.organisation_id;",
+        "options": {
+          "connectionTimeout": 20,
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5824,
+        208
+      ],
+      "id": "d604841c-560e-45db-b61f-aaa592af95f3",
+      "name": "HR: CHECK GAME PUBLISHER IN MADMIN",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "Check if the game name has an active publisher in madmin, if yes return it with how many users it has, do not include the users who has proxy.admin@keymailer.co and admin@keymailer.co"
+    },
+    {
+      "parameters": {
+        "jsCode": "const segmentMap = {\n  1: \"Indie\",\n  2: \"Studio\",\n  4: \"Publisher\",\n  5: \"Enterprise\",\n  6: \"Quote Only\"\n};\n\nreturn items.map(item => {\n  const data = item.json;\n\n  const hasOrganisation = data.organisation_id !== null && data.organisation_id !== undefined;\n\n  // Map segment\n  const segmentText = segmentMap[data.segment_id] || null;\n\n  // Build base output\n  let output = {\n    product_name: data.product_name,\n    publisher_status: data.status\n  };\n\n  // If organisation exists → return full mapped data\n  if (hasOrganisation) {\n    output = {\n      product_name: data.product_name,\n      madmin_publisher_id: data.organisation_id,\n      madmin_publisher_name: data.organisation_name,\n      madmin_publisher_link: data.organisation_id\n        ? `https://madmin.keymailer.co/publishers/${data.organisation_id}`\n        : null,\n      segment: segmentText,\n      contact_count: data.contact_count,\n      publisher_status: data.status\n    };\n  }\n\n  return {\n    json: output\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6144,
+        208
+      ],
+      "id": "65e9b0a2-8587-425b-bfc1-4b8308d01d40",
+      "name": "HR: FORMAT THE MADMIN OUTPUT V2",
+      "notesInFlow": true,
+      "notes": "Fix the format of previous node, return the product name, publisher id and name, publisher link, publisher link, segment, contact count "
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from each node\nconst tagItems = $(\"HR: WAIT - USER TAG\").all();\nconst loopItems = $(\"LOOP V2\").all();\nconst madminItems = $(\"HR: FORMAT MADMIN OUTPUT V1\").all();\nconst prevItems = items; // previous node (publisher check) output\n\n// Extract tag name\nconst tagName = tagItems[0]?.json?.name || \"\";\n\n// Build lookup maps\nconst madminMap = {};\nfor (const item of madminItems) {\n  const key = item.json.madmin_game_name?.toLowerCase().trim();\n  if (key) madminMap[key] = item.json;\n}\n\nconst publisherMap = {};\nfor (const item of prevItems) {\n  const key = item.json.product_name?.toLowerCase().trim();\n  if (key) publisherMap[key] = item.json;\n}\n\nconst results = [];\n\nfor (const loopItem of loopItems) {\n  const gameName = loopItem.json.game_name;\n  const gameNameKey = gameName?.toLowerCase().trim();\n\n  const madminRecord = madminMap[gameNameKey] || {};\n  const publisherRecord = publisherMap[gameNameKey] || {};\n\n  // Build automation_notes\n  const notes = [];\n  if (madminRecord.status != null && madminRecord.status !== \"\") {\n    notes.push(madminRecord.status);\n  }\n  if (publisherRecord.publisher_status === \"no active organisation found\") {\n    notes.push(\"no active organisation found\");\n  }\n  const automation_notes = notes.join(\", \") || null;\n\n  results.push({\n    json: {\n      tags: tagName,\n      steam_game_name: gameName,\n      steam_game_name_link: `https://store.steampowered.com/app/${loopItem.json.appid}`,\n      steam_publisher_name: loopItem.json.publisher_name,\n      steam_developer_name: loopItem.json.developer_name,\n      madmin_game_name: madminRecord.madmin_game_name || null,\n      madmin_product_link: madminRecord.madmin_link || null,\n      is_product_hidden: madminRecord.visibility || null,\n      madmin_publisher_name: publisherRecord.madmin_publisher_name || null,\n      madmin_publisher_link: publisherRecord.madmin_publisher_link || null,\n      segment: publisherRecord.segment || null,\n      contact_count: publisherRecord.contact_count || null,\n      automation_notes: automation_notes,\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6368,
+        208
+      ],
+      "id": "7089cb58-0f23-4ea7-b3df-f8e9723a47ad",
+      "name": "HR: MERGE ALL DATA",
+      "notesInFlow": true,
+      "notes": "Get the data from user tag, loop, format madmin output v1 and previous node, use that to merge all data gathered and save the results of steam and madmin together "
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6576,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "b731c488-5685-4ee4-a506-103122af260b",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Event Promo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1916072817,
+          "mode": "list",
+          "cachedResultName": "SteamDB Top Games",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit#gid=1916072817"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "steam_tags": "={{ $json.tags }}",
+            "steam_game_name": "={{ $json.steam_game_name }}",
+            "steam_game_name_link": "={{ $json.steam_game_name_link }}",
+            "steam_publisher_name": "={{ $json.steam_publisher_name }}",
+            "steam_developer_name": "={{ $json.steam_developer_name }}",
+            "madmin_game_name": "={{ $json.madmin_game_name }}",
+            "madmin_product_link": "={{ $json.madmin_product_link }}",
+            "is_product_hidden": "={{ $json.is_product_hidden }}",
+            "madmin_publisher_name": "={{ $json.madmin_publisher_name }}",
+            "madmin_publisher_link": "={{ $json.madmin_publisher_link }}",
+            "segment": "={{ $json.segment }}",
+            "contact_count": "={{ $json.contact_count }}",
+            "automation_notes": "={{ $json.automation_notes }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "steam_tags",
+              "displayName": "steam_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "steam_game_name",
+              "displayName": "steam_game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "steam_game_name_link",
+              "displayName": "steam_game_name_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "steam_publisher_name",
+              "displayName": "steam_publisher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "steam_developer_name",
+              "displayName": "steam_developer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_game_name",
+              "displayName": "madmin_game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "is_product_hidden",
+              "displayName": "is_product_hidden",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_publisher_name",
+              "displayName": "madmin_publisher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_publisher_link",
+              "displayName": "madmin_publisher_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "segment",
+              "displayName": "segment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_count",
+              "displayName": "contact_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_notes",
+              "displayName": "automation_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6672,
+        208
+      ],
+      "id": "c1a23e45-a9c1-47ad-8ec0-56d6b8f9fd37",
+      "name": "APPEND: STEAMDB TOP GAMES V2",
+      "credentials": {
+        "googleApi": {
+          "id": "qVMqdeBHKB7CTvN1",
+          "name": "km-tin-eventpromo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 6) + 10 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6912,
+        208
+      ],
+      "id": "79ec0629-491b-4e05-93af-8f96d54900f8",
+      "name": "HR: RANDOM DELAY V3",
+      "webhookId": "933b1365-d1d1-4483-9b6a-21700cda9b42"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 272,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7136,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "ebe90c52-de2a-40a9-9414-68f5989744bb",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7440,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "9d4d01a3-126b-4527-a818-bcc8b3a6934f",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the previous previous node\nconst previousData = $items(\"HR: FORMAT THE MADMIN OUTPUT V2\") || [];\n\n// Filter and map only items that have madmin_publisher_id\nconst result = previousData\n  .map(item => item.json)\n  .filter(item => item.madmin_publisher_id) // Skip if no ID\n  .map(item => ({\n    json: {\n      madmin_publisher_id: item.madmin_publisher_id,\n      madmin_publisher_name: item.madmin_publisher_name\n    }\n  }));\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7216,
+        208
+      ],
+      "id": "9a25b972-e46a-4eba-802f-272c7a278865",
+      "name": "HR: GET THE DATA FROM OUTPUT V2 NODE",
+      "notesInFlow": true,
+      "notes": "Get the data from FORMAT THE MADMIN OUTPUT V2, we will use that to check the publisher users"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    po.name AS organisation_name,\n    pu.first_name,\n    pu.last_name,\n    pu.email AS email_address,\n    pm.role,\n    pu.current_sign_in_at\nFROM public.publisher_organisations po\nJOIN public.publisher_memberships pm\n    ON po.id = pm.organisation_id\nJOIN public.publisher_users pu\n    ON pm.user_id = pu.id\nWHERE po.id = {{$json.madmin_publisher_id}}\n    AND pu.deleted_at IS NULL\n    AND pu.email NOT IN (\n        'proxy.admin@keymailer.co',\n        'admin@keymailer.co'\n    )\nORDER BY pu.first_name, pu.last_name\nLIMIT 100;",
+        "options": {
+          "connectionTimeout": 20,
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        7520,
+        208
+      ],
+      "id": "53a336b6-c93b-4758-87f2-f57f0679f339",
+      "name": "HR: CHECK PUBLISHER USERS",
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "Get the publisher users, return first name, last name, email, role, and current login"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 476,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7760,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "34de4db4-25d9-4a6e-a0a0-2840b2277533",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Event Promo",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1589211320,
+          "mode": "list",
+          "cachedResultName": "Madmin Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit#gid=1589211320"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "madmin_publisher_name": "={{ $json.organisation_name }}",
+            "first_name": "={{ $json.first_name }}",
+            "last_name": "={{ $json.last_name }}",
+            "email_address": "={{ $json.email_address }}",
+            "role": "={{ $json.role }}",
+            "current_login": "={{ DateTime.fromISO($json.current_sign_in_at).toFormat('MMMM d, yyyy') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "madmin_publisher_name",
+              "displayName": "madmin_publisher_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email_address",
+              "displayName": "email_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "current_login",
+              "displayName": "current_login",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7856,
+        496
+      ],
+      "id": "47c6deea-cf3b-4859-b336-105d8929db10",
+      "name": "APPEND: MADMIN CONTACTS V2",
+      "credentials": {
+        "googleApi": {
+          "id": "qVMqdeBHKB7CTvN1",
+          "name": "km-tin-eventpromo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 6
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        8064,
+        496
+      ],
+      "id": "43bd2c85-a641-47e8-977f-17896142e092",
+      "name": "HR: WAIT 6 SEC",
+      "webhookId": "f8739441-74fd-4fec-b500-27812e5f3243"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4928,
+        -96
+      ],
+      "id": "c651c488-1429-4953-83bc-72251698a01a",
+      "name": "HR: WAIT 5 SEC",
+      "webhookId": "59ff4010-22fd-400b-9f4d-9f476157270b"
+    },
+    {
+      "parameters": {
+        "content": "## Event Promo\n\n**Purpose:**\n- The purpose of this workflow is to get search tags in steamdb, get the games of that tags, cross-reference in madmin, check if the game exist in madmin, get the publisher and publisher users\n",
+        "height": 192,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -928,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "93506265-920d-416b-8c41-4ebe496dc2c4",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/11YQ20YA4Khsb6l60nHGYDe9aSJJ01S8LJ26UlSY7wtY/edit?gid=0#gid=0\n\n**Production URL**\nhttps://neightn.indie-demo.com/form/c1e81cd2-5bc4-4ed5-b83b-7d4652353d7d\n",
+        "height": 216,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -928,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "bd75fba0-4e13-4722-a4c7-8e243b8de0f0",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow will run when the user types Run in the form.\n\n- In the form, there are one optional field:\n    1. How many data - how many data you want to return, 100 items, 200 items, 300 items\n\n- Get all the games related to steam tags\n\n- Get the information of that game in steam such as publisher, developer, and game link\n\n- Check if the game found in steam exist on Madmin, If no stop\n\n- If yes, check if there's an publisher, if yes, get the publisher user\n\n- Save the results\n  ",
+        "height": 468,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -928,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "f2f9bcf1-0229-4c60-a81e-fb0ef20c5b48",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0817b2b6-4649-4853-ad74-513cc45d1a0c",
+              "leftValue": "={{ $json.appid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3776,
+        -64
+      ],
+      "id": "bc9d59f6-3eef-4e07-afbd-9b225415fe53",
+      "name": "HR: CHECK IF APPID IS NULL"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Event Promo",
+        "completionMessage": "Successfully ran the automation.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.4,
+      "position": [
+        5840,
+        -96
+      ],
+      "id": "31af1dd1-e082-419e-a5bc-96db5ff3abc9",
+      "name": "FORM ENDING",
+      "webhookId": "b3fc7fe6-116f-4cfe-b27c-0acd1c1785ea"
+    }
+  ],
+  "pinData": {
+    "GET POPULAR TAGS": [
+      {
+        "json": {
+          "tagid": 492,
+          "name": "Indie"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 19,
+          "name": "Action"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 21,
+          "name": "Adventure"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 597,
+          "name": "Casual"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4182,
+          "name": "Singleplayer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 122,
+          "name": "RPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 599,
+          "name": "Simulation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9,
+          "name": "Strategy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3871,
+          "name": "2D"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 493,
+          "name": "Early Access"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 113,
+          "name": "Free to Play"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4191,
+          "name": "3D"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4166,
+          "name": "Atmospheric"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4305,
+          "name": "Colorful"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1742,
+          "name": "Story Rich"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3834,
+          "name": "Exploration"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1684,
+          "name": "Fantasy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4726,
+          "name": "Cute"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3859,
+          "name": "Multiplayer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3964,
+          "name": "Pixel Graphics"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1664,
+          "name": "Puzzle"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3839,
+          "name": "First-Person"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3993,
+          "name": "Combat"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4106,
+          "name": "Action-Adventure"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1654,
+          "name": "Relaxing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4136,
+          "name": "Funny"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4252,
+          "name": "Stylized"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4085,
+          "name": "Anime"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1773,
+          "name": "Arcade"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7481,
+          "name": "Controller"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1667,
+          "name": "Horror"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 128,
+          "name": "Massively Multiplayer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 701,
+          "name": "Sports"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3942,
+          "name": "Sci-fi"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4667,
+          "name": "Violent"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1697,
+          "name": "Third Person"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6730,
+          "name": "PvE"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1774,
+          "name": "Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5350,
+          "name": "Family Friendly"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6426,
+          "name": "Choices Matter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4004,
+          "name": "Retro"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7208,
+          "name": "Female Protagonist"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4791,
+          "name": "Top-Down"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 12095,
+          "name": "Sexual Content"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 699,
+          "name": "Racing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1685,
+          "name": "Co-op"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4175,
+          "name": "Realistic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4342,
+          "name": "Dark"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6650,
+          "name": "Nudity"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1775,
+          "name": "PvP"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1695,
+          "name": "Open World"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7250,
+          "name": "Linear"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1662,
+          "name": "Survival"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5716,
+          "name": "Mystery"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6971,
+          "name": "Multiple Endings"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4747,
+          "name": "Character Customization"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1625,
+          "name": "Platformer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4195,
+          "name": "Cartoony"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1719,
+          "name": "Comedy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3799,
+          "name": "Visual Novel"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4345,
+          "name": "Gore"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1721,
+          "name": "Psychological Horror"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3968,
+          "name": "Physics"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3843,
+          "name": "Online Co-Op"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5379,
+          "name": "2D Platformer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1716,
+          "name": "Roguelike"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4057,
+          "name": "Magic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1663,
+          "name": "FPS"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3959,
+          "name": "Roguelite"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3810,
+          "name": "Sandbox"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 12472,
+          "name": "Management"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1708,
+          "name": "Tactical"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4172,
+          "name": "Medieval"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4231,
+          "name": "Action RPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3916,
+          "name": "Old School"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6815,
+          "name": "Hand-drawn"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8945,
+          "name": "Resource Management"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4295,
+          "name": "Futuristic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9204,
+          "name": "Immersive Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4094,
+          "name": "Minimalist"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5984,
+          "name": "Drama"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1702,
+          "name": "Crafting"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1643,
+          "name": "Building"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1698,
+          "name": "Point & Click"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5608,
+          "name": "Emotional"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4604,
+          "name": "Dark Fantasy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4562,
+          "name": "Cartoon"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4026,
+          "name": "Difficult"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1755,
+          "name": "Space"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5395,
+          "name": "3D Platformer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 42804,
+          "name": "Action Roguelike"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5125,
+          "name": "Procedural Generation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4947,
+          "name": "Romance"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4486,
+          "name": "Choose Your Own Adventure"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3978,
+          "name": "Survival Horror"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 11014,
+          "name": "Interactive Fiction"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6129,
+          "name": "Logic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 30358,
+          "name": "Nature"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4325,
+          "name": "Turn-Based Combat"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 14139,
+          "name": "Turn-Based Tactics"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1741,
+          "name": "Turn-Based Strategy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5611,
+          "name": "Mature"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9130,
+          "name": "Hentai"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7368,
+          "name": "Local Multiplayer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 21978,
+          "name": "VR"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6691,
+          "name": "1990's"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1646,
+          "name": "Hack and Slash"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7332,
+          "name": "Base Building"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1738,
+          "name": "Hidden Object"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9551,
+          "name": "Dating Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3798,
+          "name": "Side Scroller"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1710,
+          "name": "Surreal"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5537,
+          "name": "Puzzle Platformer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1036,
+          "name": "Education"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3835,
+          "name": "Post-apocalyptic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4885,
+          "name": "Bullet Hell"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5900,
+          "name": "Walking Simulator"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4255,
+          "name": "Shoot 'Em Up"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1720,
+          "name": "Dungeon Crawler"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4145,
+          "name": "Cinematic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 24904,
+          "name": "NSFW"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1678,
+          "name": "War"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1756,
+          "name": "Great Soundtrack"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4434,
+          "name": "JRPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 87,
+          "name": "Utilities"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 379975,
+          "name": "Clicker"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15172,
+          "name": "Conversation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1659,
+          "name": "Zombies"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3854,
+          "name": "Lore-Rich"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10235,
+          "name": "Life Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5154,
+          "name": "Score Attack"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 84,
+          "name": "Design & Illustration"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17389,
+          "name": "Tabletop"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5094,
+          "name": "Narration"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7743,
+          "name": "1980s"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 31275,
+          "name": "Text-Based"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1687,
+          "name": "Stealth"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 44868,
+          "name": "LGBTQ+"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1666,
+          "name": "Card Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6276,
+          "name": "Inventory Management"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5186,
+          "name": "Psychological"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3841,
+          "name": "Local Co-Op"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8369,
+          "name": "Investigation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3987,
+          "name": "Historical"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4975,
+          "name": "2.5D"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4064,
+          "name": "Thriller"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4695,
+          "name": "Economy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10695,
+          "name": "Party-Based RPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10808,
+          "name": "Supernatural"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5851,
+          "name": "Isometric"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6869,
+          "name": "Nonlinear"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 12057,
+          "name": "Tutorial"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3814,
+          "name": "Third-Person Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5923,
+          "name": "Dark Humor"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4168,
+          "name": "Military"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9541,
+          "name": "Demons"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4711,
+          "name": "Replay Value"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4637,
+          "name": "Top-Down Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 615955,
+          "name": "Idler"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 16689,
+          "name": "Time Management"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1673,
+          "name": "Aliens"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5711,
+          "name": "Team-Based"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17305,
+          "name": "Strategy RPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 32322,
+          "name": "Deckbuilding"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5752,
+          "name": "Robots"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4115,
+          "name": "Cyberpunk"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7926,
+          "name": "Artificial Intelligence"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5613,
+          "name": "Detective"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4236,
+          "name": "Loot"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1677,
+          "name": "Turn-Based"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5652,
+          "name": "Collectathon"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5673,
+          "name": "Modern"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3813,
+          "name": "Real Time Tactics"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4400,
+          "name": "Abstract"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5030,
+          "name": "Dystopian "
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1759,
+          "name": "Perma Death"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1676,
+          "name": "RTS"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1644,
+          "name": "Driving"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1645,
+          "name": "Tower Defense"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3877,
+          "name": "Precision Platformer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1770,
+          "name": "Board Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5547,
+          "name": "Arena Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 29482,
+          "name": "Souls-like"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1751,
+          "name": "Comic Book"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1714,
+          "name": "Psychedelic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 21725,
+          "name": "Tactical RPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4328,
+          "name": "City Builder"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10397,
+          "name": "Memes"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 791774,
+          "name": "Card Battler"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 16094,
+          "name": "Mythology"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4598,
+          "name": "Alternate History"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8013,
+          "name": "Software"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4684,
+          "name": "Wargame"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17894,
+          "name": "Cats"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1038,
+          "name": "Web Publishing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4840,
+          "name": "4 Player Local"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13906,
+          "name": "Game Development"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 255534,
+          "name": "Automation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4845,
+          "name": "Capitalism"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4234,
+          "name": "Short"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4158,
+          "name": "Beat 'em up"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 916648,
+          "name": "Creature Collector"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6378,
+          "name": "Crime"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1628,
+          "name": "Metroidvania"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4036,
+          "name": "Parkour"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7569,
+          "name": "Grid-Based Movement"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1734,
+          "name": "Fast-Paced"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5363,
+          "name": "Destruction"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 872,
+          "name": "Animation & Modeling"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15045,
+          "name": "Flight"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4474,
+          "name": "CRPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8122,
+          "name": "Level Editor"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8666,
+          "name": "Runner"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1669,
+          "name": "Moddable"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4155,
+          "name": "Class-Based"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15277,
+          "name": "Philosophical"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 97376,
+          "name": "Cozy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1621,
+          "name": "Music"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4736,
+          "name": "2D Fighter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7948,
+          "name": "Soundtrack"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 19995,
+          "name": "Dark Comedy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5765,
+          "name": "Gun Customization"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1100687,
+          "name": "Automobile Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4202,
+          "name": "Trading"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 87918,
+          "name": "Farming Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3920,
+          "name": "Cooking"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5577,
+          "name": "RPGMaker"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1752,
+          "name": "Rhythm"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 11104,
+          "name": "Vehicular Combat"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1754,
+          "name": "MMORPG"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6506,
+          "name": "3D Fighter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4508,
+          "name": "Co-op Campaign"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5794,
+          "name": "Science"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7432,
+          "name": "Lovecraftian"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4608,
+          "name": "Swordplay"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13190,
+          "name": "America"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6052,
+          "name": "Noir"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1743,
+          "name": "Fighting"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5372,
+          "name": "Conspiracy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4559,
+          "name": "Quick-Time Events"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3878,
+          "name": "Competitive"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1084988,
+          "name": "Auto Battler"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4758,
+          "name": "Twin Stick Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4046,
+          "name": "Dragons"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 220585,
+          "name": "Colony Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1693,
+          "name": "Classic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 24003,
+          "name": "Word Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5055,
+          "name": "eSports"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4878,
+          "name": "Parody "
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 16598,
+          "name": "Space Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13782,
+          "name": "Experimental"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 784,
+          "name": "Video Production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1651,
+          "name": "Satire"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4364,
+          "name": "Grand Strategy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 29363,
+          "name": "3D Vision"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3952,
+          "name": "Gothic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 176981,
+          "name": "Battle Royale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 198631,
+          "name": "Mystery Dungeon"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1027,
+          "name": "Audio Production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 353880,
+          "name": "Looter Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9592,
+          "name": "Dynamic Narration"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4835,
+          "name": "6DOF"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10816,
+          "name": "Split Screen"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7178,
+          "name": "Party Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4150,
+          "name": "World War II"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 21006,
+          "name": "Underground"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 22602,
+          "name": "Agriculture"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5796,
+          "name": "Bullet Time"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5981,
+          "name": "Mining"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7702,
+          "name": "Narrative"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6625,
+          "name": "Time Manipulation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5411,
+          "name": "Beautiful"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4700,
+          "name": "Movie"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6915,
+          "name": "Martial Arts"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4853,
+          "name": "Political"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15564,
+          "name": "Fishing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 620519,
+          "name": "Hero Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1665,
+          "name": "Match 3"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4777,
+          "name": "Spectacle fighter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 552282,
+          "name": "Wholesome"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4102,
+          "name": "Combat Racing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4821,
+          "name": "Mechs"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3934,
+          "name": "Immersive"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5228,
+          "name": "Blood"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1100689,
+          "name": "Open World Survival Craft"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1638,
+          "name": "Dog"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10679,
+          "name": "Time Travel"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1723,
+          "name": "Action RTS"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1091588,
+          "name": "Roguelike Deckbuilder"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1732,
+          "name": "Voxel"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 18594,
+          "name": "FMV"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4018,
+          "name": "Vampire"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 16250,
+          "name": "Gambling"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 31579,
+          "name": "Otome"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17770,
+          "name": "Asynchronous Multiplayer"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1777,
+          "name": "Steampunk"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13070,
+          "name": "Solitaire"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9271,
+          "name": "Trading Card Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5300,
+          "name": "God Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1681,
+          "name": "Pirates"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1445,
+          "name": "Software Training"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10383,
+          "name": "Transportation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4754,
+          "name": "Politics"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9564,
+          "name": "Hunting"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9157,
+          "name": "Underwater"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1717,
+          "name": "Hex Grid"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1023537,
+          "name": "Boomer Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 180368,
+          "name": "Faith"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13276,
+          "name": "Tanks"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1688,
+          "name": "Ninja"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5502,
+          "name": "Hacking"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1718,
+          "name": "MOBA"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 26921,
+          "name": "Political Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1616,
+          "name": "Trains"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4376,
+          "name": "Assassin"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1670,
+          "name": "4X"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1730,
+          "name": "Sokoban"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1674,
+          "name": "Typing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3955,
+          "name": "Character Action Game"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1671,
+          "name": "Superhero"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7478,
+          "name": "Illuminati"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5708,
+          "name": "Remake"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7108,
+          "name": "Party"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5160,
+          "name": "Dinosaurs"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5432,
+          "name": "Programming"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1647,
+          "name": "Western"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6310,
+          "name": "Diplomacy"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 809,
+          "name": "Photo Editing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5179,
+          "name": "Cold War"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8093,
+          "name": "Minigames"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1680,
+          "name": "Heist"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 11123,
+          "name": "Mouse only"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 51306,
+          "name": "Foreign"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 91114,
+          "name": "Shop Keeper"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9803,
+          "name": "Snow"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6910,
+          "name": "Naval"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4137,
+          "name": "Transhumanism"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4190,
+          "name": "Addictive"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 454187,
+          "name": "Traditional Roguelike"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13382,
+          "name": "Archery"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 769306,
+          "name": "Escape Room"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4994,
+          "name": "Naval Combat"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 13577,
+          "name": "Sailing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4161,
+          "name": "Real-Time"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6041,
+          "name": "Horses"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4242,
+          "name": "Episodic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 35079,
+          "name": "Job Simulator"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3965,
+          "name": "Epic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 14720,
+          "name": "Nostalgia"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4520,
+          "name": "Farming"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8253,
+          "name": "Music-Based Procedural Generation"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7622,
+          "name": "Offroad"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17015,
+          "name": "Werewolves"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 11333,
+          "name": "Villain Protagonist"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 10437,
+          "name": "Trivia"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7423,
+          "name": "Sniper"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7782,
+          "name": "Cult Classic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7107,
+          "name": "Real-Time with Pause"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 56690,
+          "name": "On-Rails Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1254546,
+          "name": "Football (Soccer)"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5230,
+          "name": "Sequel"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5390,
+          "name": "Time Attack"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 14153,
+          "name": "Dungeons & Dragons"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 71389,
+          "name": "Spelling"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6702,
+          "name": "Mars"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5382,
+          "name": "World War I"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1100686,
+          "name": "Outbreak Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 12190,
+          "name": "Boxing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 92092,
+          "name": "Jet"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 25085,
+          "name": "Touch-Friendly"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5348,
+          "name": "Mod"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 922563,
+          "name": "Roguevania"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5153,
+          "name": "Kickstarter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4184,
+          "name": "Chess"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 4291,
+          "name": "Spaceships"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7918,
+          "name": "Dwarf"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1746,
+          "name": "Basketball"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 776177,
+          "name": "360 Video"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1100688,
+          "name": "Medical Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 150626,
+          "name": "Gaming"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 198913,
+          "name": "Motorbike"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1733,
+          "name": "Unforgiving"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 19780,
+          "name": "Submarine"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 42089,
+          "name": "Jump Scare"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7038,
+          "name": "Golf"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5310,
+          "name": "Games Workshop"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 9994,
+          "name": "Experience"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6948,
+          "name": "Rome"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 123332,
+          "name": "Bikes"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 745697,
+          "name": "Social Deduction"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1649,
+          "name": "GameMaker"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1736,
+          "name": "LEGO"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1199779,
+          "name": "Extraction Shooter"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6621,
+          "name": "Pinball"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 29855,
+          "name": "Ambient"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 856791,
+          "name": "Asymmetric VR"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 61357,
+          "name": "Electronic Music"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5727,
+          "name": "Baseball"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7556,
+          "name": "Dice"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 47827,
+          "name": "Wrestling"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15954,
+          "name": "Silent Protagonist"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1753,
+          "name": "Skateboarding"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 11095,
+          "name": "Boss Rush"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8461,
+          "name": "Well-Written"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 189941,
+          "name": "Instrumental Music"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 22955,
+          "name": "Mini Golf"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1254552,
+          "name": "Football (American)"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 12286,
+          "name": "Warhammer 40K"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17927,
+          "name": "Pool"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15339,
+          "name": "Documentary"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 96359,
+          "name": "Skating"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 19568,
+          "name": "Cycling"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 337964,
+          "name": "Rock Music"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 11634,
+          "name": "Vikings"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 102530,
+          "name": "Elf"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7113,
+          "name": "Crowdfunded"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 8075,
+          "name": "TrackIR"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5914,
+          "name": "Tennis"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 14906,
+          "name": "Intentionally Awkward Controls"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 15868,
+          "name": "Motocross"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 6214,
+          "name": "Birds"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 324176,
+          "name": "Hockey"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7328,
+          "name": "Bowling"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 3796,
+          "name": "Based On A Novel"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 129761,
+          "name": "ATV"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 117648,
+          "name": "8-bit Music"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 33572,
+          "name": "Mahjong"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 28444,
+          "name": "Snowboarding"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 17337,
+          "name": "Lemmings"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 7309,
+          "name": "Skiing"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 27758,
+          "name": "Voice Control"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 252854,
+          "name": "BMX"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 603297,
+          "name": "Hardware"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 323922,
+          "name": "Musou"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 30927,
+          "name": "Fox"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5407,
+          "name": "Benchmark"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 143739,
+          "name": "Electronic"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 348922,
+          "name": "Steam Machine"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 1220528,
+          "name": "Hobby Sim"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 42329,
+          "name": "Coding"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 233824,
+          "name": "Feature Film"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 847164,
+          "name": "Volleyball"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 158638,
+          "name": "Cricket"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 49213,
+          "name": "Rugby"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 363767,
+          "name": "Snooker"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "tagid": 5941,
+          "name": "Reboot"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "HR: WAIT - USER TAG": {
+      "main": [
+        [
+          {
+            "node": "HR: GET GAMES BY TAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "CHECK INPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK INPUT": {
+      "main": [
+        [
+          {
+            "node": "GET: LIST",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "STOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: LIST": {
+      "main": [
+        [
+          {
+            "node": "LIMIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LIMIT": {
+      "main": [
+        [
+          {
+            "node": "GET POPULAR TAGS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET POPULAR TAGS": {
+      "main": [
+        [
+          {
+            "node": "MATCHING TAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MATCHING TAG": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF TAG ID IS NOT NULL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF TAG ID IS NOT NULL": {
+      "main": [
+        [
+          {
+            "node": "HR: WAIT - USER TAG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE: ERROR NO MATCHING TAGS FOUND",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET GAMES BY TAG": {
+      "main": [
+        [
+          {
+            "node": "HR: GET THE ITEMS FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET THE ITEMS FIELD": {
+      "main": [
+        [
+          {
+            "node": "HR: GET APPID FROM LOGO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET APPID FROM LOGO": {
+      "main": [
+        [
+          {
+            "node": "HR: RANDOM DELAY V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: RANDOM DELAY V1": {
+      "main": [
+        [
+          {
+            "node": "HR: CHECK IF APPID IS NULL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET INFO PER APPID": {
+      "main": [
+        [
+          {
+            "node": "HR: GET GAME NAME, APPID, PUBLISHER, DEVELOPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET GAME NAME, APPID, PUBLISHER, DEVELOPER": {
+      "main": [
+        [
+          {
+            "node": "LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP V2": {
+      "main": [
+        [
+          {
+            "node": "HR: WAIT 5 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HR: CHECK IF GAME EXIST IN MADMIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET DATA FROM USER TAG NODE": {
+      "main": [
+        [
+          {
+            "node": "UPDATE: LIST V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: CHECK IF GAME EXIST IN MADMIN": {
+      "main": [
+        [
+          {
+            "node": "HR: FORMAT MADMIN OUTPUT V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: FORMAT MADMIN OUTPUT V1": {
+      "main": [
+        [
+          {
+            "node": "HR: RANDOM DELAY V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: RANDOM DELAY V2": {
+      "main": [
+        [
+          {
+            "node": "HR: CHECK GAME PUBLISHER IN MADMIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: CHECK GAME PUBLISHER IN MADMIN": {
+      "main": [
+        [
+          {
+            "node": "HR: FORMAT THE MADMIN OUTPUT V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: FORMAT THE MADMIN OUTPUT V2": {
+      "main": [
+        [
+          {
+            "node": "HR: MERGE ALL DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: STEAMDB TOP GAMES V2": {
+      "main": [
+        [
+          {
+            "node": "HR: RANDOM DELAY V3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: MERGE ALL DATA": {
+      "main": [
+        [
+          {
+            "node": "APPEND: STEAMDB TOP GAMES V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: GET THE DATA FROM OUTPUT V2 NODE": {
+      "main": [
+        [
+          {
+            "node": "HR: CHECK PUBLISHER USERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: RANDOM DELAY V3": {
+      "main": [
+        [
+          {
+            "node": "HR: GET THE DATA FROM OUTPUT V2 NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: CHECK PUBLISHER USERS": {
+      "main": [
+        [
+          {
+            "node": "APPEND: MADMIN CONTACTS V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: MADMIN CONTACTS V2": {
+      "main": [
+        [
+          {
+            "node": "HR: WAIT 6 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: WAIT 6 SEC": {
+      "main": [
+        [
+          {
+            "node": "LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: WAIT 5 SEC": {
+      "main": [
+        [
+          {
+            "node": "HR: GET DATA FROM USER TAG NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HR: CHECK IF APPID IS NULL": {
+      "main": [
+        [
+          {
+            "node": "HR: GET INFO PER APPID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE: LIST V2": {
+      "main": [
+        [
+          {
+            "node": "FORM ENDING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "ac7a9593-6e77-4ab9-aa63-601fbec2bdca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "m1sxvWMsizku4KH1",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
