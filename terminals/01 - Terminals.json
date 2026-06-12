@@ -1,0 +1,536 @@
+{
+  "name": "Terminals",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "b5492280-09b3-4eec-a336-a3d85ad1298c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "runCustomScript",
+        "scriptCode": "// n8n “Execute Puppeteer” node: scrape all recent games across pages with timestamp\n\n// 0. capture scrape timestamp\nconst scrapedAt = new Date().toISOString();\n\n// 1. Navigate to first page\nawait $page.goto('https://www.terminals.io/games?recent=1', { waitUntil: 'networkidle0' });\n\n// 2. Wait for at least one game link to appear\nawait $page.waitForSelector('h3.text-xl a');\n\n// 3. Grab pagination links\nconst firstPageUrl    = $page.url();\nconst paginationHrefs = await $page.$$eval(\n  'div.hidden.md\\\\:inline-block a',\n  els => els.map(a => a.href)\n);\n\n// 4. Build unique list of page URLs\nconst pageUrls = Array.from(new Set([\n  firstPageUrl,\n  ...paginationHrefs.filter(u => u.includes('page='))\n]));\n\n// 5. Iterate each page, scrape title + link\nlet allGames = [];\nfor (const url of pageUrls) {\n  await $page.goto(url, { waitUntil: 'networkidle0' });\n  await $page.waitForSelector('h3.text-xl a');\n\n  const gamesOnPage = await $page.$$eval(\n    'h3.text-xl a',\n    anchors => anchors.map(a => ({\n      title: a.textContent.trim(),\n      url:   a.href\n    }))\n  );\n\n  allGames.push(...gamesOnPage);\n}\n\n// 6. Dedupe by URL\nconst seen = new Set();\nallGames = allGames.filter(g => {\n  if (seen.has(g.url)) return false;\n  seen.add(g.url);\n  return true;\n});\n\n// 7. Attach scrapedAt and return one item per game\nreturn allGames.map(game => ({\n  json: {\n    title:     game.title,\n    url:       game.url,\n    scrapedAt\n  }\n}));\n",
+        "options": {
+          "executablePath": "/usr/bin/chrome",
+          "launchArguments": {
+            "args": [
+              {
+                "arg": "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-seccomp-filter-sandbox"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-puppeteer.puppeteer",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -160
+      ],
+      "id": "c67bd5b2-385d-4420-b7a0-ef584820da4f",
+      "name": "Puppeteer"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 650012534,
+          "mode": "list",
+          "cachedResultName": "TerminalsRe",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=650012534"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        448,
+        -256
+      ],
+      "id": "7951b5b5-fbfe-45c8-a408-452e09696d5f",
+      "name": "Get row(s) in sheet",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 650012534,
+          "mode": "list",
+          "cachedResultName": "TerminalsRe",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=650012534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "scraped_at": "={{ $json.scrapedAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        944,
+        -256
+      ],
+      "id": "3090c867-6c38-4d32-9dc3-0f9006026dd6",
+      "name": "Append row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "url",
+              "field2": "url"
+            }
+          ]
+        },
+        "resolve": "preferInput2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        -208
+      ],
+      "id": "4d82ef2e-a656-48ab-afd0-b2e79c773e5e",
+      "name": "Compare Datasets"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C097ZKS5GP2",
+          "mode": "list",
+          "cachedResultName": "scraped_campaigns"
+        },
+        "messageType": "block",
+        "blocksUi": "=[\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \":rocket: *New Campaign Detected!*\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Title:*\\n{{$json.title}}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*URL:*\\n<{{$json.url}}|View on X.la>\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Scraped at:*\\n{{$json.scrapedAt}}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"emoji\": true,\n          \"text\": \"Open Campaign\"\n        },\n        \"url\": \"{{$json.url}}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"divider\"\n  }\n]\n",
+        "text": "=Terminals.io New Recent Release campaign: {{ $json.title }} – {{$json.url}}\nSheet Link: https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?gid=650012534#gid=650012534\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        -128
+      ],
+      "id": "07e0e13c-681c-49eb-8184-c94a28ec94b6",
+      "name": "Send a message",
+      "webhookId": "46cd820c-9150-466f-9e26-73c3e9c6adc1",
+      "credentials": {
+        "slackApi": {
+          "id": "F6mtRBw4D40fPE2w",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "runCustomScript",
+        "scriptCode": "// n8n “Execute Puppeteer” node: scrape all recent games across pages with timestamp\n\n// 0. capture scrape timestamp\nconst scrapedAt = new Date().toISOString();\n\n// 1. Navigate to first page\nawait $page.goto('https://www.terminals.io/games?upcomingReleases=1', { waitUntil: 'networkidle0' });\n\n// 2. Wait for at least one game link to appear\nawait $page.waitForSelector('h3.text-xl a');\n\n// 3. Grab pagination links\nconst firstPageUrl    = $page.url();\nconst paginationHrefs = await $page.$$eval(\n  'div.hidden.md\\\\:inline-block a',\n  els => els.map(a => a.href)\n);\n\n// 4. Build unique list of page URLs\nconst pageUrls = Array.from(new Set([\n  firstPageUrl,\n  ...paginationHrefs.filter(u => u.includes('page='))\n]));\n\n// 5. Iterate each page, scrape title + link\nlet allGames = [];\nfor (const url of pageUrls) {\n  await $page.goto(url, { waitUntil: 'networkidle0' });\n  await $page.waitForSelector('h3.text-xl a');\n\n  const gamesOnPage = await $page.$$eval(\n    'h3.text-xl a',\n    anchors => anchors.map(a => ({\n      title: a.textContent.trim(),\n      url:   a.href\n    }))\n  );\n\n  allGames.push(...gamesOnPage);\n}\n\n// 6. Dedupe by URL\nconst seen = new Set();\nallGames = allGames.filter(g => {\n  if (seen.has(g.url)) return false;\n  seen.add(g.url);\n  return true;\n});\n\n// 7. Attach scrapedAt and return one item per game\nreturn allGames.map(game => ({\n  json: {\n    title:     game.title,\n    url:       game.url,\n    scrapedAt\n  }\n}));\n",
+        "options": {
+          "executablePath": "/usr/bin/google-chrome",
+          "launchArguments": {
+            "args": [
+              {
+                "arg": "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-seccomp-filter-sandbox"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-puppeteer.puppeteer",
+      "typeVersion": 1,
+      "position": [
+        208,
+        80
+      ],
+      "id": "1c59cd88-db23-4806-a803-67001741e4d3",
+      "name": "Puppeteer1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1825723631,
+          "mode": "list",
+          "cachedResultName": "TerminalsUp",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=1825723631"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        448,
+        -16
+      ],
+      "id": "b6c90995-88bb-4985-ad02-69034e491ad9",
+      "name": "Get row(s) in sheet1",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "url",
+              "field2": "url"
+            }
+          ]
+        },
+        "resolve": "preferInput2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        48
+      ],
+      "id": "6752460d-c4c1-4d0c-9d1c-312ee05972da",
+      "name": "Compare Datasets1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1825723631,
+          "mode": "list",
+          "cachedResultName": "TerminalsUp",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=1825723631"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "scraped_at": "={{ $json.scrapedAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        944,
+        160
+      ],
+      "id": "cb3d95de-4751-48c9-8d89-67afc3c076fc",
+      "name": "Append row in sheet1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C097ZKS5GP2",
+          "mode": "list",
+          "cachedResultName": "scraped_campaigns"
+        },
+        "messageType": "block",
+        "blocksUi": "=[\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \":rocket: *New Campaign Detected!*\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Title:*\\n{{$json.title}}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*URL:*\\n<{{$json.url}}|View on X.la>\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Scraped at:*\\n{{$json.scrapedAt}}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"emoji\": true,\n          \"text\": \"Open Campaign\"\n        },\n        \"url\": \"{{$json.url}}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"divider\"\n  }\n]\n",
+        "text": "=Terminals.io New Upcoming Release campaign: {{ $json.title }} – {{$json.url}}\nSheet Link: https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?gid=1825723631#gid=1825723631\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        32
+      ],
+      "id": "35b21c78-1b67-4831-9b2e-9e1fc8926ddd",
+      "name": "Send a message1",
+      "webhookId": "46cd820c-9150-466f-9e26-73c3e9c6adc1",
+      "credentials": {
+        "slackApi": {
+          "id": "F6mtRBw4D40fPE2w",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Puppeteer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Puppeteer1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Puppeteer": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Datasets": {
+      "main": [
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Puppeteer1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compare Datasets1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Compare Datasets1": {
+      "main": [
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0efa2080-0b83-45ef-9147-1b8fe8555701",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "zDvo0TJNqbybNhzv",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T15:03:48.789Z",
+      "createdAt": "2026-06-11T15:03:48.789Z",
+      "id": "7U0r1sDY8yTwwiug",
+      "name": "Eduardo"
+    }
+  ]
+}

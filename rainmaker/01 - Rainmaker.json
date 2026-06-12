@@ -1,0 +1,291 @@
+{
+  "name": "Rainmaker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "eb22c551-7206-4eb5-952e-2eb0a14a6d8c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "runCustomScript",
+        "scriptCode": "// 1. Navigate and wait for the page to fully render\nawait $page.goto('https://x.la/xpn/campaigns', { waitUntil: 'networkidle0' });\nawait $page.waitForSelector('a.CardWrapper-sc-10ymsva');\nawait $page.waitForSelector('div[class*=\"CampaignTitle\"]');\n\n// 2. Capture scrape timestamp\nconst scrapedAt = new Date().toISOString();\n\n// 3. Extract an array of campaign objects\nconst campaigns = await $page.$$eval(\n  'a.CardWrapper-sc-10ymsva',\n  (els, scrapedAt) => els.map(el => ({\n    url:       el.href,\n    title:     el.querySelector('div[class*=\"CampaignTitle\"]')?.textContent.trim() || null,\n    scrapedAt\n  })),\n  scrapedAt\n);\n\n// 4. Return one n8n item per campaign\nreturn campaigns.map(c => ({ json: c }));\n",
+        "options": {
+          "executablePath": "/usr/bin/chrome",
+          "launchArguments": {
+            "args": [
+              {
+                "arg": "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-seccomp-filter-sandbox"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-puppeteer.puppeteer",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -48
+      ],
+      "id": "b11f252d-35ec-45e9-910e-22b0b9ba5f1f",
+      "name": "Puppeteer"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 648678710,
+          "mode": "list",
+          "cachedResultName": "Rainmaker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=648678710"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        640,
+        -208
+      ],
+      "id": "4a43a063-935d-4709-a172-cb3d514756d7",
+      "name": "Get row(s) in sheet",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 648678710,
+          "mode": "list",
+          "cachedResultName": "Rainmaker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=648678710"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.title }}",
+            "url": "={{ $json.url }}",
+            "scraped_at": "={{ $json.scrapedAt }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1104,
+        96
+      ],
+      "id": "d14dd90c-f773-43cc-b45e-7b0895089cf1",
+      "name": "Append row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "url",
+              "field2": "url"
+            }
+          ]
+        },
+        "resolve": "preferInput2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        -112
+      ],
+      "id": "a36c6c33-b755-4318-8b8d-12203c29b6a5",
+      "name": "Compare Datasets"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C097ZKS5GP2",
+          "mode": "list",
+          "cachedResultName": "scraped_campaigns"
+        },
+        "messageType": "block",
+        "blocksUi": "=[\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \":rocket: *New Campaign Detected!*\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Title:*\\n{{$json.title}}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*URL:*\\n<{{$json.url}}|View on X.la>\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Scraped at:*\\n{{$json.scrapedAt}}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"emoji\": true,\n          \"text\": \"Open Campaign\"\n        },\n        \"url\": \"{{$json.url}}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"divider\"\n  }\n]\n",
+        "text": "=New Rainmaker campaign: {{ $json.title }} – {{$json.url}}\nSheet Link: https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?gid=648678710#gid=648678710\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1136,
+        -64
+      ],
+      "id": "1d2a7f53-8f29-4b72-bdce-034c48d9667b",
+      "name": "Send a message",
+      "webhookId": "22c57b4a-eeea-490e-8839-cb7d3ae21445",
+      "credentials": {
+        "slackApi": {
+          "id": "F6mtRBw4D40fPE2w",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Puppeteer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Puppeteer": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Datasets": {
+      "main": [
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f19514e1-2732-474f-a0f8-d4c58a968d11",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "S1TEgpOesYGr2ZUf",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T15:03:48.789Z",
+      "createdAt": "2026-06-11T15:03:48.789Z",
+      "id": "7U0r1sDY8yTwwiug",
+      "name": "Eduardo"
+    }
+  ]
+}

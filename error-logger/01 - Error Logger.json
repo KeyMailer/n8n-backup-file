@@ -1,0 +1,138 @@
+{
+  "name": "Error Logger",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a2ca00-5b2f-405a-b587-b47110664b06",
+              "name": "workflow.name",
+              "value": "={{ $json.workflow.name }}",
+              "type": "string"
+            },
+            {
+              "id": "80f0ffc2-c11b-4f7b-b24a-7bbf3073a83a",
+              "name": "workflow.id",
+              "value": "={{ $json.workflow.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a6ff6b85-39d9-4e79-b499-995fdc30d2fe",
+              "name": "execution.executionContext.establishedAt",
+              "value": "={{ DateTime.fromMillis($json.execution.executionContext.establishedAt)\n  .toLocal()\n  .toFormat('MMMM dd, yyyy hh:mm a') }}",
+              "type": "string"
+            },
+            {
+              "id": "7c250c8c-4f2c-4dd4-af8b-ffd2c01f3197",
+              "name": "execution.url",
+              "value": "={{ $json.execution.url }}",
+              "type": "string"
+            },
+            {
+              "id": "f272184f-92f2-4d1b-b232-b081c2d5cf73",
+              "name": "execution.error.message",
+              "value": "={{ $json.execution.error.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        0
+      ],
+      "id": "146048a8-dab4-479c-9a08-4072e60aecbd",
+      "name": "EDIT FIELDS"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "59b947f2-0258-443c-9391-0b3eb40a8de5",
+      "name": "ERROR TRIGGER"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B9V9MMLUW",
+          "mode": "list",
+          "cachedResultName": "n8n-error-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"ERROR NOTIFICATION\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Workflow Name*\\n{{ $json.workflow.name }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Workflow Id*\\n{{ $json.workflow.id }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Execution Date*\\n{{ $json.execution.executionContext.establishedAt }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Execution URL*\\n{{ $json.execution.url }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Message*\\n{{ $json.execution.error.message }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"<@U09U7010B40>\"\n\t\t\t}\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        592,
+        0
+      ],
+      "id": "14540ff8-c7fc-44f3-9a32-6d2966fd5473",
+      "name": "SEND A MESSAGE",
+      "webhookId": "744784c8-a0eb-4e95-b676-6a078d37e396",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "EDIT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ERROR TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "EDIT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b6d83f34-4fbb-4312-95ae-c4a49e5400f4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "HrRA6Gjil21fGmZd",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

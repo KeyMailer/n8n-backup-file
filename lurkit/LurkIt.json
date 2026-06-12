@@ -1,0 +1,324 @@
+{
+  "name": "LurkIt",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "4359cf78-86fb-4af1-b8c4-ffed8dce3d2f",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "runCustomScript",
+        "scriptCode": "// Navigate to the page\nawait $page.goto('https://www.lurkit.com/campaigns/browse/recent', {\n  waitUntil: 'networkidle2',\n});\n\nawait new Promise(r => setTimeout(r, 3000));\n\n// Click \"Load More\" until it disappears\nawait $page.evaluate(async () => {\n  while (true) {\n    // Look for the \"LOAD MORE\" button\n    const button = Array.from(document.querySelectorAll('button'))\n      .find(b => b.innerText.trim() === 'LOAD MORE');\n    \n    if (!button) {\n      break; // No more \"LOAD MORE\" buttons - we're done\n    }\n    \n    // Click the button\n    button.click();\n    \n    // Wait for loading to start\n    await new Promise(resolve => setTimeout(resolve, 1000));\n    \n    // Wait for \"LOAD MORE\" to return (loading finished)\n    let attempts = 0;\n    while (attempts < 30) { // 30 second timeout\n      const loadMoreButton = Array.from(document.querySelectorAll('button'))\n        .find(b => b.innerText.trim() === 'LOAD MORE');\n      \n      if (loadMoreButton) {\n        break; // Loading finished, button is back\n      }\n      \n      await new Promise(resolve => setTimeout(resolve, 1000));\n      attempts++;\n    }\n    \n    // Small delay before next click\n    await new Promise(resolve => setTimeout(resolve, 1000));\n  }\n});\n\n// Get the final HTML content\nconst html = await $page.content();\n\n// Return as array format required by the system\nreturn [{ \n  html: html,\n  url: 'https://www.lurkit.com/campaigns/browse/recent',\n  timestamp: new Date().toISOString(),\n  status: 'completed'\n}];",
+        "options": {
+          "executablePath": "/usr/bin/chrome",
+          "launchArguments": {
+            "args": [
+              {
+                "arg": "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage --disable-seccomp-filter-sandbox"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-puppeteer.puppeteer",
+      "typeVersion": 1,
+      "position": [
+        192,
+        16
+      ],
+      "id": "7386e07a-e5ed-40d1-98ab-4d80dfdf90c2",
+      "name": "Puppeteer"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) Grab the HTML from the input\nconst html = $input.item.json.html;\n\n// 2) Get the current date/time\nconst scraped_at = new Date().toISOString();\n\n// 3) Regex to match <a href=\"...\"><div class=\"...text-title-small truncate...\" title=\"...\">\nconst regex = /<a[^>]+href=\"([^\"]+)\"[^>]*>\\s*<div[^>]*class=\"[^\"]*text-title-small[^\"]*truncate[^\"]*\"[^>]*title=\"([^\"]+)\"/g;\n\nconst results = [];\nlet match;\nwhile ((match = regex.exec(html)) !== null) {\n  const url = match[1].trim();\n  const name = match[2].trim();\n  results.push({ json: { name, url, scraped_at } });\n}\n\n// 4) Return each campaign with name + url + scrape date\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -128
+      ],
+      "id": "a2e6d8d8-fe12-4c20-8f73-42b6706b0d24",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Lurkit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        640,
+        -208
+      ],
+      "id": "170ae0e6-0e21-4453-9533-c8a6db347a99",
+      "name": "Get row(s) in sheet",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Lurkit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "url": "={{ $json.url }}",
+            "scraped_at": "={{ $json.scraped_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1104,
+        96
+      ],
+      "id": "e7f1d399-524c-4ca5-bacf-41beeebc9b65",
+      "name": "Append row in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "ionFqVXN3ca99Wu8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "url",
+              "field2": "url"
+            }
+          ]
+        },
+        "resolve": "preferInput2",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        -112
+      ],
+      "id": "be1b4c09-c04f-4805-a48f-b503d078b4fa",
+      "name": "Compare Datasets",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C097ZKS5GP2",
+          "mode": "list",
+          "cachedResultName": "scraped_campaigns"
+        },
+        "messageType": "block",
+        "blocksUi": "={{ [\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \":rocket: *New Campaign Detected!*\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Title:*\\n\" + $json.name\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*URL:*\\n<\" + $json.url + \"|View on Lurkit>\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Scraped at:*\\n\" + $json.scraped_at\n      }\n    ]\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"emoji\": true,\n          \"text\": \"Open Campaign\"\n        },\n        \"url\": $json.url\n      }\n    ]\n  },\n  {\n    \"type\": \"divider\"\n  }\n] }}",
+        "text": "=New Lurkit campaign: {{$json.name}} – {{$json.url}}\nSheet Link: https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?gid=0#gid=0",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1360,
+        112
+      ],
+      "id": "33e01b83-0e4c-4fdb-bb29-ff84e65f6da0",
+      "name": "Send a message",
+      "webhookId": "4c014cbd-5498-4ab2-b557-e87f36834ac4",
+      "credentials": {
+        "slackApi": {
+          "id": "F6mtRBw4D40fPE2w",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Puppeteer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Puppeteer": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Compare Datasets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare Datasets": {
+      "main": [
+        [],
+        [],
+        [],
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1a45fe93-3df4-43ef-87ab-0885219cdae0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "1ZI8BO6Rc4FtA8Cm",
+  "tags": [
+    {
+      "updatedAt": "2026-06-11T15:03:48.789Z",
+      "createdAt": "2026-06-11T15:03:48.789Z",
+      "id": "7U0r1sDY8yTwwiug",
+      "name": "Eduardo"
+    }
+  ]
+}
