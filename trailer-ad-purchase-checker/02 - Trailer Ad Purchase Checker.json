@@ -1,0 +1,6160 @@
+{
+  "name": "Trailer Ad Purchase Checker",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id, \n  catalogue_product_id, \n  start_date, \n  end_date, \n  status,\n  type\nFROM public.system_ads\nWHERE \n  status = 'accepted'\n  AND CURRENT_DATE BETWEEN start_date AND end_date;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        224,
+        -128
+      ],
+      "id": "229d7028-517f-454c-99cc-9fde0e202d50",
+      "name": "MADMIN: SYSTEM ADS",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "retrieve the data in system_ads table if the status is accepted and that are currently active today"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst typeMapping = {\n  \"System::CarouselImage\": \"Spotlight Ad\",\n  \"System::FeaturedAd\": \"Featured Ad\",\n  \"System::PromotedAd\": \"Medium Ad\",\n  \"System::SponsoredAd\": \"Small Ad\",\n  \"System::NewsletterAd\": \"Newsletter Ad\",\n  \"System::NativeSocialAd\": \"Native Social Ad\",\n};\n\nfunction formatDatePHT(isoString) {\n  return new Date(isoString).toLocaleDateString(\"en-CA\", {\n    timeZone: \"Asia/Manila\"\n  }); // Returns YYYY-MM-DD format\n}\n\nreturn items.map(item => {\n  const type = item.json.type;\n  return {\n    json: {\n      ...item.json,\n      table_source: \"system_ads\",\n      type: typeMapping[type] ?? \"Unknown\",\n      start_date: formatDatePHT(item.json.start_date),\n      end_date: formatDatePHT(item.json.end_date),\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        -128
+      ],
+      "id": "47111ccd-913d-4d0a-b75e-a00a4d046b2d",
+      "name": "FORMATTING: SYSTEM ADS",
+      "notes": "format the system_ads output in more readable especially the type field and start and end date field"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, product_id, preferred, name, description, trailer_uid\nFROM public.catalogue_product_sources\nWHERE product_id = {{ $json.catalogue_product_id }}\n  AND preferred = true\n  AND trailer_uid IS NOT NULL\n  AND trailer_uid <> '';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1072,
+        -128
+      ],
+      "id": "543db472-9018-4498-a18f-524416301bfc",
+      "name": "MADMIN: CP SOURCES",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "retrieve the data from catalogue_product_sources table only the selected field(id, product_id, preffered, name, trailer_uid)\n\nretrieve only if the catalogue_product_id is match with produc_id of cps\n\nreturn only if preferred is TRUE(make sure to always get preferred true)\nreturn only if trailer_uid is not null (not all product_Id has a video trailer)\nreturn only if trailer_uid is not empty string (sometimes the output is null or ' ' )"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        -128
+      ],
+      "id": "b58fe876-22f5-4b27-8480-b11baf6bec6c",
+      "name": "WAIT 5 SEC",
+      "webhookId": "44377f10-35c2-46b3-9aa1-ba0b79e7ae76"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfunction stripHtml(html) {\n  if (!html) return \"\";\n  return html\n    .replace(/<[^>]*>/g, \" \")        // remove all HTML tags\n    .replace(/&amp;/g, \"&\")           // decode common HTML entities\n    .replace(/&lt;/g, \"<\")\n    .replace(/&gt;/g, \">\")\n    .replace(/&nbsp;/g, \" \")\n    .replace(/&rsquo;/g, \"'\")\n    .replace(/&lsquo;/g, \"'\")\n    .replace(/&rdquo;/g, '\"')\n    .replace(/&ldquo;/g, '\"')\n    .replace(/&mdash;/g, \"—\")\n    .replace(/&ndash;/g, \"–\")\n    .replace(/&hellip;/g, \"...\")\n    .replace(/&reg;/g, \"®\")\n    .replace(/&trade;/g, \"™\")\n    .replace(/&euro;/g, \"€\")\n    .replace(/\\s+/g, \" \")             // collapse multiple spaces/newlines\n    .trim();\n}\n\nreturn items.map(item => {\n  const rawTrailerUid = item.json.trailer_uid || \"\";\n  const cleanTrailerUid = rawTrailerUid.split(\"?\")[0];\n  return {\n    json: {\n      ...item.json,\n      trailer_uid: cleanTrailerUid,\n      description: stripHtml(item.json.description),\n      table_source: \"catalogue_product_sources\",\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        -128
+      ],
+      "id": "e3ac1460-9dde-40d7-b69f-0858099957cf",
+      "name": "FORMATTING: CP SOURCES",
+      "notes": "clean the trailer_uid (11 char is valid yt id)\nadd table source"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1712,
+        -128
+      ],
+      "id": "f2afc4b8-b40b-4eb8-8371-737b21f735a7",
+      "name": "LOOP"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "get",
+        "videoId": "={{ $json.trailer_uid }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        2032,
+        -112
+      ],
+      "id": "d1bd848f-1cd2-43fa-bb50-0b7b6c1e79af",
+      "name": "GET YT VIDEO BY TRAILER UID",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "L3nuPjdrJiQamOpM",
+          "name": "n8n-justin-youtube-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst TARGET_CHANNEL_ID = \"UCNaXVVdiW4ksPAtFKv8SdrA\";\n\nreturn items.map(item => {\n  const video = item.json;\n  const channelId = video.snippet?.channelId;\n  const isKeymailer = channelId === TARGET_CHANNEL_ID;\n\n  if (isKeymailer) {\n    return {\n      json: {\n        yt_trailer_uid: video.id,\n        hasYoutubeTrailerOnKM: true\n      }\n    };\n  } else {\n    return {\n      json: {\n        yt_trailer_uid: video.id,\n        yt_title: video.snippet?.title,\n        hasYoutubeTrailerOnKM: false\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2336,
+        -112
+      ],
+      "id": "106ac381-cd47-4053-b4ca-b33cc3e52ee7",
+      "name": "IDENTIFY IF VIDEO ARE ALREADY POSTED ON KM YT",
+      "notes": "check if the video is already posted on keymailer yt channel (UCNaXVVdiW4ksPAtFKv8SdrA)"
+    },
+    {
+      "parameters": {
+        "model": "mistral:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        5024,
+        -464
+      ],
+      "id": "195d2313-2928-41a8-a646-7e6853297499",
+      "name": "AIS OLLAMA MODEL",
+      "credentials": {
+        "ollamaApi": {
+          "id": "mSHFNBdd2RKsD5ph",
+          "name": "ais-ollama-client-facing"
+        }
+      },
+      "notes": "the credentials is from eduardo, since this ais is client facing, just use low model "
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a YouTube description for this video.\n\nGame name: {{ $json.name }}\nVideo title: {{ $json.title }}\nGame description: {{ $json.steam_description }}",
+        "options": {
+          "systemMessage": "You are an expert YouTube content writer specializing in video game trailers.\nYour job is to write a compelling YouTube video description based on a given game description.\n\nRules:\n- Write exactly 2 sentences\n- Ground every claim in the provided game description — do not invent details beyond what is stated or strongly implied\n- Identify the dominant tone from the title and description (e.g. hype, fun, suspenseful, mysterious), then write accordingly\n- Do not use emojis\n- Output only the description text, nothing else\n\nExample:\nGame name: Elden Ring\nVideo title: Elden Ring - Official Launch Trailer\nGame description: A vast open-world action RPG set in the Lands Between, featuring challenging combat, deep lore, and demigod bosses.\nOutput: The wait is finally over, Elden Ring is here and the Lands Between are calling. Forge your legend, face the demigods, and claim the Elden Ring."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        5024,
+        -672
+      ],
+      "id": "7d30b06c-cfd0-4a5a-8b20-94303a62b30e",
+      "name": "GENERATE DESCRIPTION",
+      "alwaysOutputData": true,
+      "notes": "generate a yt description based on the name and video title"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9fbe37e7-1ba1-44d2-89e9-b7da65e76cce",
+              "leftValue": "={{ $json.hasYoutubeTrailerOnKM }}",
+              "rightValue": "not exist in keymailer yt channel",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2032,
+        -416
+      ],
+      "id": "9e231f59-c3c3-4c40-a4c7-106f90104eb5",
+      "name": "CHECK THE BOOLEAN FIELD"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, slug\nFROM public.catalogue_products \nWHERE id = $1;",
+        "options": {
+          "queryReplacement": "={{ $json.product_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3312,
+        -1104
+      ],
+      "id": "1073255a-0cc6-43f8-8fcf-bf81b9bd7034",
+      "name": "MADMIN: CP",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "retrieve the slug in catalogue_product table using product_id = id"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node\nconst items = $input.all();\n\n// Transform data\nconst result = items.map(item => {\n  return {\n    json: {\n      cp_id: item.json.id,\n      slug: item.json.slug,\n      cp_table_source: \"catalogue_products\"\n    }\n  };\n});\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3632,
+        -1104
+      ],
+      "id": "4e2d30a2-ff04-426d-8410-622d66f69490",
+      "name": "FORMATTING: CATALOGUE PRODUCTS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (catalogue_products)\nconst previousData = $input.all();\n\n// Get data from CHECK PRODUCT_ID EXISTENCE node\nconst checkData = $('TRUE: CHECK PRODUCT_ID EXISTENCE').all();\n\n// Get data from FORMATTING: SYSTEM ADS node\nconst sysAdsData = $('FORMATTING: SYSTEM ADS').all();\n\nconst results = [];\n\nfor (const prev of previousData) {\n  const prevJson = prev.json;\n  const cpId = prevJson.cp_id;\n\n  // Match CHECK PRODUCT_ID EXISTENCE where product_id === cp_id\n  const checkMatch = checkData.find(d => d.json.product_id === cpId);\n\n  // Match FORMATTING: SYSTEM ADS where catalogue_product_id === cp_id\n  const sysMatch = sysAdsData.find(d => d.json.catalogue_product_id === cpId);\n\n  // Only include if BOTH matches are found\n  if (checkMatch && sysMatch) {\n    const checkJson = checkMatch.json;\n    const sysJson = sysMatch.json;\n\n    results.push({\n      // From previousData (catalogue_products)\n      cp_id: prevJson.cp_id,\n      slug: prevJson.slug,\n      cp_table_source: prevJson.cp_table_source,\n\n      // From CHECK PRODUCT_ID EXISTENCE\n      cps_id: checkJson.id,                      // renamed from id\n      product_id: checkJson.product_id,\n      preferred: checkJson.preferred,\n      name: checkJson.name,\n      trailer_uid: checkJson.trailer_uid,\n      cps_table_source: checkJson.table_source,  // renamed from table_source\n      yt_trailer_uid: checkJson.yt_trailer_uid,\n\n      // From FORMATTING: SYSTEM ADS\n      sys_id: sysJson.id,                        // renamed from id\n      catalogue_product_id: sysJson.catalogue_product_id,\n      start_date: sysJson.start_date,\n      end_date: sysJson.end_date,\n      status: sysJson.status,\n      type: sysJson.type,\n      sys_table_source: sysJson.table_source,    // renamed from table_source\n    });\n  }\n}\n\nreturn results.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3904,
+        -1104
+      ],
+      "id": "f1be5ecf-3624-40cf-af19-1e0dc7d2e931",
+      "name": "GET DATA BY IDS",
+      "notes": "retrieve only the data if previous node, TRUE: CHECK PRODUCT_ID EXISTENCE, and FORMATTING: SYSTEM ADS has a matching id\n"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 794140272,
+          "mode": "list",
+          "cachedResultName": "Listing with Trailer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=794140272"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id": "={{ $json.product_id }}",
+            "game_name_with_trailer_on_the_listing": "={{ $json.name }}",
+            "madmin_product_link": "=https://madmin.keymailer.co/catalogue/products/{{ $json.product_id }}",
+            "ad_purchased": "={{ $json.type }}",
+            "ad_start_date": "={{ $json.start_date }}",
+            "ad_end_date": "={{ $json.end_date }}",
+            "youtube_link": "=https://www.keymailer.co/g/games/{{ $json.slug }}",
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name_with_trailer_on_the_listing",
+              "displayName": "game_name_with_trailer_on_the_listing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_purchased",
+              "displayName": "ad_purchased",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_link",
+              "displayName": "youtube_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5712,
+        -1088
+      ],
+      "id": "c71ee236-7346-40be-ae86-6c7096fb95ee",
+      "name": "APPEND: TRAILER THAT EXIST ON KM YT",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 794140272,
+          "mode": "list",
+          "cachedResultName": "Listing with Trailer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=794140272"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2672,
+        -1104
+      ],
+      "id": "fe0ab708-9af9-4147-bc4f-428c98e7a417",
+      "name": "GET LISTING WITH TRAILER",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cpSourcesData = $('FORMATTING: CP SOURCES').all();\nconst currentItems = $input.all();\n\nreturn currentItems.map(item => {\n  const ytTrailerUid = item.json.yt_trailer_uid;\n\n  // Find matching CP source entry by trailer_uid\n  const matchedCp = cpSourcesData.find(cp => cp.json.trailer_uid === ytTrailerUid);\n\n  if (matchedCp) {\n    return {\n      json: {\n      \n        // cp sources data\n        id: matchedCp.json.id,\n        product_id: matchedCp.json.product_id,\n        preferred: matchedCp.json.preferred,\n        name: matchedCp.json.name,\n        trailer_uid: matchedCp.json.trailer_uid,\n        table_source: matchedCp.json.table_source,\n        // Current node data second\n        yt_trailer_uid: item.json.yt_trailer_uid,\n        title: item.json.yt_title,\n        message: item.json.message,\n      }\n    };\n  }\n\n  // No match found, return current item as-is\n  return { json: item.json };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        -1104
+      ],
+      "id": "00aea2b3-3e18-4121-817c-032f53ec2956",
+      "name": "TRUE: GET MATCH DATA"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cpSourcesData = $('FORMATTING: CP SOURCES').all();\nconst currentItems = $input.all();\n\nreturn currentItems.map(item => {\n  const ytTrailerUid = item.json.yt_trailer_uid;\n\n  // Find matching CP source entry by trailer_uid\n  const matchedCp = cpSourcesData.find(cp => cp.json.trailer_uid === ytTrailerUid);\n\n  if (matchedCp) {\n    return {\n      json: {\n      \n        // cp sources data\n        id: matchedCp.json.id,\n        product_id: matchedCp.json.product_id,\n        preferred: matchedCp.json.preferred,\n        name: matchedCp.json.name,\n        description: matchedCp.json.description,\n        trailer_uid: matchedCp.json.trailer_uid,\n        table_source: matchedCp.json.table_source,\n        // Current node data second\n        yt_trailer_uid: item.json.yt_trailer_uid,\n        title: item.json.yt_title,\n        message: item.json.message,\n      }\n    };\n  }\n\n  // No match found, return current item as-is\n  return { json: item.json };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        -688
+      ],
+      "id": "f2187c48-e095-485a-8beb-4a63b1565204",
+      "name": "FALSE: GET MATCH DATA"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3312,
+        -688
+      ],
+      "id": "aad122e9-f472-474f-b363-4a15bf35f5b0",
+      "name": "FALSE: LOOPING",
+      "notes": "do not change the batch size"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2672,
+        -688
+      ],
+      "id": "ca8e2246-df81-423d-8b36-052c3885caab",
+      "name": "GET PENDING TRAILER",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (existing records)\nconst previousData = $input.all();\n\n// Get data from specific node\nconst falseMatchData = $('FALSE: GET MATCH DATA').all();\n\n// Extract product_ids from PREVIOUS NODE (these are the ones to exclude)\nconst previousItems = previousData.map(item => item.json);\n\n// Check if previous node returned empty/no real data\nconst hasPreviousData = previousItems.length > 0 && \n  !(previousItems.length === 1 && Object.keys(previousItems[0]).length === 0);\n\n// Build a Set of product_ids that already exist in previous node\nconst existingProductIds = new Set(\n  hasPreviousData\n    ? previousItems\n        .map(item => item.product_id)\n        .filter(id => id !== undefined && id !== null)\n    : []\n);\n\n// From FALSE: GET MATCH DATA, keep only items whose product_id is NOT in previous node\nconst filteredItems = falseMatchData\n  .map(item => item.json)\n  .filter(item => !existingProductIds.has(item.product_id));\n\n// Return filtered items in n8n format\nreturn filteredItems.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2992,
+        -688
+      ],
+      "id": "0d664740-8c78-4364-bebf-c96a42208392",
+      "name": "FALSE: CHECK PRODUCT_ID EXISTENCE",
+      "notes": "Check if the previous node’s product_id matches in FALSE: GET MATCH DATA product_id. If there is a match, it means it already exists; we only proceed if it does not exist yet."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (existing records)\nconst previousData = $input.all();\n\n// Get data from specific node\nconst falseMatchData = $('TRUE: GET MATCH DATA').all();\n\n// Extract product_ids from PREVIOUS NODE (these are the ones to exclude)\nconst previousItems = previousData.map(item => item.json);\n\n// Check if previous node returned empty/no real data\nconst hasPreviousData = previousItems.length > 0 && \n  !(previousItems.length === 1 && Object.keys(previousItems[0]).length === 0);\n\n// Build a Set of product_ids that already exist in previous node\nconst existingProductIds = new Set(\n  hasPreviousData\n    ? previousItems\n        .map(item => item.product_id)\n        .filter(id => id !== undefined && id !== null)\n    : []\n);\n\n// From FALSE: GET MATCH DATA, keep only items whose product_id is NOT in previous node\nconst filteredItems = falseMatchData\n  .map(item => item.json)\n  .filter(item => !existingProductIds.has(item.product_id));\n\n// Return filtered items in n8n format\nreturn filteredItems.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2992,
+        -1104
+      ],
+      "id": "9c19534c-c7fd-4168-ad5f-7ef15551f7a3",
+      "name": "TRUE: CHECK PRODUCT_ID EXISTENCE",
+      "notes": "Check if the previous node’s product_id matches in TRUE: GET MATCH DATA product_id. If there is a match, it means it already exists; we only proceed if it does not exist yet."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get raw AI output text\nconst rawOutput = $input.first().json.output;\n\n// Strip <think>...</think> block\nconst withoutThink = rawOutput.replace(/<think>[\\s\\S]*?<\\/think>/g, \"\").trim();\n\n// Remove surrounding quotes if any\nconst description = withoutThink.replace(/^\"+|\"+$/g, \"\").trim();\n\n// Return ONLY description\nreturn [\n  {\n    json: {\n      description\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5424,
+        -672
+      ],
+      "id": "6ea61788-608f-46a2-ba08-76d26c1a2f60",
+      "name": "CLEAN AI GENERATED DESCRIPTION"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (has description)\nconst previousData = $input.all();\n\n// Get data from FALSE: LOOPING node (has id, product_id, etc.)\nconst checkData = $('FALSE: LOOPING').all();\n\n// Map over checkData and append description from previousData\nreturn checkData.map((item, index) => {\n  return {\n    json: {\n      ...item.json,\n      description: previousData[index]?.json?.description || null,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5680,
+        -672
+      ],
+      "id": "35f25db0-62a3-47c9-a611-ff3f06055e98",
+      "name": "GET FALSE LOOPING DATA",
+      "notes": "append false looping data and description field"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (catalogue_products)\nconst previousData = $input.all();\n// Get data from FORMATTING: SYSTEM ADS node\nconst sysAdsData = $('FORMATTING: SYSTEM ADS').all();\n\n// Extract raw JSON from n8n items\nconst sysAdsItems = sysAdsData.map(item => item.json);\n\n// Build a lookup map for sysAds by catalogue_product_id for O(1) matching\nconst sysAdsMap = {};\nfor (const ad of sysAdsItems) {\n  sysAdsMap[ad.catalogue_product_id] = ad;\n}\n\nconst results = [];\n\nfor (const item of previousData) {\n  const p = item.json;\n  const matchedAd = sysAdsMap[p.product_id];\n\n  // Only include if there's a matching sys ad\n  if (!matchedAd) continue;\n\n  results.push({\n    json: {\n      // Previous node fields (renamed)\n      cps_id: p.id,\n      product_id: p.product_id,\n      preferred: p.preferred,\n      name: p.name,\n      trailer_uid: p.trailer_uid,\n      cps_table_source: p.table_source,\n      yt_trailer_uid: p.yt_trailer_uid,\n      yt_title: p.title,\n      ai_description: p.description,\n\n      // Sys ads fields (renamed)\n      sys_id: matchedAd.id,\n      catalogue_product_id: matchedAd.catalogue_product_id,\n      start_date: matchedAd.start_date,\n      end_date: matchedAd.end_date,\n      status: matchedAd.status,\n      type: matchedAd.type,\n      sys_table_source: matchedAd.table_source,\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5936,
+        -672
+      ],
+      "id": "faa6162a-daa9-4d75-900d-f1434cfdd025",
+      "name": "FALSE: GET DATA BY IDS",
+      "notes": "merge only if the product_id from previous node and system ads node is match, then, rename other field"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id": "={{ $json.product_id }}",
+            "game_name_without_trailer_on_the_listing": "={{ $json.name }}",
+            "madmin_product_link": "=https://madmin.keymailer.co/catalogue/products/{{ $json.product_id }}",
+            "ad_purchased": "={{ $json.type }}",
+            "ad_start_date": "={{ $json.start_date }}",
+            "ad_end_date": "={{ $json.end_date }}",
+            "generated_description": "={{ $json.ai_description }}",
+            "status": "pending",
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name_without_trailer_on_the_listing",
+              "displayName": "game_name_without_trailer_on_the_listing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_purchased",
+              "displayName": "ad_purchased",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generated_description",
+              "displayName": "generated_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7808,
+        -400
+      ],
+      "id": "970090ec-1b03-4117-abe4-914588c45f77",
+      "name": "APPEND: PENDING TRAILERS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        8032,
+        -400
+      ],
+      "id": "2256fb78-b7f0-492b-a005-fd438f1688ce",
+      "name": "WAIT 2 SEC",
+      "webhookId": "e50fcb9f-b196-4b22-bdcb-94ec4b5e8e3e"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "done"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        1728
+      ],
+      "id": "94055fe8-09ee-4190-aee8-7b6cb919a6d1",
+      "name": "CROSS REF: GET PENDING TRAILERS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "Retrieve the data if the status is done"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "4558b4a2-ec71-4131-aac9-65a6dc9ca224",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        448,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "20b20beb-d99f-45ee-8c90-3013775a40e7",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "478a0cfd-32b9-4ee7-af48-d77fbe499e57",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 496,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        448,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "d58024eb-85e4-4e86-859d-d5049943e6e1",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        976,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "130f09ca-eafa-4e53-96a1-03959d781513",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1296,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "accddb97-dd9d-4b5e-8e55-e51ec8ea27a4",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1616,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "c385f7dc-1eaf-430d-9a51-14c2b032bb19",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1936,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "ecae0ff7-87d6-4dc6-9907-12b0ab8042cb",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "f9b6a2d3-ee2f-449e-a76f-86bfb7b6347b",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1936,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "606bb38a-e7ac-4435-a5a0-ab66119044f8",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "2d386599-7b76-4dbc-8748-7fad51c0f393",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2576,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "9436d9d1-16a4-4281-85ab-7d5cd65b194c",
+      "name": "Sticky Note49"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2896,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "8adf7111-2b53-408a-93e7-de5827ef30a0",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3216,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "0683bae1-b922-41f3-bb1a-46e81373b365",
+      "name": "Sticky Note50"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 440,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4976,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "a739fc59-f20a-457c-b646-0c693da083ba",
+      "name": "Sticky Note51"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 768,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5344,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "1e602773-6ee0-4f66-b84e-f142315cbde2",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 244,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7744,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "c1c62439-cb04-4e43-8290-2b0e16a1688a",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "# Video trailer that does not exist yet on the KM YouTube channel",
+        "height": 80,
+        "width": 2400,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        -880
+      ],
+      "typeVersion": 1,
+      "id": "98de9048-f2bb-4a54-a56c-2dbdc75be9aa",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "d61a5ea2-aa8b-48f2-8732-c7d7b09bc5c1",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2576,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "0ac627a9-b20d-4001-a64f-4d463aac43fd",
+      "name": "Sticky Note52"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2896,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "a8bedd47-fe00-4c94-8c96-e8a00512a4e2",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3216,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "2702f818-171d-4414-99bb-ea70e4c22a8e",
+      "name": "Sticky Note53"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3536,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "14576118-128f-47ae-8bc5-d8607970bafc",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5600,
+        -1168
+      ],
+      "typeVersion": 1,
+      "id": "114bd8d8-2486-4502-8dc3-b879379c726d",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "# Video trailer that exist on the KM YouTube channel",
+        "height": 80,
+        "width": 2160,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        -1312
+      ],
+      "typeVersion": 1,
+      "id": "d5797993-1ec3-452b-8e9b-99145a28e01c",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "## Trailer Ad Purchase Checker\n\n**Purpose:**\n- The purpose of this automation is to retrieve active running ads and check whether they have a video trailer ad. If a trailer exists, it will verify if it has already been posted on the KM YouTube channel. If it has already been posted, no action will be taken. If it has not been posted yet, the system will generate a description of the product.\n",
+        "height": 240,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "9d474dfc-7aa6-448d-8c58-0767d9c55a93",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "a435e776-8344-42d0-a127-d59fdce58436",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "04792eec-5496-47f2-8bee-de7a9ef6b1a5",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?gid=0#gid=0\n\n\n",
+        "height": 136,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "f0ec257e-f065-47b4-99d7-6a39957e63de",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run every weekday only, twice a day:\n- 8:00 AM UK time\n- 1:00 PM UK time\n\n  \n- Retrieve data from the madmin.system_ads table and check if the status is \"accepted\" and active.\n\n- Retrieve data from madmin.catalogue_product_source to get the product ID, name, and trailer UID.\n\n- Check if the trailer UID exists on the KM YouTube channel. If it exists, store it in \"listing with trailer\" and retrieve the slug from madmin.catalogue_product.\n\n- If it does not exist, generate a description using Ollama AI, then save it to \"pending trailers\".",
+        "height": 404,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "8139afff-663d-4c29-bf8a-7d4a5e0c0ab1",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 8,13 * * 1-5"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        -128
+      ],
+      "id": "8dc703f7-0c4d-4afe-8ed7-f93a4c582ca8",
+      "name": "TRIGGER 1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 20,21 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        1728
+      ],
+      "id": "0c93e832-b811-4e42-8874-a9085b192faf",
+      "name": "TRIGGER 2"
+    },
+    {
+      "parameters": {
+        "content": "## Trailer Ad Purchase Checker - Cross References\n\n**Purpose:**\n- The purpose of this automation is to check the status of pending trailers. If the status is set to \"done,\" the data will be transferred to the \"listing with trailer\" section, and the corresponding entry will be deleted from \"pending trailers.\"\n",
+        "height": 224,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "955bcb2e-6d8d-450f-8a41-287b43228bdb",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?gid=0#gid=0\n\n\n",
+        "height": 136,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        1904
+      ],
+      "typeVersion": 1,
+      "id": "f2c28434-790d-407c-bc2b-56b2a3c27fcf",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run everyday, twice a day:\n- 8:00 PM UK time\n- 9:00 PM UK time\n\n- Get the data from \"Pending Trailers\" only if the status is \"done\" .\n\n- Retrieve data from madmin.catalogue_product to get the slug.\n\n- Check if the product ID already exist in \"Listing with Trailer\". if it does, delete the data from Pending Trailers.\n\n- If it does not exist, transfer the data from \"Pending Trailers\" to \"Listing with Trailer\", then delete the data from \" Pending Trailers\" after the transfer.\n  ",
+        "height": 388,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        2064
+      ],
+      "typeVersion": 1,
+      "id": "df6c0364-74a7-44e4-920b-1f34bb8c31ea",
+      "name": "Sticky Note57"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT\n    cp.id                               AS product_id,\n    po.id                               AS publisher_organisation_id,\n    po.name                             AS publisher_organisation_name,\n    po.segment_id                       AS publisher_organisation_segment_id\n\nFROM public.catalogue_products cp\n\nINNER JOIN public.catalogue_product_meta_data cpmd\n    ON cp.id = cpmd.product_id\n\nINNER JOIN public.catalogue_meta_data cmd\n    ON cpmd.meta_data_id = cmd.id\n\nINNER JOIN public.publisher_organisations po\n    ON cmd.publisher_organisation_id = po.id\n\nWHERE cp.id = $1\n  AND po.active = true;",
+        "options": {
+          "queryReplacement": "={{ $json.product_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4192,
+        -1104
+      ],
+      "id": "71f78934-0fd8-42dd-bf8d-f90aef286a23",
+      "name": "MADMIN: PUBLISHER ORGANISATION",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "get the publisher using product id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a3204541-b864-4f04-85d2-1a7deb667352",
+              "leftValue": "={{ $json.publisher_organisation_segment_id }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4832,
+        -1104
+      ],
+      "id": "e8b4e0ab-73fd-483a-ae1c-15ae8abe9f84",
+      "name": "CHECK IF SEGMENT IS 1. MEANING ITS INDIE",
+      "notes": "1 - Indie\n2 - Studio\n4 - Publisher\n5 - Enterprise\n6 - Quote only"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869268677,
+          "mode": "list",
+          "cachedResultName": "Do not Publish",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=1869268677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id": "={{ $json.product_id }}",
+            "game_name": "={{ $json.name }}",
+            "madmin_product_link": "=https://madmin.keymailer.co/catalogue/products/{{ $json.product_id }}",
+            "ad_purchase": "={{ $json.type }}",
+            "ad_start_date": "={{ $json.start_date }}",
+            "ad_end_date": "={{ $json.end_date }}",
+            "youtube_link": "=https://youtu.be/{{ $json.trailer_uid }}",
+            "exist_on_km_yt": "true",
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_purchase",
+              "displayName": "ad_purchase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_link",
+              "displayName": "youtube_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generated_description",
+              "displayName": "generated_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "exist_on_km_yt",
+              "displayName": "exist_on_km_yt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6368,
+        -1376
+      ],
+      "id": "3894fe37-8e31-4593-9a6d-f549be6a7185",
+      "name": "APPEND: DO NOT PUBLISH",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869268677,
+          "mode": "list",
+          "cachedResultName": "Do not Publish",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=1869268677"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5472,
+        -1376
+      ],
+      "id": "f48360a8-8ced-48e8-8bb4-ed3044ee729a",
+      "name": "GET DO NOT PUBLISH DATA",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (existing records)\nconst previousData = $input.all();\n\n// Get data from specific node\nconst falseMatchData = $('INDIE: GET PREVIOUS DATA').all();\n\n// Extract product_ids from PREVIOUS NODE (these are the ones to exclude)\nconst previousItems = previousData.map(item => item.json);\n\n// Check if previous node returned empty/no real data\nconst hasPreviousData = previousItems.length > 0 && \n  !(previousItems.length === 1 && Object.keys(previousItems[0]).length === 0);\n\n// Build a Set of product_ids that already exist in previous node\nconst existingProductIds = new Set(\n  hasPreviousData\n    ? previousItems\n        .map(item => item.product_id)\n        .filter(id => id !== undefined && id !== null)\n    : []\n);\n\n// From FALSE: GET MATCH DATA, keep only items whose product_id is NOT in previous node\nconst filteredItems = falseMatchData\n  .map(item => item.json)\n  .filter(item => !existingProductIds.has(item.product_id));\n\n// Return filtered items in n8n format\nreturn filteredItems.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5792,
+        -1376
+      ],
+      "id": "ba30fbb6-2d66-437b-9b78-db4a3e5fc78d",
+      "name": "REMOVE MATCHING PRODUCT ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (publisher info)\nconst publisherData = $input.all().map(item => item.json);\n\n// Get \"GET DATA BY IDS\" node data (the ad/catalogue data)\nconst catalogueData = $('GET DATA BY IDS').all().map(item => item.json);\n\n// Build a lookup map from publisher data: product_id -> publisher info\nconst publisherMap = {};\nfor (const pub of publisherData) {\n  publisherMap[pub.product_id] = {\n    publisher_organisation_id: pub.publisher_organisation_id,\n    publisher_organisation_name: pub.publisher_organisation_name,\n    publisher_organisation_segment_id: pub.publisher_organisation_segment_id,\n  };\n}\n\n// Merge: for each catalogue item, find matching publisher by cp_id === product_id\nconst merged = catalogueData\n  .map(cat => {\n    const publisher = publisherMap[cat.cp_id];\n    if (!publisher) return null; // skip if no match\n\n    return {\n      ...cat,\n      publisher_organisation_id: publisher.publisher_organisation_id,\n      publisher_organisation_name: publisher.publisher_organisation_name,\n      publisher_organisation_segment_id: publisher.publisher_organisation_segment_id,\n      po_table_source: \"publisher_organisations\",\n    };\n  })\n  .filter(Boolean); // remove nulls\n\n// Return as n8n items\nreturn merged.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6048,
+        -1376
+      ],
+      "id": "ed870bd4-3e4b-4cdc-9754-0fb3c3cb53b9",
+      "name": "MERGE OUTPUT FORMATTING"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (publisher info)\nconst publisherData = $input.all().map(item => item.json);\n\n// Get \"GET DATA BY IDS\" node data (the ad/catalogue data)\nconst catalogueData = $('GET DATA BY IDS').all().map(item => item.json);\n\n// Build a lookup map from publisher data: product_id -> publisher info\nconst publisherMap = {};\nfor (const pub of publisherData) {\n  publisherMap[pub.product_id] = {\n    publisher_organisation_id: pub.publisher_organisation_id,\n    publisher_organisation_name: pub.publisher_organisation_name,\n    publisher_organisation_segment_id: pub.publisher_organisation_segment_id,\n  };\n}\n\n// Merge: for each catalogue item, find matching publisher by cp_id === product_id\nconst merged = catalogueData\n  .map(cat => {\n    const publisher = publisherMap[cat.cp_id];\n    if (!publisher) return null; // skip if no match\n\n    return {\n      ...cat,\n      publisher_organisation_id: publisher.publisher_organisation_id,\n      publisher_organisation_name: publisher.publisher_organisation_name,\n      publisher_organisation_segment_id: publisher.publisher_organisation_segment_id,\n      po_table_source: \"publisher_organisations\",\n    };\n  })\n  .filter(Boolean); // remove nulls\n\n// Return as n8n items\nreturn merged.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5424,
+        -1088
+      ],
+      "id": "eee3e738-faf5-4dbe-83c5-6b55ff8534be",
+      "name": "MERGE OUTPUT FORMATTING. "
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4096,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "e493ff65-ad65-49e9-9403-a55bb002b8ce",
+      "name": "Sticky Note58"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4736,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "31027284-3dde-4d02-a62a-325b8fcbfe21",
+      "name": "Sticky Note59"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5056,
+        -1168
+      ],
+      "typeVersion": 1,
+      "id": "bc758b5a-1b8c-42c3-9c21-e22392881d87",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5056,
+        -1456
+      ],
+      "typeVersion": 1,
+      "id": "c7d4524e-7e92-4ea3-9054-82ba6b3762a3",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => ({ json: item.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5152,
+        -1088
+      ],
+      "id": "b7f9449b-ce99-472f-bcc9-81fccc4f5152",
+      "name": "NOT INDIE: GET PREVIOUS DATA"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "product_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        4512,
+        -1104
+      ],
+      "id": "121bc116-5a0c-4729-8ad2-9a72b3284d18",
+      "name": "REMOVE DUPLICATE PRODUCT_ID"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4416,
+        -1200
+      ],
+      "typeVersion": 1,
+      "id": "d5b5bf2b-c3d6-4872-a148-f0688b73e03b",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => ({ json: item.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5152,
+        -1376
+      ],
+      "id": "326b92a8-e055-49a0-a788-515ca8564353",
+      "name": "INDIE: GET PREVIOUS DATA"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5376,
+        -1456
+      ],
+      "typeVersion": 1,
+      "id": "5d4aee97-508f-4032-8993-9f9a46d5e255",
+      "name": "Sticky Note60"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5696,
+        -1456
+      ],
+      "typeVersion": 1,
+      "id": "5000eaad-6a3c-4cb8-a9b4-a3e9067298b1",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6256,
+        -1456
+      ],
+      "typeVersion": 1,
+      "id": "89944001-f20c-46d9-82a3-15abd5f45716",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT\n    cp.id                               AS product_id,\n    po.id                               AS publisher_organisation_id,\n    po.name                             AS publisher_organisation_name,\n    po.segment_id                       AS publisher_organisation_segment_id\n\nFROM public.catalogue_products cp\n\nINNER JOIN public.catalogue_product_meta_data cpmd\n    ON cp.id = cpmd.product_id\n\nINNER JOIN public.catalogue_meta_data cmd\n    ON cpmd.meta_data_id = cmd.id\n\nINNER JOIN public.publisher_organisations po\n    ON cmd.publisher_organisation_id = po.id\n\nWHERE cp.id = $1\n  AND po.active = true;",
+        "options": {
+          "queryReplacement": "={{ $json.product_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6240,
+        -672
+      ],
+      "id": "d0fc1979-5f4b-4a66-a57f-36bc04e1c830",
+      "name": "MADMIN: PUBLISHER ORGANISATION.",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "get the publisher using product id"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "product_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        6560,
+        -672
+      ],
+      "id": "acc280f8-4fe5-4c1c-8de2-822115bc6fe5",
+      "name": "REMOVE DUPLICATE PRODUCT_ID."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a3204541-b864-4f04-85d2-1a7deb667352",
+              "leftValue": "={{ $json.publisher_organisation_segment_id }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6880,
+        -672
+      ],
+      "id": "97320eb0-4590-4483-a35b-da55bb7fc2ac",
+      "name": "CHECK IF SEGMENT IS 1. MEANING ITS INDIE.",
+      "notes": "1 - Indie\n2 - Studio\n4 - Publisher\n5 - Enterprise\n6 - Quote only"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => ({ json: item.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7200,
+        -400
+      ],
+      "id": "02b9cdf8-34bd-440c-8d49-d83aa2688d24",
+      "name": "NOT INDIE: GET PREVIOUS DATA."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (publisher info)\nconst publisherData = $input.all().map(item => item.json);\n\n// Get \"GET DATA BY IDS\" node data (the ad/catalogue data)\nconst catalogueData = $('FALSE: GET DATA BY IDS').all().map(item => item.json);\n\n// Build a lookup map from publisher data: product_id -> publisher info\nconst publisherMap = {};\nfor (const pub of publisherData) {\n  publisherMap[pub.product_id] = {\n    publisher_organisation_id: pub.publisher_organisation_id,\n    publisher_organisation_name: pub.publisher_organisation_name,\n    publisher_organisation_segment_id: pub.publisher_organisation_segment_id,\n  };\n}\n\n// Merge: for each catalogue item, find matching publisher by product_id === product_id\nconst merged = catalogueData\n  .map(cat => {\n    const publisher = publisherMap[cat.product_id];\n    if (!publisher) return null; // skip if no match\n\n    return {\n      ...cat,\n      publisher_organisation_id: publisher.publisher_organisation_id,\n      publisher_organisation_name: publisher.publisher_organisation_name,\n      publisher_organisation_segment_id: publisher.publisher_organisation_segment_id,\n      po_table_source: \"publisher_organisations\",\n    };\n  })\n  .filter(Boolean); // remove nulls\n\n// Return as n8n items\nreturn merged.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7520,
+        -400
+      ],
+      "id": "a1ae719b-96f4-4e45-af9d-89c9e7c23d27",
+      "name": "MERGE OUTPUT FORMATTING.."
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => ({ json: item.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7200,
+        -688
+      ],
+      "id": "c4678b1d-cd90-49d0-9044-7fec9b73bf69",
+      "name": "INDIE: GET PREVIOUS DATA."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869268677,
+          "mode": "list",
+          "cachedResultName": "Do not Publish",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=1869268677"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "product_id",
+              "lookupValue": "={{ $json.product_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7520,
+        -688
+      ],
+      "id": "0926e33f-44fc-4592-b5ba-46e5df243eaf",
+      "name": "GET DO NOT PUBLISH DATA.",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (publisher info)\nconst publisherData = $input.all().map(item => item.json);\n\n// Get \"GET DATA BY IDS\" node data (the ad/catalogue data)\nconst catalogueData = $('FALSE: GET DATA BY IDS').all().map(item => item.json);\n\n// Build a lookup map from publisher data: product_id -> publisher info\nconst publisherMap = {};\nfor (const pub of publisherData) {\n  publisherMap[pub.product_id] = {\n    publisher_organisation_id: pub.publisher_organisation_id,\n    publisher_organisation_name: pub.publisher_organisation_name,\n    publisher_organisation_segment_id: pub.publisher_organisation_segment_id,\n  };\n}\n\n// Merge: for each catalogue item, find matching publisher by product_id === product_id\nconst merged = catalogueData\n  .map(cat => {\n    const publisher = publisherMap[cat.product_id];\n    if (!publisher) return null; // skip if no match\n\n    return {\n      ...cat,\n      publisher_organisation_id: publisher.publisher_organisation_id,\n      publisher_organisation_name: publisher.publisher_organisation_name,\n      publisher_organisation_segment_id: publisher.publisher_organisation_segment_id,\n      po_table_source: \"publisher_organisations\",\n    };\n  })\n  .filter(Boolean); // remove nulls\n\n// Return as n8n items\nreturn merged.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8512,
+        -672
+      ],
+      "id": "44a906e1-6510-4ab9-a2a3-da9e222217d7",
+      "name": "MERGE OUTPUT FORMATTING..."
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        9040,
+        -672
+      ],
+      "id": "0f46ee1c-55b8-41a7-b7ea-93b9ac1c303b",
+      "name": "WAIT 2 SEC.",
+      "webhookId": "e50fcb9f-b196-4b22-bdcb-94ec4b5e8e3e"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869268677,
+          "mode": "list",
+          "cachedResultName": "Do not Publish",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=1869268677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id": "={{ $json.product_id }}",
+            "game_name": "={{ $json.name }}",
+            "madmin_product_link": "=https://madmin.keymailer.co/catalogue/products/{{ $json.product_id }}",
+            "ad_purchase": "={{ $json.type }}",
+            "ad_start_date": "={{ $json.start_date }}",
+            "ad_end_date": "={{ $json.end_date }}",
+            "exist_on_km_yt": "false",
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}",
+            "generated_description": "={{ $json.ai_description }}",
+            "youtube_link": "=https://youtu.be/{{ $json.trailer_uid }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_purchase",
+              "displayName": "ad_purchase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_link",
+              "displayName": "youtube_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generated_description",
+              "displayName": "generated_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exist_on_km_yt",
+              "displayName": "exist_on_km_yt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        8800,
+        -672
+      ],
+      "id": "c3d60a3f-9f42-41f3-ab24-a90fbdc3ee7b",
+      "name": "APPEND: DO NOT PUBLISH.",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6144,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "20a6a7cb-aa36-46ab-8db9-a997c7fc5a6a",
+      "name": "Sticky Note61"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6464,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "7a6d3ab7-8562-464f-a5b3-0bc1f9d40593",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6784,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "ba431d4e-4b46-44d3-b85c-4b85019b1838",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7104,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "af4b3692-49ee-4997-a2f7-c7a54ed0811b",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7424,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "d8d03356-24e9-46f2-ab2f-ce30943f305d",
+      "name": "Sticky Note63"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 304,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7744,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "1e0aadc6-ff1c-4edc-8285-8e2389c27d66",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8736,
+        -752
+      ],
+      "typeVersion": 1,
+      "id": "9cc26816-f8c6-4fe6-8344-450b2ea3ab9a",
+      "name": "Sticky Note64"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 608,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7104,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "3fee9c7c-df87-42de-a99a-885e25729616",
+      "name": "Sticky Note65"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        3456
+      ],
+      "typeVersion": 1,
+      "id": "fa63bdda-ac58-4aa9-9167-954339494b94",
+      "name": "Sticky Note71"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "do_not_publish"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        3536
+      ],
+      "id": "c047ce43-a60c-4844-b408-09671f1dce10",
+      "name": "CROSS REF: GET PENDING TRAILERS - DO NOT PUBLISH",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "Retrieve the data if the status is done"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, product_id, preferred, name, trailer_uid\nFROM public.catalogue_product_sources\nWHERE product_id = {{ $json.product_id }}\n  AND preferred = true\n  AND trailer_uid IS NOT NULL\n  AND trailer_uid <> '';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2144,
+        3856
+      ],
+      "id": "72e446f2-5044-4613-a751-90e407118ef1",
+      "name": "CF DNP: MADMIN CPS",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "retrieve the data from catalogue_product_sources table only the selected field(id, product_id, preffered, name, trailer_uid)\n\nretrieve only if the catalogue_product_id is match with produc_id of cps\n\nreturn only if preferred is TRUE(make sure to always get preferred true)\nreturn only if trailer_uid is not null (not all product_Id has a video trailer)\nreturn only if trailer_uid is not empty string (sometimes the output is null or ' ' )"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        544,
+        3536
+      ],
+      "id": "3caf5082-e0dc-4cc5-b9d1-225f50cf53d2",
+      "name": "CROSS REF DNP: LOOP",
+      "notes": "keep it batch size 1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const rawTrailerUid = item.json.trailer_uid || \"\";\n  const cleanTrailerUid = rawTrailerUid.split(\"?\")[0];\n\n  return {\n    json: {\n      ...item.json,\n      trailer_uid: cleanTrailerUid,\n      table_source: \"catalogue_product_sources\",\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        3856
+      ],
+      "id": "f8996588-0c27-41a8-8d90-5bc6ec7c0467",
+      "name": "CF DNP: CP FORMATTING OUTPUT",
+      "notes": "clean the trailer_uid (11 char is valid yt id)\nadd table source"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869268677,
+          "mode": "list",
+          "cachedResultName": "Do not Publish",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=1869268677"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "product_id",
+              "lookupValue": "={{ $json.product_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        3840
+      ],
+      "id": "8dfe0801-c40e-4bbb-9399-ddfd73d1c522",
+      "name": "GET DNP DATA",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const currentItem = $input.first().json;\nconst hasData = currentItem && Object.keys(currentItem).length > 0;\n\nconst crossRefItem = $('CF DNP: LOOP PREV DATA').first().json;\n\nreturn {\n  json: {\n    ...crossRefItem,\n    hasExist: hasData\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        3840
+      ],
+      "id": "95b3e3d6-a875-4d65-b998-67368e3bb29e",
+      "name": "CHECK IF PRODUCT ID EXIST"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a6398f87-9fb8-4f53-996e-3aa94ae8fad1",
+              "leftValue": "={{ $json.hasExist }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1824,
+        3840
+      ],
+      "id": "f1533cf8-56a2-4ac0-9cdb-9966dfc34c3b",
+      "name": "CHECK HASEXIST FIELD"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "product_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2464,
+        4112
+      ],
+      "id": "06d1c83b-7239-4ddb-8f1b-e065623c55ad",
+      "name": "MERGE MATCHES PRODUCT ID"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1869268677,
+          "mode": "list",
+          "cachedResultName": "Do not Publish",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=1869268677"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id": "={{ $json.product_id }}",
+            "game_name": "={{ $json.name }}",
+            "exist_on_km_yt": "false",
+            "generated_description": "={{ $json.generated_description }}",
+            "ad_purchase": "={{ $json.ad_purchased }}",
+            "ad_start_date": "={{ $json.ad_start_date }}",
+            "ad_end_date": "={{ $json.ad_end_date }}",
+            "madmin_product_link": "={{ $json.madmin_product_link }}",
+            "youtube_link": "=https://youtu.be/{{ $json.trailer_uid }}",
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_purchase",
+              "displayName": "ad_purchase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_link",
+              "displayName": "youtube_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generated_description",
+              "displayName": "generated_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "exist_on_km_yt",
+              "displayName": "exist_on_km_yt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2768,
+        4112
+      ],
+      "id": "a1757264-5f7c-42eb-be7c-d327ce41ab49",
+      "name": "APPEND: DNP",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "product_id": "={{ $json.product_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2784,
+        4400
+      ],
+      "id": "9ace2e0b-418e-4340-834f-5e91282e84a1",
+      "name": "CF DNP: INSERT DATA IN DATA TABLE"
+    },
+    {
+      "parameters": {
+        "amount": 4
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2992,
+        4112
+      ],
+      "id": "06a834bb-14cc-4373-b1a8-8b13d079ffdb",
+      "name": "DNP: WAIT 4 SEC",
+      "webhookId": "118dfa92-949f-409f-b74a-e2673083a5c3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "matchType": "allConditions",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        864,
+        3520
+      ],
+      "id": "34ffd8e9-0d12-4bf4-a812-c350e1997ead",
+      "name": "CF DNP: GET ALL ROW FROM DATA TABLE"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        3520
+      ],
+      "id": "451799f5-0698-42bf-b4da-a10d50b13b81",
+      "name": "CF DNP: REMOVE DUPLICATE"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node\nconst previousNode = $input.all();\n\n// Get data from CROSS REF node\nconst pendingTrailer = $('CROSS REF: GET PENDING TRAILERS - DO NOT PUBLISH').all();\n\n// Create a Set of product_ids from CROSS REF node\nconst trailerProductIds = new Set(\n  pendingTrailer.map(item => item.json.product_id)\n);\n\n// Return previous node data with match flag\nreturn previousNode.map(item => {\n  return {\n    json: {\n      ...item.json,\n      match_product_id: trailerProductIds.has(item.json.product_id)\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        3520
+      ],
+      "id": "413c640a-42f9-42d4-bb19-97a835657559",
+      "name": "CF DNP: MATCHING PRODUCT_ID",
+      "notes": "check if the product_id from previous node is match with the 'CROSS REF: GET PENDING TRAILERS ' product_id"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1648,
+        3152
+      ],
+      "typeVersion": 1,
+      "id": "ea6d216f-c6ff-4360-abef-d8702dfb95f2",
+      "name": "Sticky Note70"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 80,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1968,
+        3136
+      ],
+      "typeVersion": 1,
+      "id": "0224faaa-865b-43e8-84fb-eb16c44093c8",
+      "name": "Sticky Note72"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2288,
+        3152
+      ],
+      "typeVersion": 1,
+      "id": "3c4d846a-2d6b-4418-abd0-80b8237ac8f3",
+      "name": "Sticky Note73"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "row_number",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        3232
+      ],
+      "id": "33c773af-280b-46fd-b598-695deffe6036",
+      "name": "CF DNP: SORT ROW_NUMBER BY DESC",
+      "notes": "We sort the rows in descending order to solve the delete row issue in Google Sheets. If we sort in ascending order, it removes the smaller row number first, which causes the row indices to shift.\n\nFor example, if we delete row numbers 1 and 6:\n\nIf we delete row 1 first, row 6 becomes row 5, since the rows shift up.\nWe are not dynamically updating the row numbers, so this causes issues.\n\nInstead, we delete in descending order:\n\nDelete row 6 first, then row 1.\nThis way, row 1 remains unchanged when row 6 is deleted."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2064,
+        3232
+      ],
+      "id": "5e8fb524-00e8-4dba-83a6-00da50e38910",
+      "name": "CF DNP: LOOP"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "startIndex": "={{ $json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        3248
+      ],
+      "id": "9214aace-eeb5-42e4-b9fc-e73094e4c5d4",
+      "name": "CF DNP: DELETE ROW IN PENDING TRAILERS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1744,
+        3520
+      ],
+      "id": "5f305039-de37-49f5-8f3f-e9f7c7e622bd",
+      "name": "CF DNP: DELETE ROW BY ROW_NUMBER"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        4320
+      ],
+      "id": "ab4036d9-0e09-47fd-a16e-f0b22738a13b",
+      "name": "TRUE: WAIT 2 SEC",
+      "webhookId": "872d75da-eb33-4d1a-8936-ab0233f53c7a"
+    },
+    {
+      "parameters": {
+        "content": "## Trailer Ad Purchase Checker - Cross References DNP\n\n**Purpose:**\n- The purpose of this automation is to check the status of pending trailers. If the status is set to \"do_not_publish,\" the data will be transferred to the \"Do not Publish\" section, and the corresponding entry will be deleted from \"pending trailers.\"\n",
+        "height": 256,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        3456
+      ],
+      "typeVersion": 1,
+      "id": "b0906c66-0220-47b7-b234-c0f1f45a81ca",
+      "name": "Sticky Note74"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        3456
+      ],
+      "typeVersion": 1,
+      "id": "9369a6b2-b3f0-476c-9610-c3e880b2fa76",
+      "name": "Sticky Note75"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 80,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        448,
+        3440
+      ],
+      "typeVersion": 1,
+      "id": "22eac71d-27f1-4ef4-a854-17d2080092f8",
+      "name": "Sticky Note76"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        3440
+      ],
+      "typeVersion": 1,
+      "id": "5b7f43db-2baa-431b-be63-4f2d05769361",
+      "name": "Sticky Note78"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 80,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1648,
+        3424
+      ],
+      "typeVersion": 1,
+      "id": "fe907b06-9927-4354-bf5c-f307f627be8b",
+      "name": "Sticky Note79"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "7fbec216-bde3-4fd4-a84b-f5a2ea0c2272",
+      "name": "Sticky Note80"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 80,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1728,
+        3744
+      ],
+      "typeVersion": 1,
+      "id": "fb482a1f-a093-4c82-9fab-49eb70fbe93c",
+      "name": "Sticky Note81"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 80,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2048,
+        3744
+      ],
+      "typeVersion": 1,
+      "id": "0c7e7a59-6f9f-4022-8e07-ca02bc76237e",
+      "name": "Sticky Note82"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 624,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2368,
+        3744
+      ],
+      "typeVersion": 1,
+      "id": "7fecd7b2-6d89-4610-95a2-84658892f763",
+      "name": "Sticky Note83"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2688,
+        4016
+      ],
+      "typeVersion": 1,
+      "id": "72f998d2-c769-4ed0-8eb6-5e08cc822e77",
+      "name": "Sticky Note84"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 288,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2688,
+        4320
+      ],
+      "typeVersion": 1,
+      "id": "29fc3a17-aab6-448e-bc1e-39cb2e21c772",
+      "name": "Sticky Note85"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "product_id": "={{ $json.product_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        4096
+      ],
+      "id": "2c0e3da0-3f7c-4613-b480-8c84c5da3223",
+      "name": "CF DNP: INSERT DATA IN DATA TABLE."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        528,
+        1728
+      ],
+      "id": "dc59a4b6-0991-4ba7-a107-3f9fa6b45748",
+      "name": "CF: LOOP",
+      "notes": "keep it batch size 1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 794140272,
+          "mode": "list",
+          "cachedResultName": "Listing with Trailer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=794140272"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "product_id",
+              "lookupValue": "={{ $json.product_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        1744
+      ],
+      "id": "20254303-5ca7-4eef-9f6a-bc826b80f1c2",
+      "name": "CF: GET LISTING WITH TRAILER",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const currentItem = $input.first().json;\nconst hasData = currentItem && Object.keys(currentItem).length > 0;\n\nconst crossRefItem = $('CF: LOOP PREV DATA').first().json;\n\nreturn {\n  json: {\n    ...crossRefItem,\n    hasExist: hasData\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        1744
+      ],
+      "id": "14279d5a-8a91-4a52-894b-e8b53eef9f18",
+      "name": "CF: CHECK IF PRODUCT ID EXIST"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a6398f87-9fb8-4f53-996e-3aa94ae8fad1",
+              "leftValue": "={{ $json.hasExist }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1808,
+        1744
+      ],
+      "id": "e6bfc868-58e2-4080-87a5-ebf3c26188de",
+      "name": "CF: CHECK HASEXIST FIELD"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "product_id": "={{ $json.product_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1536,
+        2032
+      ],
+      "id": "e556ffbc-3728-4ac0-bb02-ce5e56007f86",
+      "name": "CF: INSERT DATA IN DATA TABLE"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        2032
+      ],
+      "id": "3075d42d-d012-44b3-93de-a2d70b78bff0",
+      "name": "CF: WAIT 2 SEC",
+      "webhookId": "872d75da-eb33-4d1a-8936-ab0233f53c7a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, product_id, preferred, name, trailer_uid\nFROM public.catalogue_product_sources\nWHERE product_id = {{ $json.product_id }}\n  AND preferred = true\n  AND trailer_uid IS NOT NULL\n  AND trailer_uid <> '';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2144,
+        1760
+      ],
+      "id": "8b27b1cf-bc00-4c29-9063-e0f2396c6c80",
+      "name": "CF: MADMIN CPS",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "retrieve the data from catalogue_product_sources table only the selected field(id, product_id, preffered, name, trailer_uid)\n\nretrieve only if the catalogue_product_id is match with produc_id of cps\n\nreturn only if preferred is TRUE(make sure to always get preferred true)\nreturn only if trailer_uid is not null (not all product_Id has a video trailer)\nreturn only if trailer_uid is not empty string (sometimes the output is null or ' ' )"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const rawTrailerUid = item.json.trailer_uid || \"\";\n  const cleanTrailerUid = rawTrailerUid.split(\"?\")[0];\n\n  return {\n    json: {\n      ...item.json,\n      trailer_uid: cleanTrailerUid,\n      table_source: \"catalogue_product_sources\",\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        1760
+      ],
+      "id": "8c03c18d-c145-43e4-9d51-9291c26c659e",
+      "name": "CF: CP FORMATTING OUTPUT",
+      "notes": "clean the trailer_uid (11 char is valid yt id)\nadd table source"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "get",
+        "videoId": "={{ $json.trailer_uid }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        1760
+      ],
+      "id": "4963c1d3-6d09-4fc9-8b3a-7e39ed42b61f",
+      "name": "CF: GET YT VID BY TRAILER UID",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "L3nuPjdrJiQamOpM",
+          "name": "n8n-justin-youtube-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst TARGET_CHANNEL_ID = \"UCNaXVVdiW4ksPAtFKv8SdrA\";\n\nreturn items.map(item => {\n  const video = item.json;\n  const channelId = video.snippet?.channelId;\n  const isKeymailer = channelId === TARGET_CHANNEL_ID;\n\n  if (isKeymailer) {\n    return {\n      json: {\n        yt_trailer_uid: video.id,\n        hasYoutubeTrailerOnKM: true\n      }\n    };\n  } else {\n    return {\n      json: {\n        yt_trailer_uid: video.id,\n        yt_title: video.snippet?.title,\n        hasYoutubeTrailerOnKM: false\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3296,
+        1760
+      ],
+      "id": "f1048ffe-b4f2-4d61-899a-fd1cb89a50f3",
+      "name": "CF: IDENTIFY IF VIDEO EXIST ON KM YT",
+      "notes": "check if the video is already posted on keymailer yt channel (UCNaXVVdiW4ksPAtFKv8SdrA)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c8e8cdc1-dcbe-4018-9b2f-7ab6cdd8ca59",
+              "leftValue": "={{ $json.hasYoutubeTrailerOnKM }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3616,
+        1760
+      ],
+      "id": "0aa9568c-bdb7-41b6-ab1f-f7aa4250c574",
+      "name": "CF: CHECK HASYOUTUBETRAILERONKM"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node\nconst previousNodeData = $input.all().map(item => item.json);\n\n// Get data from \"CF: CP FORMATTING OUTPUT\" node\nconst cpSourcesData = $('CF: CP FORMATTING OUTPUT').all().map(item => item.json);\n\n// Match and return results\nconst results = [];\n\nfor (const prevItem of previousNodeData) {\n  const { yt_trailer_uid } = prevItem;\n\n  const matched = cpSourcesData.find(\n    source => source.trailer_uid === yt_trailer_uid\n  );\n\n  if (matched) {\n    results.push({\n      json: {\n        id: matched.id,\n        product_id: matched.product_id,\n        preferred: matched.preferred,\n        name: matched.name,\n        trailer_uid: matched.trailer_uid,\n        table_source: matched.table_source,\n        message: \"verification failed\"\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3296,
+        2064
+      ],
+      "id": "3efb2c28-97f4-4ad5-90b4-fd5229287905",
+      "name": "CF: FALSE - MATCHING TRAILER UID"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}",
+            "status": "verification_failed",
+            "product_id": "={{ $json.product_id }}"
+          },
+          "matchingColumns": [
+            "product_id"
+          ],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "game_name_without_trailer_on_the_listing",
+              "displayName": "game_name_without_trailer_on_the_listing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_purchased",
+              "displayName": "ad_purchased",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "generated_description",
+              "displayName": "generated_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3296,
+        2368
+      ],
+      "id": "a8a418ad-87e2-4d1d-88ee-f02f046a9ac5",
+      "name": "UPDATE: PENDING TRAILERS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "retrieve the data only if its match with product_Id"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3296,
+        2608
+      ],
+      "id": "b8467d75-a638-4a0c-a8f0-682b0e2646b9",
+      "name": "UPDATE: WAIT 2 SEC",
+      "webhookId": "20341f01-6675-4ec8-8ba3-8adde1f541d7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node\nconst previousNodeData = $input.all().map(item => item.json);\n\n// Get data from \"CF: CP FORMATTING OUTPUT\" node\nconst cpSources1Data = $('CF: CP FORMATTING OUTPUT').all().map(item => item.json);\n\n// Match and return results\nconst results = [];\n\nfor (const prevItem of previousNodeData) {\n  const { yt_trailer_uid } = prevItem;\n\n  const matched = cpSources1Data.find(\n    source => source.trailer_uid === yt_trailer_uid\n  );\n\n  if (matched) {\n    results.push({\n      json: {\n        id: matched.id,\n        product_id: matched.product_id,\n        preferred: matched.preferred,\n        name: matched.name,\n        trailer_uid: matched.trailer_uid,\n        table_source: matched.table_source,\n        message: \"verification success\"\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3936,
+        1744
+      ],
+      "id": "42602ae3-e522-4910-9a5e-5c089bedc373",
+      "name": "CF: TRUE - MATCHING TRAILER UID"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4176,
+        1744
+      ],
+      "id": "0e7c1afa-bfc6-4fe3-a943-e5783c02ea56",
+      "name": "CF: WAIT 5 SEC",
+      "webhookId": "777859f3-c39a-41da-a8be-ff842a7a5958"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, slug\nFROM public.catalogue_products \nWHERE id = $1;",
+        "options": {
+          "queryReplacement": "={{ $json.product_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4496,
+        1744
+      ],
+      "id": "f619a822-c9c6-4d0d-8e07-e0c1a178a33f",
+      "name": "CF: MADMIN CP TABLE",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "retrieve the slug in catalogue_product table using product_id = id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ef8e5d6a-eafd-4296-be99-bd96a5401512",
+              "name": "product_id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "5baf5077-4874-4a2e-a582-11f73087e52e",
+              "name": "slug",
+              "value": "={{ $json.slug }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4816,
+        1744
+      ],
+      "id": "d65ec012-baa4-402e-a962-1b97d721c73f",
+      "name": "CF: CHANGED ID TO PRODUCT_ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items\nconst loopData = $('CF: LOOP').all();\nconst cpData = $input.all();\n\n\n// Create a lookup map from Edit Fields\nconst cpMap = {};\ncpData.forEach(item => {\n  const key = item.json.product_id;\n  if (key !== undefined) {\n    cpMap[key] = item.json;\n  }\n});\n\n// Merge based on product_id\nreturn loopData.map(item => {\n  const productId = item.json.product_id;\n\n  return {\n    json: {\n      ...item.json,\n      ...(cpMap[productId] || {}) // merge if match found\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5024,
+        1744
+      ],
+      "id": "1b4a7a2e-084a-4a63-969d-5a0b4951e671",
+      "name": "CF: MERGE DATA",
+      "notes": "merge the data from both 'CROSS REF:LOOP' and 'CF: CHANGED ID TO PRODUCT_ID 'if both product_id are match\n"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "101f9b29-b784-4f0c-b896-6819d73ed988",
+              "name": "product_id",
+              "value": "={{ $json.product_id }}",
+              "type": "number"
+            },
+            {
+              "id": "f8d13232-af74-45c0-9435-bbca47ac2daf",
+              "name": "name",
+              "value": "={{ $json.game_name_without_trailer_on_the_listing }}",
+              "type": "string"
+            },
+            {
+              "id": "2d882e17-3f0a-4c77-8383-31daac49ca45",
+              "name": "madmin_product_link",
+              "value": "={{ $json.madmin_product_link }}",
+              "type": "string"
+            },
+            {
+              "id": "0e9911af-5c0c-4c34-a31d-6a86e0e8aeed",
+              "name": "type",
+              "value": "={{ $json.ad_purchased }}",
+              "type": "string"
+            },
+            {
+              "id": "885d59d3-4737-4040-bff9-612f1cf4ad6e",
+              "name": "start_date",
+              "value": "={{ $json.ad_start_date }}",
+              "type": "string"
+            },
+            {
+              "id": "a5d875fe-d7a0-497c-8f0d-081924fcb4c5",
+              "name": "end_date",
+              "value": "={{ $json.ad_end_date }}",
+              "type": "string"
+            },
+            {
+              "id": "cb6d2ba8-4603-41e2-9fe4-8d7f1e1711ba",
+              "name": "slug",
+              "value": "={{ $json.slug }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5264,
+        1744
+      ],
+      "id": "d27c116b-2aa3-4d97-b92e-64af22e72d5d",
+      "name": "CF: RENAME FIELDS"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "product_id": "={{ $json.product_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        5552,
+        2064
+      ],
+      "id": "c20c33f1-bd89-4b0a-be05-b10e7eccc63f",
+      "name": "CF: INSERT DATA IN DATA TABLE."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 794140272,
+          "mode": "list",
+          "cachedResultName": "Listing with Trailer",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=794140272"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_id": "={{ $json.product_id }}",
+            "game_name_with_trailer_on_the_listing": "={{ $json.name }}",
+            "madmin_product_link": "=https://madmin.keymailer.co/catalogue/products/{{ $json.product_id }}",
+            "ad_purchased": "={{ $json.type }}",
+            "ad_start_date": "={{ $json.start_date }}",
+            "ad_end_date": "={{ $json.end_date }}",
+            "youtube_link": "=https://www.keymailer.co/g/games/{{ $json.slug }}",
+            "automation_run": "={{ new Date().toISOString().split('T')[0] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "product_id",
+              "displayName": "product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name_with_trailer_on_the_listing",
+              "displayName": "game_name_with_trailer_on_the_listing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "madmin_product_link",
+              "displayName": "madmin_product_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_purchased",
+              "displayName": "ad_purchased",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_start_date",
+              "displayName": "ad_start_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_end_date",
+              "displayName": "ad_end_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "youtube_link",
+              "displayName": "youtube_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_run",
+              "displayName": "automation_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5536,
+        1744
+      ],
+      "id": "4cc56a3a-644f-47dc-8197-28282fbe8106",
+      "name": "CF: APPEND LISTING WITH TRAILER",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5760,
+        2064
+      ],
+      "id": "0c645e8f-f320-4f90-97c2-e79164a5c94a",
+      "name": "CF: WAIT 2 SEC.",
+      "webhookId": "872d75da-eb33-4d1a-8936-ab0233f53c7a"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5776,
+        1744
+      ],
+      "id": "4ec51af7-6c0f-4c68-a2de-20d5595cf0bf",
+      "name": "APPEND CF: WAIT 2 SEC",
+      "webhookId": "872d75da-eb33-4d1a-8936-ab0233f53c7a"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "matchType": "allConditions",
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        864,
+        1424
+      ],
+      "id": "abc6bafd-d581-4288-92a7-96e6ffabcf98",
+      "name": "CF: GET ALL ROW FROM DATA TABLE"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        1424
+      ],
+      "id": "fc9052c5-9a1b-41d5-bc53-e539360c6b75",
+      "name": "CF: REMOVE DUPLICATE"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node\nconst previousNode = $input.all();\n\n// Get data from CROSS REF node\nconst pendingTrailer = $('CROSS REF: GET PENDING TRAILERS').all();\n\n// Create a Set of product_ids from CROSS REF node\nconst trailerProductIds = new Set(\n  pendingTrailer.map(item => item.json.product_id)\n);\n\n// Return previous node data with match flag\nreturn previousNode.map(item => {\n  return {\n    json: {\n      ...item.json,\n      match_product_id: trailerProductIds.has(item.json.product_id)\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        1424
+      ],
+      "id": "3853c83b-40a1-476e-87c4-2917a75bf211",
+      "name": "CF: MATCHING PRODUCT_ID",
+      "notes": "check if the product_id from previous node is match with the 'CROSS REF: GET PENDING TRAILERS ' product_id"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "YhwzmkS0DymkXDyR",
+          "mode": "list",
+          "cachedResultName": "Trailer Ad Purchase Checker",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/YhwzmkS0DymkXDyR"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "row_number",
+              "keyValue": "={{ $json.row_number }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1664,
+        1424
+      ],
+      "id": "9a96e902-2ee1-48c4-84bb-5c06446c5ded",
+      "name": "CF: DELETE ROW BY ROW_NUMBER"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1568,
+        1056
+      ],
+      "typeVersion": 1,
+      "id": "6cd529ad-92d9-4ee5-849a-584285e66ea2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "row_number",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        1136
+      ],
+      "id": "e32eafd9-cc97-46ec-b6a7-e7815e4c14f8",
+      "name": "CF: SORT ROW_NUMBER BY DESC",
+      "notes": "We sort the rows in descending order to solve the delete row issue in Google Sheets. If we sort in ascending order, it removes the smaller row number first, which causes the row indices to shift.\n\nFor example, if we delete row numbers 1 and 6:\n\nIf we delete row 1 first, row 6 becomes row 5, since the rows shift up.\nWe are not dynamically updating the row numbers, so this causes issues.\n\nInstead, we delete in descending order:\n\nDelete row 6 first, then row 1.\nThis way, row 1 remains unchanged when row 6 is deleted."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Trailer Ad Purchase Checker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 147626325,
+          "mode": "list",
+          "cachedResultName": "Pending Trailers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit#gid=147626325"
+        },
+        "startIndex": "={{ $json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2288,
+        1152
+      ],
+      "id": "390f37ad-ca1d-4e10-ab8a-e4547fef1e9f",
+      "name": "CF: DELETE ROW IN PENDING TRAILERS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 80,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1888,
+        1040
+      ],
+      "typeVersion": 1,
+      "id": "e430a601-4580-4aa7-bb10-e767e954cf2a",
+      "name": "Sticky Note110"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 492,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2208,
+        1040
+      ],
+      "typeVersion": 1,
+      "id": "77f453c4-3cf4-419a-a69d-f801eaad7876",
+      "name": "Sticky Note111"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1984,
+        1136
+      ],
+      "id": "06904cd5-cf46-4857-8d8d-d384f29f6faf",
+      "name": "CF: LOOP."
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => ({ json: item.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        1744
+      ],
+      "id": "7efb540e-f193-4d9b-a9a8-83cd106bac46",
+      "name": "CF: LOOP PREV DATA"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => ({ json: item.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        3840
+      ],
+      "id": "5b5f769b-5587-4c75-b1b8-418c11abc97c",
+      "name": "CF DNP: LOOP PREV DATA"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "73a9d31d-e94b-41dd-a443-ae09b8236bfe",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "4e2db42f-f493-4682-a1a7-9f5019df59cf",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "a0887058-c350-4d8e-8efc-24db4af815f2",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 80,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1728,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "88e58360-35b5-41a2-9c33-cf32c90f4fd1",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 604,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        1936
+      ],
+      "typeVersion": 1,
+      "id": "d8e47794-9555-4e89-a8d9-ed0d0e874dfd",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2048,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "4a64c064-6e48-4de7-9b5c-fa8914befeca",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2368,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "b6588b96-276c-4481-a19e-926d8ba8f9a7",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2768,
+        1760
+      ],
+      "id": "55f0ce5b-2f46-4dd9-9265-1bf728f10be7",
+      "name": "CF: WAIT 5 SEC..",
+      "webhookId": "f96c22f5-3590-45ff-8cc0-5ce6562c2541"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2688,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "4e6e07b3-d9bd-4432-8f28-c1f82ac93693",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3200,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "1afae97b-6f8b-492e-88fa-2a3abae01c3c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3520,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "46962f7a-d961-42d9-a713-d6e84dd113e9",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3200,
+        1984
+      ],
+      "typeVersion": 1,
+      "id": "20fffa5b-38d1-4131-9da2-ecb11b57eedb",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 484,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3200,
+        2288
+      ],
+      "typeVersion": 1,
+      "id": "accb3d63-7a01-47a4-930b-065b6eddc969",
+      "name": "Sticky Note112"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3840,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "8053a9d7-c631-484b-8ed3-93e01898f0f7",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4400,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "d3627023-268d-4667-b412-d12201e56127",
+      "name": "Sticky Note66"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 704,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4720,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "285d45f2-8a52-41c2-9c55-9b600e991492",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 492,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5456,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "4f3e3cf8-8b75-4930-a0b1-27f8ab025c36",
+      "name": "Sticky Note113"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 492,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5456,
+        1984
+      ],
+      "typeVersion": 1,
+      "id": "fa87efe8-de54-4714-abd5-b941e7544269",
+      "name": "Sticky Note67"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "8e0fd6cb-b57f-454e-9bb2-8f7c1b81c003",
+      "name": "Sticky Note68"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 448,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "6e83a7ac-2df0-4227-b351-2d81f91fa329",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1568,
+        1344
+      ],
+      "typeVersion": 1,
+      "id": "4bc08dd1-7725-490e-8ed0-307e1891b2b1",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        3456
+      ],
+      "typeVersion": 1,
+      "id": "c627ca42-f8aa-4ca2-b03a-0d0e415814c6",
+      "name": "Sticky Note77"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "736be136-6ce8-4183-aff3-26131cea0ed7",
+      "name": "Sticky Note114"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "8491d8f7-a1f7-486e-9cb3-7ff5540cda7d",
+      "name": "Sticky Note115"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 472,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1728,
+        4032
+      ],
+      "typeVersion": 1,
+      "id": "27a7794d-32d8-4c04-94e9-574bfe24a634",
+      "name": "Sticky Note116"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 22,23 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        3536
+      ],
+      "id": "0406a437-90af-4afd-af26-de169484cc72",
+      "name": "TRIGGER 3"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1w8HJ8iHNSb6PDSh_bcgfkd1-UYMp6ODMVx793LsxPLQ/edit?gid=0#gid=0\n\n\n",
+        "height": 136,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        3744
+      ],
+      "typeVersion": 1,
+      "id": "75eae2c3-b5cc-4f39-8a61-244aca6e4994",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run everyday, twice a day:\n- 10:00 PM UK time\n- 11:00 PM UK time\n\n- Get the data from \"Pending Trailers\" only if the status is \"do_not_publish\" .\n\n- Check if the product ID already exist in \"Do not Publish\". if it does, delete the data from Pending Trailers.\n\n- If it does not exist, transfer the data from \"Pending Trailers\" to \"Do not Publish\", then delete the data from \" Pending Trailers\" after the transfer.\n  ",
+        "height": 340,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -672,
+        3920
+      ],
+      "typeVersion": 1,
+      "id": "d68f4347-0a6f-4f37-addb-b82955066c6d",
+      "name": "Sticky Note86"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2528,
+        1152
+      ],
+      "id": "64ed2ad3-6d71-442e-a0d2-6f8226ff552c",
+      "name": "DELETE: WAIT 5 SEC",
+      "webhookId": "5c098e59-0f61-4d5b-a94a-329cecf1da5b"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        3248
+      ],
+      "id": "aaa864f7-999e-4181-b5fa-8f3c1936be3a",
+      "name": "CF DNP: WAIT 5 SEC",
+      "webhookId": "5c098e59-0f61-4d5b-a94a-329cecf1da5b"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        -112
+      ],
+      "id": "79cd637f-8a4c-4768-922c-2d3796f413bb",
+      "name": "WAIT 10 SEC",
+      "webhookId": "e86c2ce5-ca3f-4e6e-84f7-f6c14dbd84a9"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from specific node\nconst falseMatchData = $('INDIE: GET PREVIOUS DATA.').all();\n\n// Get previous node data (existing records)\nconst previousData = $input.all();\n\n// Check if previous node returned empty/no real data ({})\nconst isEmptyResult = \n  previousData.length === 0 || \n  (previousData.length === 1 && Object.keys(previousData[0].json).length === 0);\n\n// Build a Set of product_ids that already exist\nconst existingProductIds = new Set(\n  !isEmptyResult\n    ? previousData\n        .map(item => item.json.product_id)\n        .filter(id => id !== undefined && id !== null)\n    : []\n);\n\n// Add hasExist field to each item\nconst result = falseMatchData.map(item => {\n  const productId = item.json.product_id;\n  const hasExist = existingProductIds.has(productId);\n\n  return {\n    json: {\n      ...item.json,\n      hasExist\n    }\n  };\n});\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7856,
+        -688
+      ],
+      "id": "2e0caf0c-5263-4ad7-8ac5-783a70346f1e",
+      "name": "IDENTIFY WHETHER THE PRODUCT ID HAS EXIST"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04889d85-563a-4fed-bafe-9ccd2c0ba99d",
+              "leftValue": "={{ $json.hasExist }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        8160,
+        -688
+      ],
+      "id": "2560e701-c4a1-4823-9e20-650da4fd2589",
+      "name": "HAS EXIST TRUE",
+      "notes": "IF HAS EXIST IS TRUE MEANING THE PRODUCT ID ALREADY EXIST SO WE DON'T NEED TO SAVE IT"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8080,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "e300c63d-9fd2-4690-99ea-8e0097b84976",
+      "name": "Sticky Note87"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 304,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8400,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "711893b4-c8cf-43dc-ac1b-cc2d56dbf814",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/storesearch/?term={{ $json.name }}&cc=US&l=en",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3632,
+        -672
+      ],
+      "id": "c2491605-22fe-40a0-ae1d-1ff51b5ae1c5",
+      "name": "CHECK GAME ON STEAM"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.first().json;\n\nconst firstItem = inputData.items[0];\n\nreturn [{ json: firstItem }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3952,
+        -672
+      ],
+      "id": "ff7b406f-e05c-44a3-ad89-cca6529803a8",
+      "name": "GET FIRST ITEM"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/appdetails?appids={{ $json.id }}&cc=us&l=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4272,
+        -672
+      ],
+      "id": "6012badc-b999-487b-ad7a-199f202d0779",
+      "name": "CHECK APP ID ON STEAM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dd404d7-11c0-4b26-b24a-47a3c3a60e4c",
+              "name": "steam_description",
+              "value": "={{ Object.values($json)[0].data.short_description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4560,
+        -672
+      ],
+      "id": "3a5ae50b-0917-445e-918c-37bd101e1788",
+      "name": "STEAM NECESSARY FIELDS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from FALSE: LOOPING node\nconst falseLoopingData = $('FALSE: LOOPING').all();\n\n// Get data from previous node\nconst previousNodeData = $input.all();\n\n// Merge the data\nconst result = falseLoopingData.map((loopItem, index) => {\n  const loopJson = loopItem.json;\n  const prevJson = previousNodeData[index]?.json || {};\n\n  return {\n    json: {\n      id: loopJson.id,\n      product_id: loopJson.product_id,\n      preferred: loopJson.preferred,\n      name: loopJson.name,\n      description: loopJson.description,\n      trailer_uid: loopJson.trailer_uid,\n      table_source: loopJson.table_source,\n      yt_trailer_uid: loopJson.yt_trailer_uid,\n      title: loopJson.title,\n      steam_description: prevJson.steam_description ?? null,\n    }\n  };\n});\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4784,
+        -672
+      ],
+      "id": "15f259a6-b274-4018-8b27-692a3fcea173",
+      "name": "MERGE FIELDS",
+      "notes": "GET THE FIELD FROM FALSE: LOOPING\nGET THE FIELD FROM PREVIOUS NODE\n\nMERGE THEM"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3536,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "513fb7e7-8c1e-41fa-a8dc-c6eb6b63ea1a",
+      "name": "Sticky Note88"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3856,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "75890cde-c67b-493a-b78f-79d3e7158f10",
+      "name": "Sticky Note89"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4176,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "829daa0b-0d53-4670-a974-4279631b2ce8",
+      "name": "Sticky Note90"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 448,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4496,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "e21fe86c-daee-4abd-9637-6a6252c104d9",
+      "name": "Sticky Note91"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "MADMIN: SYSTEM ADS": {
+      "main": [
+        [
+          {
+            "node": "FORMATTING: SYSTEM ADS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATTING: SYSTEM ADS": {
+      "main": [
+        [
+          {
+            "node": "WAIT 5 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 5 SEC": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: CP SOURCES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MADMIN: CP SOURCES": {
+      "main": [
+        [
+          {
+            "node": "FORMATTING: CP SOURCES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATTING: CP SOURCES": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP": {
+      "main": [
+        [
+          {
+            "node": "CHECK THE BOOLEAN FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET YT VIDEO BY TRAILER UID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET YT VIDEO BY TRAILER UID": {
+      "main": [
+        [
+          {
+            "node": "IDENTIFY IF VIDEO ARE ALREADY POSTED ON KM YT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDENTIFY IF VIDEO ARE ALREADY POSTED ON KM YT": {
+      "main": [
+        [
+          {
+            "node": "WAIT 10 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AIS OLLAMA MODEL": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GENERATE DESCRIPTION",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GENERATE DESCRIPTION": {
+      "main": [
+        [
+          {
+            "node": "CLEAN AI GENERATED DESCRIPTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK THE BOOLEAN FIELD": {
+      "main": [
+        [
+          {
+            "node": "TRUE: GET MATCH DATA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FALSE: GET MATCH DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MADMIN: CP": {
+      "main": [
+        [
+          {
+            "node": "FORMATTING: CATALOGUE PRODUCTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMATTING: CATALOGUE PRODUCTS": {
+      "main": [
+        [
+          {
+            "node": "GET DATA BY IDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET DATA BY IDS": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: PUBLISHER ORGANISATION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET LISTING WITH TRAILER": {
+      "main": [
+        [
+          {
+            "node": "TRUE: CHECK PRODUCT_ID EXISTENCE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRUE: GET MATCH DATA": {
+      "main": [
+        [
+          {
+            "node": "GET LISTING WITH TRAILER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FALSE: GET MATCH DATA": {
+      "main": [
+        [
+          {
+            "node": "GET PENDING TRAILER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FALSE: LOOPING": {
+      "main": [
+        [],
+        [
+          {
+            "node": "CHECK GAME ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRUE: CHECK PRODUCT_ID EXISTENCE": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: CP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET PENDING TRAILER": {
+      "main": [
+        [
+          {
+            "node": "FALSE: CHECK PRODUCT_ID EXISTENCE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FALSE: CHECK PRODUCT_ID EXISTENCE": {
+      "main": [
+        [
+          {
+            "node": "FALSE: LOOPING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLEAN AI GENERATED DESCRIPTION": {
+      "main": [
+        [
+          {
+            "node": "GET FALSE LOOPING DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FALSE LOOPING DATA": {
+      "main": [
+        [
+          {
+            "node": "FALSE: GET DATA BY IDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FALSE: GET DATA BY IDS": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: PUBLISHER ORGANISATION.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: PENDING TRAILERS": {
+      "main": [
+        [
+          {
+            "node": "WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "FALSE: LOOPING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CROSS REF: GET PENDING TRAILERS": {
+      "main": [
+        [
+          {
+            "node": "CF: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 1": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: SYSTEM ADS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 2": {
+      "main": [
+        [
+          {
+            "node": "CROSS REF: GET PENDING TRAILERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MADMIN: PUBLISHER ORGANISATION": {
+      "main": [
+        [
+          {
+            "node": "REMOVE DUPLICATE PRODUCT_ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF SEGMENT IS 1. MEANING ITS INDIE": {
+      "main": [
+        [
+          {
+            "node": "INDIE: GET PREVIOUS DATA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NOT INDIE: GET PREVIOUS DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: TRAILER THAT EXIST ON KM YT": {
+      "main": [
+        []
+      ]
+    },
+    "GET DO NOT PUBLISH DATA": {
+      "main": [
+        [
+          {
+            "node": "REMOVE MATCHING PRODUCT ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REMOVE MATCHING PRODUCT ID": {
+      "main": [
+        [
+          {
+            "node": "MERGE OUTPUT FORMATTING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE OUTPUT FORMATTING. ": {
+      "main": [
+        [
+          {
+            "node": "APPEND: TRAILER THAT EXIST ON KM YT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE OUTPUT FORMATTING": {
+      "main": [
+        [
+          {
+            "node": "APPEND: DO NOT PUBLISH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NOT INDIE: GET PREVIOUS DATA": {
+      "main": [
+        [
+          {
+            "node": "MERGE OUTPUT FORMATTING. ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REMOVE DUPLICATE PRODUCT_ID": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF SEGMENT IS 1. MEANING ITS INDIE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INDIE: GET PREVIOUS DATA": {
+      "main": [
+        [
+          {
+            "node": "GET DO NOT PUBLISH DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MADMIN: PUBLISHER ORGANISATION.": {
+      "main": [
+        [
+          {
+            "node": "REMOVE DUPLICATE PRODUCT_ID.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REMOVE DUPLICATE PRODUCT_ID.": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF SEGMENT IS 1. MEANING ITS INDIE.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF SEGMENT IS 1. MEANING ITS INDIE.": {
+      "main": [
+        [
+          {
+            "node": "INDIE: GET PREVIOUS DATA.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NOT INDIE: GET PREVIOUS DATA.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NOT INDIE: GET PREVIOUS DATA.": {
+      "main": [
+        [
+          {
+            "node": "MERGE OUTPUT FORMATTING..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE OUTPUT FORMATTING..": {
+      "main": [
+        [
+          {
+            "node": "APPEND: PENDING TRAILERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INDIE: GET PREVIOUS DATA.": {
+      "main": [
+        [
+          {
+            "node": "GET DO NOT PUBLISH DATA.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET DO NOT PUBLISH DATA.": {
+      "main": [
+        [
+          {
+            "node": "IDENTIFY WHETHER THE PRODUCT ID HAS EXIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE OUTPUT FORMATTING...": {
+      "main": [
+        [
+          {
+            "node": "APPEND: DO NOT PUBLISH.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: DO NOT PUBLISH.": {
+      "main": [
+        [
+          {
+            "node": "WAIT 2 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 2 SEC.": {
+      "main": [
+        [
+          {
+            "node": "FALSE: LOOPING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CROSS REF: GET PENDING TRAILERS - DO NOT PUBLISH": {
+      "main": [
+        [
+          {
+            "node": "CROSS REF DNP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CROSS REF DNP: LOOP": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: GET ALL ROW FROM DATA TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CF DNP: LOOP PREV DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: MADMIN CPS": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: CP FORMATTING OUTPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET DNP DATA": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF PRODUCT ID EXIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF PRODUCT ID EXIST": {
+      "main": [
+        [
+          {
+            "node": "CHECK HASEXIST FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK HASEXIST FIELD": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: INSERT DATA IN DATA TABLE.",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CF DNP: MADMIN CPS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MERGE MATCHES PRODUCT ID",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CF DNP: CP FORMATTING OUTPUT": {
+      "main": [
+        [
+          {
+            "node": "MERGE MATCHES PRODUCT ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE MATCHES PRODUCT ID": {
+      "main": [
+        [
+          {
+            "node": "APPEND: DNP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CF DNP: INSERT DATA IN DATA TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: DNP": {
+      "main": [
+        [
+          {
+            "node": "DNP: WAIT 4 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: INSERT DATA IN DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "CROSS REF DNP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: GET ALL ROW FROM DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: REMOVE DUPLICATE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: REMOVE DUPLICATE": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: MATCHING PRODUCT_ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: MATCHING PRODUCT_ID": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: SORT ROW_NUMBER BY DESC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CF DNP: DELETE ROW BY ROW_NUMBER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: SORT ROW_NUMBER BY DESC": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "CF DNP: DELETE ROW IN PENDING TRAILERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: DELETE ROW IN PENDING TRAILERS": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: WAIT 5 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRUE: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "CROSS REF DNP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: INSERT DATA IN DATA TABLE.": {
+      "main": [
+        [
+          {
+            "node": "TRUE: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: LOOP": {
+      "main": [
+        [
+          {
+            "node": "CF: GET ALL ROW FROM DATA TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CF: LOOP PREV DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: GET LISTING WITH TRAILER": {
+      "main": [
+        [
+          {
+            "node": "CF: CHECK IF PRODUCT ID EXIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: CHECK IF PRODUCT ID EXIST": {
+      "main": [
+        [
+          {
+            "node": "CF: CHECK HASEXIST FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: CHECK HASEXIST FIELD": {
+      "main": [
+        [
+          {
+            "node": "CF: INSERT DATA IN DATA TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CF: MADMIN CPS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: INSERT DATA IN DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "CF: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "CF: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: MADMIN CPS": {
+      "main": [
+        [
+          {
+            "node": "CF: CP FORMATTING OUTPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: CP FORMATTING OUTPUT": {
+      "main": [
+        [
+          {
+            "node": "CF: WAIT 5 SEC..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: GET YT VID BY TRAILER UID": {
+      "main": [
+        [
+          {
+            "node": "CF: IDENTIFY IF VIDEO EXIST ON KM YT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: IDENTIFY IF VIDEO EXIST ON KM YT": {
+      "main": [
+        [
+          {
+            "node": "CF: CHECK HASYOUTUBETRAILERONKM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: CHECK HASYOUTUBETRAILERONKM": {
+      "main": [
+        [
+          {
+            "node": "CF: TRUE - MATCHING TRAILER UID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CF: FALSE - MATCHING TRAILER UID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: FALSE - MATCHING TRAILER UID": {
+      "main": [
+        [
+          {
+            "node": "UPDATE: PENDING TRAILERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE: PENDING TRAILERS": {
+      "main": [
+        [
+          {
+            "node": "UPDATE: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "CF: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: WAIT 5 SEC": {
+      "main": [
+        [
+          {
+            "node": "CF: MADMIN CP TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: TRUE - MATCHING TRAILER UID": {
+      "main": [
+        [
+          {
+            "node": "CF: WAIT 5 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: MADMIN CP TABLE": {
+      "main": [
+        [
+          {
+            "node": "CF: CHANGED ID TO PRODUCT_ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: CHANGED ID TO PRODUCT_ID": {
+      "main": [
+        [
+          {
+            "node": "CF: MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "CF: RENAME FIELDS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CF: INSERT DATA IN DATA TABLE.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: RENAME FIELDS": {
+      "main": [
+        [
+          {
+            "node": "CF: APPEND LISTING WITH TRAILER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: APPEND LISTING WITH TRAILER": {
+      "main": [
+        [
+          {
+            "node": "APPEND CF: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: INSERT DATA IN DATA TABLE.": {
+      "main": [
+        [
+          {
+            "node": "CF: WAIT 2 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: WAIT 2 SEC.": {
+      "main": [
+        [
+          {
+            "node": "CF: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: GET ALL ROW FROM DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "CF: REMOVE DUPLICATE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: REMOVE DUPLICATE": {
+      "main": [
+        [
+          {
+            "node": "CF: MATCHING PRODUCT_ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: MATCHING PRODUCT_ID": {
+      "main": [
+        [
+          {
+            "node": "CF: DELETE ROW BY ROW_NUMBER",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CF: SORT ROW_NUMBER BY DESC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: SORT ROW_NUMBER BY DESC": {
+      "main": [
+        [
+          {
+            "node": "CF: LOOP.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: DELETE ROW IN PENDING TRAILERS": {
+      "main": [
+        [
+          {
+            "node": "DELETE: WAIT 5 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: LOOP.": {
+      "main": [
+        [],
+        [
+          {
+            "node": "CF: DELETE ROW IN PENDING TRAILERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: LOOP PREV DATA": {
+      "main": [
+        [
+          {
+            "node": "CF: GET LISTING WITH TRAILER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: LOOP PREV DATA": {
+      "main": [
+        [
+          {
+            "node": "GET DNP DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF: WAIT 5 SEC..": {
+      "main": [
+        [
+          {
+            "node": "CF: GET YT VID BY TRAILER UID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 3": {
+      "main": [
+        [
+          {
+            "node": "CROSS REF: GET PENDING TRAILERS - DO NOT PUBLISH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE: WAIT 5 SEC": {
+      "main": [
+        [
+          {
+            "node": "CF: LOOP.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CF DNP: WAIT 5 SEC": {
+      "main": [
+        [
+          {
+            "node": "CF DNP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 10 SEC": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDENTIFY WHETHER THE PRODUCT ID HAS EXIST": {
+      "main": [
+        [
+          {
+            "node": "HAS EXIST TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HAS EXIST TRUE": {
+      "main": [
+        [
+          {
+            "node": "FALSE: LOOPING",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MERGE OUTPUT FORMATTING...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK GAME ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "GET FIRST ITEM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FIRST ITEM": {
+      "main": [
+        [
+          {
+            "node": "CHECK APP ID ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK APP ID ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "STEAM NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "MERGE FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE FIELDS": {
+      "main": [
+        [
+          {
+            "node": "GENERATE DESCRIPTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "7966b35c-4aa8-40a0-b34f-1c3ef004ffcb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "PdsU4McS7iDZEw2L",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
