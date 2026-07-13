@@ -1,0 +1,4385 @@
+{
+  "name": "CM Task Monitoring",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        -416
+      ],
+      "id": "df8d2551-f167-45fe-aaf8-f25dd55cfbef",
+      "name": "ABDUL: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('ABDUL: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "ed3770c0-fb53-43e5-b040-610939775d4f",
+      "name": "ABDUL: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -432
+      ],
+      "id": "531a02e8-8db0-4df6-9549-5a9f12a99f9f",
+      "name": "ABDUL: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        -432
+      ],
+      "id": "d99172b2-fcbe-4f7c-ac70-d52378967438",
+      "name": "ABDUL: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Abdul",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        -112
+      ],
+      "id": "5ad37d82-c21e-4aa4-8f18-1921ebffbaf0",
+      "name": "ABDUL: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -112
+      ],
+      "id": "7724b5ae-a138-43d2-b15a-77d0bc885ab1",
+      "name": "ABDUL: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "l6KWX8IAZWCFJZlY",
+          "name": "Abdul"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        -112
+      ],
+      "id": "fcb0c71f-a707-47c2-948e-0bc15d041ec5",
+      "name": "ABDUL: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        -96
+      ],
+      "id": "4387e62f-c281-4f70-a1c8-64fde1f8f74c",
+      "name": "ABDUL: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -96
+      ],
+      "id": "98ddc34c-8619-4f83-ad79-248d1c05ec93",
+      "name": "ABDUL: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "l6KWX8IAZWCFJZlY",
+          "name": "Abdul"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        1312
+      ],
+      "id": "88ac8d64-0058-44e7-b352-4ae5d2985ffd",
+      "name": "CLOIE: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "zUCunwF13Vx2CVgs",
+          "name": "Cloie Jance"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Cloie",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        1312
+      ],
+      "id": "702d0bbc-4c7e-4584-897c-5b1655687dc9",
+      "name": "CLOIE: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        1312
+      ],
+      "id": "37464474-d3fd-4908-a9c4-40bbdbfccf5c",
+      "name": "CLOIE: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        1328
+      ],
+      "id": "b1379a01-31db-42c0-aa9f-808cee3f9a95",
+      "name": "CLOIE: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        144,
+        1328
+      ],
+      "id": "a225063a-d27c-4928-b523-423370b7ce3a",
+      "name": "CLOIE: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "zUCunwF13Vx2CVgs",
+          "name": "Cloie Jance"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('CLOIE: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        1328
+      ],
+      "id": "1823efcf-a497-40bb-97f1-ada85c0231cd",
+      "name": "CLOIE: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        1040
+      ],
+      "id": "e92b3eee-0113-40c6-a736-20ce03db3cf6",
+      "name": "CLOIE: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        1024
+      ],
+      "id": "787a4799-cd41-46b6-a95d-0c56feb479cb",
+      "name": "CLOIE: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        1024
+      ],
+      "id": "4d2e4019-6aa0-4b89-a195-31e78421f4c6",
+      "name": "CLOIE: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        2016
+      ],
+      "id": "0bc78946-c698-4495-ab57-b88cdf5acfca",
+      "name": "DARRYL: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "l864d4hOj60M0lt3",
+          "name": "Darryl Kwok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Darryl",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        2016
+      ],
+      "id": "72faa173-1241-4f6b-9697-562c3d624bb9",
+      "name": "DARRYL: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        2016
+      ],
+      "id": "6ffb8c96-e054-4b1e-96ab-bb0e2364f46c",
+      "name": "DARRYL: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        2032
+      ],
+      "id": "3491e551-415b-4541-aad0-23ebf65ecb84",
+      "name": "DARRYL: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        112,
+        2032
+      ],
+      "id": "fef78ce9-f15a-4ccc-9079-ae68d226da51",
+      "name": "DARRYL: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "l864d4hOj60M0lt3",
+          "name": "Darryl Kwok"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('DARRYL: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        2032
+      ],
+      "id": "db4261bf-bcb2-4be7-a291-d83439acd212",
+      "name": "DARRYL: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        1728
+      ],
+      "id": "505a276e-5410-471f-afa2-d67aa2ebcd3e",
+      "name": "DARRYL: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        1712
+      ],
+      "id": "a9292087-4a2b-4fcc-9d6d-b209b142bc9e",
+      "name": "DARRYL: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        1712
+      ],
+      "id": "78816123-2678-4495-a741-baa1436180f8",
+      "name": "DARRYL: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        1696
+      ],
+      "id": "1631433e-64e8-43d9-b84f-466114c0518b",
+      "name": "DARRYL: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "path": "cm-task-monitoring",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1696,
+        2016
+      ],
+      "id": "b681926c-7ec4-49a5-a971-7b7b702c1d3a",
+      "name": "TRIGGER",
+      "webhookId": "ae10750a-328a-4a54-803d-4f0f15938ecb",
+      "notes": "It will be triggered when the user clicks the Monitor button on the /task-monitoring page of the n8n webhook website.\n\nDO NOT CHANGE THE PATH: cm-task-monitoring"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        1008
+      ],
+      "id": "89e12b12-d453-49e9-b202-1d06d1ed9994",
+      "name": "CLOIE: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        -448
+      ],
+      "id": "97162ee1-11c3-4777-865f-9baab413f583",
+      "name": "ABDUL: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        624
+      ],
+      "id": "352e0460-afa9-4294-8c23-edcb9deee1c9",
+      "name": "ANDREA: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "IJBlWNDwrzb5tAEq",
+          "name": "Andrea"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        128,
+        640
+      ],
+      "id": "dc74f98f-eff1-4b28-9d3d-d9c9a31e32f5",
+      "name": "ANDREA: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "IJBlWNDwrzb5tAEq",
+          "name": "Andrea"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Andrea",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        624
+      ],
+      "id": "33d04802-3fe4-4419-bb3c-b97a5a9208d1",
+      "name": "ANDREA: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        624
+      ],
+      "id": "7553aedf-37c5-4d98-a129-ad5bff326b44",
+      "name": "ANDREA: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        640
+      ],
+      "id": "746934c0-16a6-443d-b5c1-0ca16b33714a",
+      "name": "ANDREA: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('ANDREA: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        640
+      ],
+      "id": "bd3da4d6-f504-42c1-859e-dab6a8a8798d",
+      "name": "ANDREA: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        320
+      ],
+      "id": "023213ac-a78a-432b-b8e1-9323b0afea9c",
+      "name": "ANDREA: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        304
+      ],
+      "id": "6cfa0013-83b1-40f3-9758-c1d5294f5014",
+      "name": "ANDREA: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        304
+      ],
+      "id": "30d2e8f6-4cfb-4fbb-b876-ffe776ea57ef",
+      "name": "ANDREA: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        288
+      ],
+      "id": "aad5067e-8c1d-48aa-b538-df234257aa8b",
+      "name": "ANDREA: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "content": "# DARRYL\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        1536
+      ],
+      "typeVersion": 1,
+      "id": "14fb4bab-b49f-4753-9b87-575f202cdc98",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        2720
+      ],
+      "id": "a45bc46f-e10f-4181-baf4-f81280c8bcf9",
+      "name": "DOMINIC: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "2n2Mvw1fbqrRn6Hs",
+          "name": "Dominic Miguel Almonte"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Dominic",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        2720
+      ],
+      "id": "06c6fda3-9648-41b8-9448-09dc65904c89",
+      "name": "DOMINIC: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        2720
+      ],
+      "id": "cdcf28f0-c7b2-40ed-8438-85884f126653",
+      "name": "DOMINIC: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        2736
+      ],
+      "id": "f7cf45cd-3bf0-4e93-8d17-b84d7e5f9b04",
+      "name": "DOMINIC: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        128,
+        2736
+      ],
+      "id": "479f099b-0c0c-471f-a3db-9aa1dd7abaf3",
+      "name": "DOMINIC: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "2n2Mvw1fbqrRn6Hs",
+          "name": "Dominic Miguel Almonte"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('DOMINIC: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        2736
+      ],
+      "id": "c8ca47fb-8480-4213-be2e-8f734b60658f",
+      "name": "DOMINIC: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        2432
+      ],
+      "id": "2cd4a7a8-3826-47f7-8221-07298cd8afe1",
+      "name": "DOMINIC: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        2416
+      ],
+      "id": "33ebfb53-ac09-4219-a0ae-514d60f6466c",
+      "name": "DOMINIC: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        2416
+      ],
+      "id": "7e532532-1f2e-4a6b-91d1-1432354e45c8",
+      "name": "DOMINIC: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        2400
+      ],
+      "id": "ef877143-cc90-4c69-9b66-a2ac084f9ed6",
+      "name": "DOMINIC: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        3424
+      ],
+      "id": "4474d6d7-1e6a-40b5-82c0-17f82bc4e571",
+      "name": "HANS: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "OUSDcBRIbFLn3lkF",
+          "name": "Hans"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Hans",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        3424
+      ],
+      "id": "65535677-a7b2-41fd-a225-d2173b8d81bf",
+      "name": "HANS: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        3424
+      ],
+      "id": "2a4c60be-604f-4a85-8497-d7fe5fea5823",
+      "name": "HANS: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        3440
+      ],
+      "id": "d39e5d3c-53c6-4200-8633-c45669750c6b",
+      "name": "HANS: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        128,
+        3440
+      ],
+      "id": "543c5795-8c4e-4434-a051-f2c7b1178202",
+      "name": "HANS: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "OUSDcBRIbFLn3lkF",
+          "name": "Hans"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('HANS: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        3440
+      ],
+      "id": "78d3cc86-5215-46aa-a72a-f3cb56d6a6b6",
+      "name": "HANS: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        3136
+      ],
+      "id": "7ac72084-4af7-45c5-9ba8-8cf3992ac089",
+      "name": "HANS: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        3120
+      ],
+      "id": "d47bbb6a-b010-49a2-b1a9-a7e0c47b20ed",
+      "name": "HANS: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        3120
+      ],
+      "id": "aa55b2a2-38d9-44be-aa2c-34c0642d6af8",
+      "name": "HANS: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        3104
+      ],
+      "id": "62d4b9f1-c4a4-4c0c-8df0-6b6733f0d1da",
+      "name": "HANS: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        4112
+      ],
+      "id": "828fd364-ef51-483d-a5cd-74d3b5918c87",
+      "name": "LYLE: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "CLvQngckdG5BLmbC",
+          "name": "Lyle"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Lyle",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        4112
+      ],
+      "id": "942d9788-b969-43c8-b151-dd322e91c0f9",
+      "name": "LYLE: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -400,
+        4112
+      ],
+      "id": "608973dc-9eaf-4ea7-af26-09311749c06a",
+      "name": "LYLE: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        4128
+      ],
+      "id": "8c5db4e8-541e-4438-8dfe-228df59fdab9",
+      "name": "LYLE: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        112,
+        4128
+      ],
+      "id": "c4b808a5-c45c-4dee-a3ef-c6b27fded793",
+      "name": "LYLE: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "CLvQngckdG5BLmbC",
+          "name": "Lyle"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('LYLE: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        4128
+      ],
+      "id": "f0b1f5d5-62ce-4423-8fc9-2ab734eb605f",
+      "name": "LYLE: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        3840
+      ],
+      "id": "e7e801a5-f267-4833-b922-90c2e8fce309",
+      "name": "LYLE: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        3824
+      ],
+      "id": "d6cac9b0-e348-41f8-87b8-a921ab3560c4",
+      "name": "LYLE: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        3824
+      ],
+      "id": "a7c0651d-5203-4639-ba4b-abea4eb80225",
+      "name": "LYLE: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        3808
+      ],
+      "id": "950b65f2-8a22-499e-a551-d4538b129a7e",
+      "name": "LYLE: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "resource": "list",
+        "operation": "getAll"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        4816
+      ],
+      "id": "2da3845c-f9da-4752-b28a-973207423dd4",
+      "name": "RICH LIM: LIST",
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "ixcWWxxifXhYWAA2",
+          "name": "Rich Lim"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ebf01458-c8a2-4f38-8fbd-ab50c7fb1e4c",
+              "name": "display_name",
+              "value": "={{ $json.displayName }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5d8f3f-844d-462c-8442-eaa6035394f3",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "7d547caf-1d47-4740-965c-f2674aeeb17e",
+              "name": "user_name",
+              "value": "Rich Lim",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -720,
+        4816
+      ],
+      "id": "aadd410d-4612-4943-8c2e-d657a2def5a4",
+      "name": "RICH LIM: IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -416,
+        4816
+      ],
+      "id": "b2e6a880-8d5e-4948-9c2a-86a7a4af8d42",
+      "name": "RICH LIM: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        4832
+      ],
+      "id": "de241600-8fa8-44bd-9df3-aedf4113658b",
+      "name": "RICH LIM: WAIT 3 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "taskListId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.microsoftToDo",
+      "typeVersion": 1,
+      "position": [
+        128,
+        4832
+      ],
+      "id": "be5b9c52-e5c7-4fb9-a70a-81375cca5279",
+      "name": "RICH LIM: TASKS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "microsoftToDoOAuth2Api": {
+          "id": "ixcWWxxifXhYWAA2",
+          "name": "Rich Lim"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItem = $('RICH LIM: LOOP').item.json;\nconst displayName = loopItem.display_name;\nconst userName = loopItem.user_name;\n\n// Loop over ALL input items, not just the first\nreturn $input.all().map(inputItem => {\n  const hasTask = Object.keys(inputItem.json).length > 0;\n  return {\n    json: {\n      ...inputItem.json,\n      listName: displayName,\n      userName: userName,\n      hasTask: hasTask\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        4832
+      ],
+      "id": "db0a65ae-54af-4574-a3a4-e672e29c73ed",
+      "name": "RICH LIM: ADD LIST METADATA",
+      "notes": "if previous node return { } meaning the list has no task. return hasTask false with its list name\n\nIf previous node return a data meaning the list has a tasks. return hasTask true with its list name and data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a163fe5-70fb-4c50-9a15-1c616a12e97d",
+              "leftValue": "={{ $json.hasTask }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -80,
+        4544
+      ],
+      "id": "207341a9-d9f3-440d-86b7-b1ab954cd3ad",
+      "name": "RICH LIM: CHECK HAS TASK FIELD"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - categorize Microsoft To Do tasks\n// Timezone: Asia/Manila (UTC+8, no DST)\n\nconst MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;\n\nfunction toManila(date) {\n  return new Date(date.getTime() + MANILA_OFFSET_MS);\n}\n\nfunction dateOnlyStr(date) {\n  return date.toISOString().split('T')[0]; // YYYY-MM-DD\n}\n\n// Safely parse Graph's datetime strings (handles 7-digit fractional seconds)\n// as UTC, since Graph returns these with timeZone: \"UTC\".\nfunction parseGraphUtc(dateTimeStr) {\n  if (!dateTimeStr) return null;\n  const match = dateTimeStr.match(/^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})/);\n  if (!match) return null;\n  return new Date(match[1] + 'Z');\n}\n\nconst now = new Date();\nconst currentYear = now.getUTCFullYear();\nconst todayManilaStr = dateOnlyStr(toManila(now));\nconst todayManilaDate = new Date(todayManilaStr + 'T00:00:00.000Z');\n\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const task = item.json;\n\n  // Created this year check (dynamic)\n  const createdDate = task.createdDateTime ? new Date(task.createdDateTime) : null;\n  const isCreatedThisYear = createdDate ? createdDate.getUTCFullYear() === currentYear : false;\n\n  // Parse due date (Graph nests it as an object: { dateTime, timeZone })\n  const dueRaw = task.dueDateTime ? task.dueDateTime.dateTime : null;\n  const dueUtc = parseGraphUtc(dueRaw);\n\n  let dueDateManila = null;\n  let category = 'no_due_date';\n\n  if (dueUtc) {\n    const dueManila = toManila(dueUtc);\n    dueDateManila = dateOnlyStr(dueManila);\n    const dueDateOnly = new Date(dueDateManila + 'T00:00:00.000Z');\n\n    const diffDays = Math.round((dueDateOnly - todayManilaDate) / (1000 * 60 * 60 * 24));\n\n    if (diffDays === 0) category = 'due_today';\n    else if (diffDays < 0) category = 'overdue';\n    else category = 'upcoming';\n  }\n\n  results.push({\n    json: {\n      ...task,\n      isCreatedThisYear,\n      dueDateManila,   // due date converted to Manila (YYYY-MM-DD)\n      category,        // Due Today / Overdue / Upcoming / No Due Date\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        4528
+      ],
+      "id": "bf7c825b-db85-4784-9398-cbe294674bfb",
+      "name": "RICH LIM: CATEGORIZED DUE DATE TIME",
+      "notes": "check if createdDateTime is this year\n\ncategorized the duedatetime field:\n\n1. due today \n2. over due\n3. upcoming\n4. no due date"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a08d960e-558f-4065-ae6f-fce6116341cf",
+              "leftValue": "={{ $json.isCreatedThisYear }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        4528
+      ],
+      "id": "8878f939-ba9f-4f7b-a32a-965c77b59717",
+      "name": "RICH LIM: IS CREATED THIS YEAR",
+      "notes": "check if the tasks is created this year, if yes proceed. if no, ignore."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fields to exclude (case-insensitive match)\nconst excludeFields = [\n  '@odata.etag',\n  'hasAttachments',\n  'createdDateTime',\n  'lastModifiedDateTime',\n  'isReminderOn',\n  'body',\n  'isCreatedThisYear',\n  'hasTask',\n  'checklistItems@odata.context',\n  'categories'\n];\n\n// Normalize for case-insensitive comparison\nconst excludeSet = new Set(excludeFields.map(f => f.toLowerCase()));\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const source = item.json;\n  const cleaned = {};\n\n  for (const key of Object.keys(source)) {\n    if (!excludeSet.has(key.toLowerCase())) {\n      cleaned[key] = source[key];\n    }\n  }\n\n  results.push({ json: cleaned });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        4512
+      ],
+      "id": "0ac9e2ec-7feb-4b45-b540-9796b416961e",
+      "name": "RICH LIM: REMOVE NOT IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        -448
+      ],
+      "id": "180d20f2-24a0-4bcb-9876-32b578d5a0f0",
+      "name": "ABDUL: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        288
+      ],
+      "id": "e62f08c8-360e-40f0-8298-5ca32ce31568",
+      "name": "ANDREA: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        1008
+      ],
+      "id": "06731e70-82de-4e7f-942d-2ea4d64fc5ad",
+      "name": "CLOIE: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        1696
+      ],
+      "id": "6d7ce71c-d0d5-4bc4-914c-18e9ee51cb23",
+      "name": "DARRYL: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        2400
+      ],
+      "id": "dfec3d7b-1c2a-4571-b78b-2c52223ea965",
+      "name": "DOMINIC: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        3104
+      ],
+      "id": "02297493-2b19-4378-b44c-c5b434740522",
+      "name": "HANS: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        3808
+      ],
+      "id": "29a92af0-82cb-4b3e-9ebc-b7f76ae4c2cb",
+      "name": "LYLE: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        4512
+      ],
+      "id": "c895f5d2-51b3-4e2f-a5f0-a1d3ff7ee5a3",
+      "name": "RICH LIM: WAIT 2 SEC",
+      "webhookId": "bed48a36-74d7-46a8-bd1a-dae2c59ffcb8"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1776,
+        1920
+      ],
+      "typeVersion": 1,
+      "id": "f515340d-b78c-46ac-b092-a894b82f6f2a",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        1936
+      ],
+      "typeVersion": 1,
+      "id": "010210b8-71a2-4186-adaf-dbced258318c",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        1936
+      ],
+      "typeVersion": 1,
+      "id": "569f23f8-74c3-43d4-95d4-e812a73aabd5",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        1936
+      ],
+      "typeVersion": 1,
+      "id": "6bbe229b-b1a5-4397-8666-648daa701c8e",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        1936
+      ],
+      "typeVersion": 1,
+      "id": "53b864a9-5ef9-4128-a536-0b96be56fe2d",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        1936
+      ],
+      "typeVersion": 1,
+      "id": "6aaf6060-531b-4797-a823-ec59896b6903",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "0063f6a7-13e6-4e90-bbf1-9657e50ad61a",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "9946c6e3-2b54-4ed5-93a9-3c85f3637e40",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "05cfd41b-8cd0-4797-a523-40d374b9427c",
+      "name": "Sticky Note49"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        1648
+      ],
+      "typeVersion": 1,
+      "id": "2e7168a2-0485-4deb-b594-69ddfbd6157d",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        1232
+      ],
+      "typeVersion": 1,
+      "id": "49a04cf3-c7f6-4bc3-9a76-04e7be09cde6",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        1232
+      ],
+      "typeVersion": 1,
+      "id": "ad87d203-c172-4f7b-a84d-3f95cc1038fd",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        1232
+      ],
+      "typeVersion": 1,
+      "id": "c1cf4ba7-104e-4d92-af66-e5a0551152f5",
+      "name": "Sticky Note50"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        1232
+      ],
+      "typeVersion": 1,
+      "id": "ee547d97-d0ad-4627-ba20-9c7fbdfae2dc",
+      "name": "Sticky Note51"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        1232
+      ],
+      "typeVersion": 1,
+      "id": "3a07ed21-7151-44a0-be80-c0fb86a0bab8",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "b72d4c99-40f2-452a-9215-aeeea033f216",
+      "name": "Sticky Note52"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "dfcacabb-358d-4a86-bbb0-df68762e0e66",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "92eece85-8a08-4515-b521-55716cd1d2f2",
+      "name": "Sticky Note53"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "e3109f11-9771-4915-927e-a647cd0b1e1c",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "# CLOIE\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        832
+      ],
+      "typeVersion": 1,
+      "id": "a6089221-80cf-4719-8eb9-3172c15d7e3c",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "3065ae30-c4e2-4c83-b869-fb037c544748",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "49e36cc2-b271-4a6d-83a6-648794f048e6",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "f2fe832f-0c9e-4a56-9986-48daa790fb92",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 280,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "5b3408fc-c1a2-4e89-8241-5098a63bdc14",
+      "name": "Sticky Note57"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "21787d58-0aab-4551-af1e-a291c6d3a91c",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "4134845c-0e06-446a-8721-c3dce48db2b0",
+      "name": "Sticky Note58"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "1f08536d-4ec7-49ae-a208-aed6da235f4d",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "557ba8b7-b59d-4073-9b63-8563715c604c",
+      "name": "Sticky Note59"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "dc300629-0e24-45e2-915e-fb6921b4e248",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "# ANDREA\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "72165f55-a310-4fde-9bf4-836137baa1dc",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "e201b3ce-9475-4497-b3e8-c621fe220005",
+      "name": "Sticky Note60"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "303c3134-de0b-4209-8283-54a48efa6fc1",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "8d16a61b-d022-4d52-81d6-cc39e8a0c591",
+      "name": "Sticky Note61"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 280,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "cf8a04d6-3b0e-4e6c-ba35-0c7015cb0772",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "c9540910-8376-4a0b-9023-a388fc1ccecc",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "02b2710d-fe0b-4600-b7bc-b46532f422aa",
+      "name": "Sticky Note63"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "6d15e747-b2dc-485a-906c-efa70edbec55",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "f373ab8c-4c90-4001-a535-97a34ef0b5d4",
+      "name": "Sticky Note64"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "055dc2f2-b4e7-485d-bddb-101ab5c11e31",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "# ABDUL\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        -608
+      ],
+      "typeVersion": 1,
+      "id": "80083d43-9408-486e-8d3c-99a6b6dfaa9f",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "# DOMINIC\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        2240
+      ],
+      "typeVersion": 1,
+      "id": "63baa801-1873-4561-a0a4-e4ae0a0d34d3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        2640
+      ],
+      "typeVersion": 1,
+      "id": "812d73f7-c45f-439f-a88c-9b61bd8d1926",
+      "name": "Sticky Note65"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        2352
+      ],
+      "typeVersion": 1,
+      "id": "13d24088-acd3-46c1-80a8-f32ba95a11c5",
+      "name": "Sticky Note66"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        2640
+      ],
+      "typeVersion": 1,
+      "id": "9cdb7fad-7352-4df7-8254-63b128269da5",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        2640
+      ],
+      "typeVersion": 1,
+      "id": "fc691c63-f38c-4caa-8ac5-0cdd7c42cf0c",
+      "name": "Sticky Note67"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        2640
+      ],
+      "typeVersion": 1,
+      "id": "e755eb62-4b34-412e-a848-11a3737dadff",
+      "name": "Sticky Note68"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        2640
+      ],
+      "typeVersion": 1,
+      "id": "3982e5eb-bff2-4d0c-9821-d6e3e2f4ce45",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        2352
+      ],
+      "typeVersion": 1,
+      "id": "80afeae4-33ab-4a70-b1a3-db6ef82b9b51",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        2352
+      ],
+      "typeVersion": 1,
+      "id": "6285f82f-81ae-4d1c-ad70-f96f57ad099b",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        2352
+      ],
+      "typeVersion": 1,
+      "id": "e1559a27-88ba-4f35-9466-efb2900a43cd",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "content": "# HANS\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        2944
+      ],
+      "typeVersion": 1,
+      "id": "5b006ced-8afb-44a1-8b0e-d96df35a4967",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        3056
+      ],
+      "typeVersion": 1,
+      "id": "f3c3c0a5-eb3c-4c20-b65f-eab88dabd4b1",
+      "name": "Sticky Note70"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        3344
+      ],
+      "typeVersion": 1,
+      "id": "036df9c6-6099-4c19-a1cd-31ed457e4ab5",
+      "name": "Sticky Note71"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        3344
+      ],
+      "typeVersion": 1,
+      "id": "b2942894-fce4-4a7d-b9aa-3f89da8ecde6",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        3344
+      ],
+      "typeVersion": 1,
+      "id": "0369e17e-c0d9-42b3-93a4-adddd30003c0",
+      "name": "Sticky Note72"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        3344
+      ],
+      "typeVersion": 1,
+      "id": "daa2b0a5-2b99-4fb1-b798-1d1b4c41503b",
+      "name": "Sticky Note73"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        3344
+      ],
+      "typeVersion": 1,
+      "id": "ed519245-67ee-4299-8e13-06ac18bcaa0c",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        3056
+      ],
+      "typeVersion": 1,
+      "id": "e34faa5c-fe43-4dd4-b8ce-4ac7c46fd264",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        3056
+      ],
+      "typeVersion": 1,
+      "id": "44f4f726-3cf1-4e8a-a73d-9a95ae3f7784",
+      "name": "Sticky Note74"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        3056
+      ],
+      "typeVersion": 1,
+      "id": "e410637e-1275-44ab-bc5b-9e714a588c55",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "content": "# LYLE\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        3648
+      ],
+      "typeVersion": 1,
+      "id": "7f05081e-88b4-489b-b0d0-0681221f51bf",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "eae7c4b6-d512-4513-af56-ba595e7125dc",
+      "name": "Sticky Note75"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        4048
+      ],
+      "typeVersion": 1,
+      "id": "59695d56-4eed-4c40-8da6-c7d74ae05a34",
+      "name": "Sticky Note76"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        4048
+      ],
+      "typeVersion": 1,
+      "id": "621d8615-034c-4c23-919a-4e8f35c56649",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        4048
+      ],
+      "typeVersion": 1,
+      "id": "6c5ce2ec-d1ae-4e45-99a3-b5d8fdfbbeff",
+      "name": "Sticky Note77"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        4048
+      ],
+      "typeVersion": 1,
+      "id": "eee92bfd-6bae-472d-a5b1-ef3f483ebcde",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        4048
+      ],
+      "typeVersion": 1,
+      "id": "8e7904a6-55ad-40bc-8e4c-52288291e7e6",
+      "name": "Sticky Note78"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "2419e8ff-8a4f-4ac1-8523-1af42e7ce4fa",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "1c78ab7f-f5f1-4fe4-b73a-3784d894abc6",
+      "name": "Sticky Note79"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        3760
+      ],
+      "typeVersion": 1,
+      "id": "02364b56-9697-4610-9d3e-4bbf270329c6",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "# RICH LIM\n",
+        "height": 80,
+        "width": 2384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        4352
+      ],
+      "typeVersion": 1,
+      "id": "98163b1a-c203-49a9-a94a-73529c48ba6b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        4464
+      ],
+      "typeVersion": 1,
+      "id": "66b158b3-3c78-4744-881d-6f89ff9722aa",
+      "name": "Sticky Note80"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 476,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        4752
+      ],
+      "typeVersion": 1,
+      "id": "6b6b3301-7e67-4228-bb51-d6aa940f3e11",
+      "name": "Sticky Note81"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        336,
+        4752
+      ],
+      "typeVersion": 1,
+      "id": "971d785e-9bd0-4546-9199-851ce7d34ad4",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -496,
+        4752
+      ],
+      "typeVersion": 1,
+      "id": "de96dc9c-d7a6-4f07-b1e5-55faeabf17b1",
+      "name": "Sticky Note82"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -816,
+        4752
+      ],
+      "typeVersion": 1,
+      "id": "8c1f39e2-4184-4dcc-80b8-ecfc1c2c34b8",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1136,
+        4752
+      ],
+      "typeVersion": 1,
+      "id": "467608e3-26b8-46a8-a7cf-4dbb147ee5e4",
+      "name": "Sticky Note83"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        144,
+        4464
+      ],
+      "typeVersion": 1,
+      "id": "c7b977e8-8ce7-474e-a231-8b0f14a89130",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        4464
+      ],
+      "typeVersion": 1,
+      "id": "698c45fe-d176-4886-af7a-44b5277e6cc3",
+      "name": "Sticky Note84"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        4464
+      ],
+      "typeVersion": 1,
+      "id": "f2b0ff1e-23da-40ec-b15c-0cbe2bc3fd4c",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 384,
+        "width": 688,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1600,
+        1808
+      ],
+      "typeVersion": 1,
+      "id": "136c5da0-7491-4bb5-bd46-93d3a3d6c797",
+      "name": "Sticky Note85"
+    },
+    {
+      "parameters": {
+        "numberInputs": 8
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1712,
+        1856
+      ],
+      "id": "b4a20eec-bd40-4372-a804-7f0d0955d624",
+      "name": "MERGE"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node — \"Run Once for All Items\"\nconst grouped = {};\n\nfor (const item of items) {\n  const task = item.json;\n  const user = task.userName;\n\n  if (!grouped[user]) {\n    grouped[user] = { userName: user, tasks: [] };\n  }\n  grouped[user].tasks.push(task);\n}\n\nreturn Object.values(grouped).map((group) => ({ json: group }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        1952
+      ],
+      "id": "2528deb2-c0ca-4cdd-ae05-8a6dec2cb05e",
+      "name": "MERGE TASKS BY USERNAME",
+      "notes": "merge the tasks based on the username (merge it with associated username)"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "userName"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        1952
+      ],
+      "id": "55a783f7-a0e7-4a03-ad34-e008623ff41b",
+      "name": "SORT BY USERNAME A-Z"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2416,
+        1952
+      ],
+      "id": "3471341a-beb1-4d9c-bf40-56cf90259bf8",
+      "name": "RESPOND TO WEBHOOK",
+      "notes": "send the response to client side (react app)"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2320,
+        1888
+      ],
+      "typeVersion": 1,
+      "id": "e76cc6a6-bd4c-429c-9d8b-32c4d81c12ec",
+      "name": "Sticky Note86"
+    },
+    {
+      "parameters": {
+        "content": "## CM Task Monitoring\n\n**Purpose:**\n- The purpose of this workflow is to retrieve all tasks from each Microsoft To Do list for every member.\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2256,
+        1920
+      ],
+      "typeVersion": 1,
+      "id": "3e3a8d51-da6f-49ef-8738-88b39a66d069",
+      "name": "Sticky Note87"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Website URL**:\nhttps://neightn-booking.indie-demo.com/task-monitoring\n\n**Webhook URL testing**:\nhttps://neightn.indie-demo.com/webhook-test/cm-task-monitoring\n\n**Webhook URL Production**:\nhttps://neightn.indie-demo.com/webhook/cm-task-monitoring\n\n\n",
+        "height": 248,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2256,
+        2112
+      ],
+      "typeVersion": 1,
+      "id": "129c806a-efbd-41b1-b773-c735f8f32665",
+      "name": "Sticky Note88"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow is triggered when the user clicks the Monitor button on the /task-monitoring page.\n\n- Retrieve each user's Microsoft To Do lists.\n\n- Retrieve all tasks under each list.\n\n- Send the retrieved data to the react app for display.\n\n**Important Notes:**\n\n- Do not forget to include the username in the important fields node\n\n- Ignore any lists that do not contain any tasks\n\n- Ignore any tasks that were not created in the current year",
+        "height": 436,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2256,
+        2400
+      ],
+      "typeVersion": 1,
+      "id": "8bfe311e-0eb3-469a-baf8-db5aa902ee5d",
+      "name": "Sticky Note89"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ABDUL: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: LIST": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: LOOP": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ABDUL: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: TASKS": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: LIST": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: LOOP": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CLOIE: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: TASKS": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: LIST": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: LOOP": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DARRYL: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: TASKS": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ANDREA: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CLOIE: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DARRYL: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DOMINIC: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HANS: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "LYLE: LIST",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RICH LIM: LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DARRYL: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "DARRYL: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "ABDUL: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CLOIE: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "CLOIE: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: LIST": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: TASKS": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: LOOP": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ANDREA: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: LIST": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: LOOP": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DOMINIC: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: TASKS": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: LIST": {
+      "main": [
+        [
+          {
+            "node": "HANS: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "HANS: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: LOOP": {
+      "main": [
+        [
+          {
+            "node": "HANS: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HANS: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "HANS: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: TASKS": {
+      "main": [
+        [
+          {
+            "node": "HANS: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "HANS: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "HANS: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "HANS: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "HANS: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: LIST": {
+      "main": [
+        [
+          {
+            "node": "LYLE: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "LYLE: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: LOOP": {
+      "main": [
+        [
+          {
+            "node": "LYLE: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "LYLE: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "LYLE: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: TASKS": {
+      "main": [
+        [
+          {
+            "node": "LYLE: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "LYLE: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "LYLE: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "LYLE: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "LYLE: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: LIST": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: LOOP": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: CHECK HAS TASK FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RICH LIM: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: TASKS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: TASKS": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: ADD LIST METADATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: ADD LIST METADATA": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: CHECK HAS TASK FIELD": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: CATEGORIZED DUE DATE TIME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: CATEGORIZED DUE DATE TIME": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: IS CREATED THIS YEAR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: IS CREATED THIS YEAR": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: REMOVE NOT IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "ANDREA: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOMINIC: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "DOMINIC: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANS: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "HANS: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LYLE: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "LYLE: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RICH LIM: REMOVE NOT IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "RICH LIM: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ABDUL: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ANDREA: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CLOIE: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "DARRYL: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "DOMINIC: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "HANS: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "LYLE: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "RICH LIM: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "MERGE": {
+      "main": [
+        [
+          {
+            "node": "MERGE TASKS BY USERNAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE TASKS BY USERNAME": {
+      "main": [
+        [
+          {
+            "node": "SORT BY USERNAME A-Z",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SORT BY USERNAME A-Z": {
+      "main": [
+        [
+          {
+            "node": "RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "ad0b9cd4-b14f-4768-824a-a2064c9efbcf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "1OtHhtyL52eA1MPq",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

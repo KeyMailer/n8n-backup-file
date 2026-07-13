@@ -1,0 +1,523 @@
+{
+  "name": "Calendly - Slack: Notify Channel of New Meetings",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        688
+      ],
+      "id": "961b543a-72ae-440b-b250-08feb015c5d6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nreturn [{\n  json: item.body\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        384
+      ],
+      "id": "f4cd8116-8fd3-49fd-a398-dd0de8811aa8",
+      "name": "GET BODY"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5dc2a7e0-2731-42e9-8bc6-50bc3631c2d5",
+              "name": "event_name",
+              "value": "={{ $json.payload.scheduled_event.name || '-' }}",
+              "type": "string"
+            },
+            {
+              "id": "927eb207-8093-41ca-865c-4cff1a445a11",
+              "name": "event_start_time_uk",
+              "value": "={{ new Date($json.payload.scheduled_event.start_time).toLocaleString('en-GB', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  year: 'numeric',\n  hour: 'numeric',\n  minute: '2-digit',\n  hour12: true,\n  timeZone: 'Europe/London'\n}) }}",
+              "type": "string"
+            },
+            {
+              "id": "029e26b2-76ee-48ee-9b00-d43ef7fb850a",
+              "name": "event_start_time_asia",
+              "value": "={{ new Date($json.payload.scheduled_event.start_time).toLocaleString('en-GB', {\n  weekday: 'long',\n  day: 'numeric',\n  month: 'long',\n  year: 'numeric',\n  hour: 'numeric',\n  minute: '2-digit',\n  hourCycle: 'h12',\n  timeZone: 'Asia/Manila'\n}) }}",
+              "type": "string"
+            },
+            {
+              "id": "8b48938c-c2ec-4a7b-a4bb-e24b7c6af5d2",
+              "name": "invitee_name",
+              "value": "={{ $json.payload.name }}",
+              "type": "string"
+            },
+            {
+              "id": "87262aaf-7d24-4b6e-b957-419f5f6e960f",
+              "name": "invitee_email",
+              "value": "={{ $json.payload.email }}",
+              "type": "string"
+            },
+            {
+              "id": "0a544228-0a31-4943-b49f-c6fd8a39d39f",
+              "name": "invitee_orgs",
+              "value": "={{ $json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "84893187-01b7-489b-96e1-2351c4328af1",
+              "name": "invitee_preferred_lang",
+              "value": "={{ $json.language }}",
+              "type": "string"
+            },
+            {
+              "id": "4f34a587-2030-492b-90d7-bcd76726efe5",
+              "name": "invitee_timezone",
+              "value": "={{ $json.payload.timezone || '-' }}",
+              "type": "string"
+            },
+            {
+              "id": "42b27769-7fae-468e-b77e-579a22caeedd",
+              "name": "tracking_utm_source",
+              "value": "={{ $json.payload.tracking.utm_source || '-' }}",
+              "type": "string"
+            },
+            {
+              "id": "ba0fa10c-b104-4533-bb4a-a064dbb3fea7",
+              "name": "tracking_utm_campaign",
+              "value": "={{ $json.payload.tracking.utm_campaign || '-' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        592,
+        384
+      ],
+      "id": "3d1775f9-5993-48ab-8af7-11ffb83cde05",
+      "name": "EDIT FIELDS",
+      "notes": "get only necessary fields"
+    },
+    {
+      "parameters": {
+        "content": "## DO NOT DELETE\n",
+        "height": 256,
+        "width": 592,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "1f41a09a-f0a9-402c-8304-6fa2aa24d8a3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "https://api.calendly.com/users/me",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "calendlyApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -192,
+        96
+      ],
+      "id": "78c18543-209a-498e-8ae9-be1af015199d",
+      "name": "HTTP REQ - 1",
+      "credentials": {
+        "calendlyApi": {
+          "id": "h0h1DeYOo5IN7zei",
+          "name": "Calendly account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.calendly.com/webhook_subscriptions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "calendlyApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"url\": \"https://neightn.indie-demo.com/webhook/calendly-invitee\",\n  \"events\": [\"invitee.created\"],\n  \"user\": \"https://api.calendly.com/users/b170b6de-deb0-4599-a661-1feda655c73b\",\n  \"organization\": \"https://api.calendly.com/organizations/d5c65737-2d53-4146-b5d0-293252dc6fdc\",\n  \"scope\": \"user\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        96,
+        96
+      ],
+      "id": "90a4ef8e-a60a-455a-b43a-8af145b8b225",
+      "name": "HTTP REQ - 2",
+      "credentials": {
+        "calendlyApi": {
+          "id": "h0h1DeYOo5IN7zei",
+          "name": "Calendly account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Using the Calendly node is not working due to credential setup issues, so I had to implement a workaround.\n\n**Steps taken:**\n\n1. Requested the Calendly credentials from Thom.\n2. Generated a Personal Access Token (PAT).\n3. Sent requests to the following endpoints:\n\n   * `https://api.calendly.com/users/me`\n   * `https://api.calendly.com/webhook_subscriptions`\n\nThis allows me to receive notifications whenever a new meeting is booked.\n\n**Reason for the workaround:**\n\n1. The Personal Access Token authentication method is deprecated.\n2. OAuth is now the recommended authentication method, but the credentials are not working in the Calendly Developer portal.\n3. As a temporary solution, I am still using the Personal Access Token for direct API requests instead of the Calendly node.\n",
+        "height": 464,
+        "width": 592
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -480
+      ],
+      "typeVersion": 1,
+      "id": "81622a0c-4e7c-4142-91cd-240c97b295e1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calendly-invitee",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        384
+      ],
+      "id": "57427ff3-7b17-4363-baf4-5dc9d25c6901",
+      "name": "CALENDLY INVITEE CREATED",
+      "webhookId": "936682d9-c3f9-422c-ba7c-fe3fcba66d83",
+      "notes": "do not change the path"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09CCUMRB9B",
+          "mode": "list",
+          "cachedResultName": "sales-calls"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"NEW CALENDLY MEETING SCHEDULED\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Event info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Event Name*\\n{{ $json.event_name }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Date & Time (BST)*\\n{{ $json.event_start_time_uk }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Date & Time (PHT)*\\n{{ $json.event_start_time_asia }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Invitee info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Name*\\n{{ $json.invitee_name }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Email*\\n{{ $json.invitee_email }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Company / Org*\\n{{ $json.invitee_orgs }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Preferred Language*\\n{{ $json.invitee_preferred_lang }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Timezone*\\n{{ $json.invitee_timezone }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Tracking info\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*UTM Source*\\n{{ $json.tracking_utm_source }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*UTM Campaign*\\n{{ $json.tracking_utm_campaign }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        848,
+        384
+      ],
+      "id": "6ac895b7-6fe8-4829-bb7c-f182ef455152",
+      "name": "SALES-CALL CHANNEL",
+      "webhookId": "95ed08b8-c404-4fcf-a42f-f0bd123e2373",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "1ea32abe-5775-4e2c-b5ef-ed629aa57da4",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 688,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        48,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "32fd9da2-271f-4da4-9aa2-f775d90c1db9",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "d7da8f31-6a5d-4ee3-82e2-8c7dcd38bddb",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Calendly - Slack: Notify Channel of New Meetings\n\n**Purpose:**\n- The purpose of this automation is to send a notification whenever a new Calendly meeting is booked.\n\n",
+        "height": 192,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -752,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "55c40c77-2ebb-4537-a49b-b35790bf17b1",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow runs every time a new Calendly meeting is booked.\n\n- Sends a notification to the #sales-call Slack channel.",
+        "height": 148,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -752,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "b4a08c73-6e28-4d51-8a8e-0b8bd56c93df",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "jsCode": "const qas = $json.payload.questions_and_answers || [];\n\nfunction getAnswer(questionText) {\n  const match = qas.find(qa => qa.question.trim().toLowerCase() === questionText.trim().toLowerCase());\n  return match ? match.answer : '-';\n}\n\nreturn {\n  json: {\n    ...$json,\n    company: getAnswer('Company/Organization'),\n    meetingPrep: getAnswer('Please share anything that will help prepare for our meeting.'),\n    language: getAnswer('Which language do you prefer for our meeting?')\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        384
+      ],
+      "id": "9b84ddde-faeb-4f3b-a756-c99874a016bf",
+      "name": "HANDLE QUESTIONS AND ANSWERS",
+      "notes": "The problem is that questions_and_answers array index positions aren't fixed — they shift depending on how many questions were actually answered. In your first example, \"Company/Organization\" is at index 0 and language is at index 2. In your second example (no company question), language moved to index 1. So when you hardcode [0], [2], etc., you grab the wrong answer or get nothing once the array shape changes."
+    }
+  ],
+  "pinData": {
+    "When clicking ‘Execute workflow’": [
+      {
+        "json": {
+          "created_at": "2026-07-13T08:53:34.000000Z",
+          "created_by": "https://api.calendly.com/users/b170b6de-deb0-4599-a661-1feda655c73b",
+          "event": "invitee.created",
+          "payload": {
+            "cancel_url": "https://calendly.com/cancellations/b2e84cd0-586c-4fdf-9f47-dff7609fe9ec",
+            "created_at": "2026-07-13T08:53:33.864752Z",
+            "email": "abdulrahman.emd@gmail.com",
+            "event": "https://api.calendly.com/scheduled_events/dc747b19-ab46-49b0-b634-8f7e08de84de",
+            "first_name": null,
+            "invitee_scheduled_by": null,
+            "last_name": null,
+            "name": "Abdulrahman",
+            "new_invitee": null,
+            "no_show": null,
+            "old_invitee": null,
+            "payment": null,
+            "questions_and_answers": [
+              {
+                "answer": "English",
+                "position": 1,
+                "question": "Which language do you prefer for our meeting?"
+              }
+            ],
+            "reconfirmation": null,
+            "reschedule_url": "https://calendly.com/reschedulings/b2e84cd0-586c-4fdf-9f47-dff7609fe9ec",
+            "rescheduled": false,
+            "routing_form_submission": null,
+            "scheduled_event": {
+              "created_at": "2026-07-13T08:53:33.842988Z",
+              "end_time": "2026-07-13T17:00:00.000000Z",
+              "event_guests": [],
+              "event_memberships": [
+                {
+                  "user": "https://api.calendly.com/users/b170b6de-deb0-4599-a661-1feda655c73b",
+                  "user_email": "discover@partnier.com",
+                  "user_name": "Partnier - The Game Marketing Ecosystem"
+                }
+              ],
+              "event_type": "https://api.calendly.com/event_types/fcf6e968-d21c-4b50-be90-0d7bb8b9fcc3",
+              "invitees_counter": {
+                "total": 1,
+                "active": 1,
+                "limit": 5
+              },
+              "location": {
+                "join_url": "https://calendly.com/events/dc747b19-ab46-49b0-b634-8f7e08de84de/google_meet",
+                "status": "processing",
+                "type": "google_conference"
+              },
+              "meeting_notes_html": null,
+              "meeting_notes_plain": null,
+              "name": "Game Press & Influencer Engagement Demo",
+              "start_time": "2026-07-13T16:30:00.000000Z",
+              "status": "active",
+              "updated_at": "2026-07-13T08:53:33.842988Z",
+              "uri": "https://api.calendly.com/scheduled_events/dc747b19-ab46-49b0-b634-8f7e08de84de"
+            },
+            "scheduling_method": null,
+            "status": "active",
+            "text_reminder_number": null,
+            "timezone": "Asia/Amman",
+            "tracking": {
+              "utm_campaign": null,
+              "utm_source": null,
+              "utm_medium": null,
+              "utm_content": null,
+              "utm_term": null,
+              "salesforce_uuid": null
+            },
+            "updated_at": "2026-07-13T08:53:33.864752Z",
+            "uri": "https://api.calendly.com/scheduled_events/dc747b19-ab46-49b0-b634-8f7e08de84de/invitees/b2e84cd0-586c-4fdf-9f47-dff7609fe9ec"
+          },
+          "company": "-",
+          "meetingPrep": "-",
+          "language": "English"
+        }
+      }
+    ],
+    "HTTP REQ - 1": [
+      {
+        "json": {
+          "resource": {
+            "avatar_url": "https://d3v0px0pttie1i.cloudfront.net/uploads/user/avatar/19404238/69528f86.png",
+            "created_at": "2022-07-05T14:26:59.692723Z",
+            "current_organization": "https://api.calendly.com/organizations/d5c65737-2d53-4146-b5d0-293252dc6fdc",
+            "email": "discover@partnier.com",
+            "locale": "en",
+            "name": "Partnier - The Game Marketing Ecosystem",
+            "resource_type": "User",
+            "scheduling_url": "https://calendly.com/partnier",
+            "slug": "partnier",
+            "time_notation": "24h",
+            "timezone": "Europe/London",
+            "updated_at": "2026-06-25T14:14:12.491254Z",
+            "uri": "https://api.calendly.com/users/b170b6de-deb0-4599-a661-1feda655c73b"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "GET BODY": {
+      "main": [
+        [
+          {
+            "node": "HANDLE QUESTIONS AND ANSWERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EDIT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "SALES-CALL CHANNEL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP REQ - 1": {
+      "main": [
+        [
+          {
+            "node": "HTTP REQ - 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CALENDLY INVITEE CREATED": {
+      "main": [
+        [
+          {
+            "node": "GET BODY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HANDLE QUESTIONS AND ANSWERS": {
+      "main": [
+        [
+          {
+            "node": "EDIT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "deb38992-6471-4b7e-967b-59a8ea8748e2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "eKTeAdKantVzjUfC",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
