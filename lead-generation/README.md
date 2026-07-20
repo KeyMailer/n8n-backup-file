@@ -15,3 +15,9 @@
 ### SLACK MESSAGE
 
 - Fix the message formatting in the Slack block, and add an overview to avoid confusion.
+
+## 04
+
+### SLACK MESSAGE
+
+- Changed the slack notify from 11:15am (6:15PM PHT) to 11:30am (6:30PM PHT)
