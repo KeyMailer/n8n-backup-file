@@ -1,0 +1,5992 @@
+{
+  "name": "Lead Generation v2",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Lurkit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        352,
+        -224
+      ],
+      "id": "2d85827a-8b58-4d6b-bc90-123392c72c1e",
+      "name": "LURKIT",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 648678710,
+          "mode": "list",
+          "cachedResultName": "Rainmaker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=648678710"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        352,
+        80
+      ],
+      "id": "56ef1e7d-cd58-42ad-b3ab-0aa4163f206c",
+      "name": "RAINMAKER",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 650012534,
+          "mode": "list",
+          "cachedResultName": "TerminalsRe",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=650012534"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        352,
+        416
+      ],
+      "id": "a7788fda-226f-49db-99df-26013fbdb21f",
+      "name": "TERMINAL RECENT RELEASE",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2110574b-5447-425e-a888-fa67511bd03d",
+              "leftValue": "={{ $json.scraped_at.substring(0, 10) }}",
+              "rightValue": "={{ $now.toISO().substring(0, 10) }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        720,
+        -224
+      ],
+      "id": "8cc3fce5-20e0-41e3-8f4e-8e0d22ba7136",
+      "name": "LURKIT DATE FILTER",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2110574b-5447-425e-a888-fa67511bd03d",
+              "leftValue": "={{ $json.scraped_at.substring(0, 10) }}",
+              "rightValue": "={{ $now.toISO().substring(0, 10) }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        720,
+        80
+      ],
+      "id": "5e78a6dc-9f28-456e-bd2e-b085c3bf51da",
+      "name": "RAINMAKER DATE FILTER",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2110574b-5447-425e-a888-fa67511bd03d",
+              "leftValue": "={{ $json.scraped_at.substring(0, 10) }}",
+              "rightValue": "={{ $now.toISO().substring(0, 10) }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        720,
+        416
+      ],
+      "id": "70f233a8-faa7-4f2c-ad61-2caa45efd738",
+      "name": "TERMINAL DATE FILTER",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1424,
+        64
+      ],
+      "id": "9e94b967-6e64-4e77-8f06-4e834ddddf19",
+      "name": "MERGE DATA"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "edd1b56a-a693-4c23-aaaa-68ae7b2dee30",
+              "leftValue": "={{ $json.row_number }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1792,
+        80
+      ],
+      "id": "cdbf83b3-beb7-4286-a48e-1d02936f55cd",
+      "name": "CHECK IF THERE'S EMPTY OBJECT"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  (\n    SELECT id \n    FROM public.catalogue_products \n    WHERE name = '{{ $json.name.replace(/'/g, \"''\") }}'\n    LIMIT 1\n  ) AS id,\n  '{{ $json.name.replace(/'/g, \"''\") }}' AS name,\n  EXISTS (\n    SELECT 1 \n    FROM public.catalogue_products \n    WHERE name = '{{ $json.name.replace(/'/g, \"''\") }}'\n  ) AS has_exist;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2528,
+        64
+      ],
+      "id": "6342c765-21ad-41bf-a6ab-8d7bb027d8cd",
+      "name": "CATALOGUE_PRODUCTS TABLE",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "94adfaf7-19d0-4033-ad9f-bace1b6d8aa4",
+              "leftValue": "={{ $json.has_exist }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2880,
+        64
+      ],
+      "id": "80fee48e-4a8b-4127-bd5f-6f91d8135d2a",
+      "name": "CHECK IF THE GAME NAME EXIST"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    DISTINCT ON (pu.id)\n    cpmd.id AS meta_data_id,\n    cpmd.product_id,\n    cpmd.meta_data_id,\n    cmd.id AS catalogue_meta_data_id,\n    cmd.publisher_organisation_id,\n    po.id AS organisation_id,\n    po.name AS organisation_name,\n    po.active AS organisation_active,\n    pm.id AS membership_id,\n    pm.user_id,\n    pm.role,\n    pu.id AS publisher_user_id,\n    pu.email,\n    pu.first_name,\n    pu.last_name\nFROM catalogue_product_meta_data cpmd\nJOIN catalogue_meta_data cmd\n    ON cpmd.meta_data_id = cmd.id\nJOIN publisher_organisations po\n    ON cmd.publisher_organisation_id = po.id\n    AND po.active = true\nJOIN publisher_memberships pm\n    ON po.id = pm.organisation_id\n    AND pm.user_id NOT IN (15001, 82)  -- exlude proxy.admin@keymailer.co\nJOIN publisher_users pu\n    ON pm.user_id = pu.id\nWHERE cpmd.product_id = {{ $json.id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3616,
+        -368
+      ],
+      "id": "cff906a2-d73e-4bc5-9670-2f37026f47e0",
+      "name": "TABLE RELATIONSHIPS",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "GET THE PUBLISHER ORGANIZATION AND ITS USER USING CATALOGUE_PRODUCTS ID.\nEXCLUDE THE 15001(KEYMAILER EMAIL)\nEXCLUDE THE 82 (KEYMAILER EMAIL)\nMAKE SURE THE ORGANIZATION IS ACTIVE (TRUE)\n\nTABLES:\ncatalogue_product_meta_data\ncatalogue_meta_data\npublisher_organisations\npublisher_memberships\npublisher_users"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d9906d70-f04b-4234-8e83-e43ce4cbb227",
+              "name": "organisation_name",
+              "value": "={{ $json.organisation_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f03e730f-4bcc-4067-ac7a-e31ae2f6472c",
+              "name": "game_name",
+              "value": "={{ $json.game_name }}",
+              "type": "string"
+            },
+            {
+              "id": "6c563389-3465-4505-a62b-496d635743b5",
+              "name": "source",
+              "value": "={{ $json.source }}",
+              "type": "string"
+            },
+            {
+              "id": "1d6afb18-8753-4dfa-9c80-93fe6c62685d",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "77040cc2-b3fb-4975-a582-8fb27375fafd",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "921bb57d-e173-43ae-99f1-9574ee324a1b",
+              "name": "full_name",
+              "value": "={{ $json.first_name + \" \" + $json.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "d8e9cb7c-cbc6-49fb-9227-4f18ff9d5810",
+              "name": "first_name",
+              "value": "={{ $json.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "0ccf8277-512f-4066-a27e-33bda2d9d5cb",
+              "name": "last_name",
+              "value": "={{ $json.last_name }}",
+              "type": "string"
+            },
+            {
+              "id": "472396db-d325-47ad-9462-2a89d61dea6b",
+              "name": "role",
+              "value": "={{ $json.role }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4336,
+        -368
+      ],
+      "id": "0868b717-6a15-4353-b7c3-b810799b1c45",
+      "name": "GET NECESSARY FIELDS"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dba4b26c-53cf-4327-8d19-6dc23721e81e",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "181f1a30-fa68-44ac-9b34-0c951d208874",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3248,
+        -368
+      ],
+      "id": "b7c85fbd-bb77-4bb2-af00-926787a95385",
+      "name": "GAME FOUND IN MADMIN"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node (publisher/member data)\nconst previousNodeData = $input.all().map(item => item.json);\n\n// Get data from \"GAME FOUND IN MADMIN\" node (game data)\nconst gameFoundData = $('GAME FOUND IN MADMIN').all().map(item => item.json);\n\n// Process and match\nconst results = [];\n\nfor (const record of previousNodeData) {\n  const productId = record.product_id;\n\n  // Find matching game where id === product_id\n  const matchedGame = gameFoundData.find(game => game.id === productId);\n\n  if (matchedGame) {\n    // Append game_name from matched game's name\n    results.push({\n      json: {\n        ...record,\n        game_name: matchedGame.name\n      }\n    });\n  } else {\n    // No match found — pass through without game_name (or skip if preferred)\n    results.push({\n      json: {\n        ...record,\n        game_name: null\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3888,
+        -368
+      ],
+      "id": "5ba53d1b-eeeb-405f-b59d-d9b6420517e8",
+      "name": "MATCHING ID",
+      "notes": "matching product_id and id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "181f1a30-fa68-44ac-9b34-0c951d208874",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3248,
+        80
+      ],
+      "id": "24971a03-23a3-4bac-9f4e-1dc27745c642",
+      "name": "GAME NOT FOUND IN MADMIN"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3584,
+        80
+      ],
+      "id": "f2be5fa4-225f-443b-951e-6aaf1840ff9e",
+      "name": "LOOP THRU GAME"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d1f870e-7e0e-42fe-a12f-7038f7f79551",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4320,
+        96
+      ],
+      "id": "baa4ab66-66fb-4761-a40b-ccbbec808e5c",
+      "name": "CHECK TOTAL RETURN"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the node \"LOOP THRU GAME\"\nconst data = $('LOOP THRU GAME').all();\n\n// Add message field to each item\nreturn data.map(item => {\n  return {\n    json: {\n      ...item.json,\n      message: \"this game name is not found both madmin and steam\"\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4320,
+        576
+      ],
+      "id": "35279ab1-e930-4e4e-b5df-7d63832c4fd4",
+      "name": "GET LOOP THRU GAME DATA"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 522434222,
+          "mode": "list",
+          "cachedResultName": "Unmatched Games",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=522434222"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "game_name": "={{ $json.name }}",
+            "automation_notes": "={{ $json.message }}",
+            "date": "={{ $now.toISODate() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "automation_notes",
+              "displayName": "automation_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4624,
+        576
+      ],
+      "id": "3a45cfa8-59e0-4092-b518-e9037f4fcb46",
+      "name": "APPEND: UNMATCHED GAMES",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/appdetails?appids={{ $json.id }}&cc=us&l=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5040,
+        80
+      ],
+      "id": "37a1273a-fb6b-4d85-95b7-eb520a0aa92a",
+      "name": "CHECK APP ID ON STEAM"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/storesearch/?term={{ $json.name }}&cc=US&l=en",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3952,
+        96
+      ],
+      "id": "b26f87ca-a085-45e9-9104-903ac4d23af4",
+      "name": "CHECK GAME ON STEAM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ba41673c-75f3-4c40-8600-ee3a7dd9dd87",
+              "name": "game_name",
+              "value": "={{ Object.values($json)[0].data.name }}",
+              "type": "string"
+            },
+            {
+              "id": "585456d7-ff44-4f56-bdeb-ce1170103be3",
+              "name": "steam_appid",
+              "value": "={{ Object.values($json)[0].data.steam_appid }}",
+              "type": "number"
+            },
+            {
+              "id": "1dd404d7-11c0-4b26-b24a-47a3c3a60e4c",
+              "name": "publisher",
+              "value": "={{ Object.values($json)[0].data.publishers?.[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "0cee3660-f2cd-4c05-8059-0991eaf35b87",
+              "name": "developer",
+              "value": "={{ Object.values($json)[0].data.developers[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        5392,
+        80
+      ],
+      "id": "6b6f7d6c-4d99-4105-88eb-35d6c3feb06c",
+      "name": "STEAM NECESSARY FIELDS"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH \nsearch_term AS (\n    SELECT CASE \n        WHEN '{{$json.publisher}}' IN ('', 'null', 'NULL') \n        THEN '{{$json.developer}}'\n        ELSE '{{$json.publisher}}'\n    END AS term\n),\npublisher_match AS (\n    SELECT \n        po.id,\n        po.name\n    FROM public.publisher_organisations po, search_term\n    WHERE po.name ILIKE '%' || search_term.term || '%'\n      AND po.active = true\n),\nresults AS (\n    SELECT \n        {{$json.steam_appid}} AS steam_appid,\n        po.name AS organisations_name,\n        pm.role,\n        pu.id AS user_id,\n        pu.email,\n        pu.first_name,\n        pu.last_name,\n        true AS \"publisherHasFound\"\n    FROM publisher_match po\n    JOIN public.publisher_memberships pm ON pm.organisation_id = po.id\n    JOIN public.publisher_users pu ON pu.id = pm.user_id\n    WHERE pm.user_id NOT IN (15001, 82)\n)\nSELECT * FROM results\nUNION ALL\nSELECT \n    {{$json.steam_appid}} AS steam_appid,\n    (SELECT term FROM search_term) AS organisations_name,\n    NULL AS role,\n    NULL AS user_id,\n    NULL AS email,\n    NULL AS first_name,\n    NULL AS last_name,\n    false AS \"publisherHasFound\"\nWHERE NOT EXISTS (SELECT 1 FROM results);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5744,
+        80
+      ],
+      "id": "6c18782b-71e5-4037-bf01-b4d5761b2e66",
+      "name": "STEAM: TABLE RELATIONSHIPS",
+      "credentials": {
+        "postgres": {
+          "id": "ghviRi7mSIOmrT5C",
+          "name": "keymailer-postgresql-read-only"
+        }
+      },
+      "notes": "get the users using publisher name (active = true), exlclude 15001 which is the proxy.admin@keymailer, admin@keymailer.co"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node (user/org data)\nconst previousNodeData = $input.all().map(item => item.json);\n\n// Get data from \"STEAM NECESSARY FIELDS\" node\nconst steamFieldsData = $('STEAM NECESSARY FIELDS').all().map(item => item.json);\n\n// Merge records where steam_appid matches\nconst mergedResults = [];\n\nfor (const user of previousNodeData) {\n  const matchingSteam = steamFieldsData.find(\n    steam => steam.steam_appid === user.steam_appid\n  );\n\n  if (matchingSteam) {\n    mergedResults.push({\n      steam_appid: user.steam_appid,\n      game_name: matchingSteam.game_name,\n      organisations_name: user.organisations_name,\n      role: user.role,\n      user_id: user.user_id,\n      email: user.email,\n      first_name: user.first_name,\n      last_name: user.last_name,\n    });\n  }\n}\n\n// Return as n8n items\nreturn mergedResults.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6432,
+        64
+      ],
+      "id": "bc9f5a9d-47ee-440a-b163-770c0bc7d054",
+      "name": "STEAM MATCHING APP ID"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1401329180,
+          "mode": "list",
+          "cachedResultName": "Steam Matches",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1401329180"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisations_name }}",
+            "game_name": "={{ $json.game_name }}",
+            "email": "={{ $json.email }}",
+            "full_name": "={{$json.first_name + \" \" + $json.last_name}}",
+            "first_name": "={{ $json.first_name }}",
+            "last_name": "={{ $json.last_name }}",
+            "role": "={{ $json.role }}",
+            "date": "={{ $now.toISODate() }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7184,
+        64
+      ],
+      "id": "537d42c9-cf9d-41fa-96d1-a7ff3747336e",
+      "name": "APPEND: STEAM MATCHES",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1539464337,
+          "mode": "list",
+          "cachedResultName": "Madmin Matches",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1539464337"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisation_name }}",
+            "game_name": "={{ $json.game_name }}",
+            "email": "={{ $json.email }}",
+            "full_name": "={{ $json.full_name }}",
+            "first_name": "={{ $json.first_name }}",
+            "last_name": "={{ $json.last_name }}",
+            "role": "={{ $json.role }}",
+            "date": "={{ $now.toISODate() }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_name",
+              "displayName": "first_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_name",
+              "displayName": "last_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4624,
+        -672
+      ],
+      "id": "03c3aff2-e265-458c-b124-750bd79fd094",
+      "name": "APPEND: MADMIN MATCHES",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1539464337,
+          "mode": "list",
+          "cachedResultName": "Madmin Matches",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1539464337"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $now.toISODate() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        1776
+      ],
+      "id": "2e5f8d96-5b09-469c-8432-919de3c49fb9",
+      "name": "MADMIN MATCHES",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1401329180,
+          "mode": "list",
+          "cachedResultName": "Steam Matches",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1401329180"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $now.toISODate() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        2080
+      ],
+      "id": "18a2f788-2046-4d9e-93f7-971aec7576e4",
+      "name": "STEAM MATCHES",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        928,
+        1920
+      ],
+      "id": "f21a1103-445c-4eeb-baa6-b6720adbe886",
+      "name": "MERGE"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        1920
+      ],
+      "id": "41f09645-625a-48bf-b5bf-2336792c84d8",
+      "name": "INTERCOM LOOP"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.intercom.io/contacts/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": {\n    \"operator\": \"AND\",\n    \"value\": [\n      {\n        \"field\": \"custom_attributes.Publishers\",\n        \"operator\": \"~\",\n        \"value\": \"{{ $json.organisation_name }}\"\n      },\n      {\n        \"field\": \"custom_attributes.Developers\",\n        \"operator\": \"~\",\n        \"value\": \"{{ $json.organisation_name }}\"\n      }\n    ]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2288,
+        2240
+      ],
+      "id": "e711766d-c9d5-4401-ba48-7773adede4e8",
+      "name": "INTERCOM",
+      "credentials": {
+        "intercomApi": {
+          "id": "wlgMrlAFTSVnO66r",
+          "name": "Intercom account"
+        }
+      },
+      "notes": "Check if the organisation_name input is match with the custom_attributes.Publishers OR Developer field from Intercom"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node (contact list results)\nconst currentNodeData = $input.all();\nconst intercomLoopData = $('INTERCOM LOOP').all();\nconst organisationNames = intercomLoopData.map(item => item.json.organisation_name);\n\n// Flatten all contacts\nconst allContacts = [];\nfor (const item of currentNodeData) {\n  const json = item.json;\n  const lists = Array.isArray(json) ? json : [json];\n  for (const list of lists) {\n    const contacts = list.data || [];\n    for (const contact of contacts) {\n      allContacts.push(contact);\n    }\n  }\n}\n\n// Track which orgs got matched\nconst matchedOrgs = new Set();\nconst results = [];\n\nfor (const contact of allContacts) {\n  const externalId = contact.external_id || '';\n  const email = contact.email || null;\n  const name = contact.name || null;\n  const role = contact.role || null;\n  const publishers = (contact.custom_attributes?.Publishers || '').toLowerCase();\n  const developers = (contact.custom_attributes?.Developers || '').toLowerCase();\n\n  if (!externalId.startsWith('p_')) continue;\n\n  let matchedOrg = null;\n  for (const orgName of organisationNames) {\n    const orgLower = orgName.toLowerCase();\n    if (orgLower === publishers || orgLower === developers) {\n      matchedOrg = orgName;\n      break;\n    }\n  }\n\n  if (matchedOrg) {\n    matchedOrgs.add(matchedOrg); // track it\n    results.push({\n      json: {\n        organisation_name: matchedOrg,\n        externalId,\n        email,\n        name,\n        role,\n        hasFound: true,\n      }\n    });\n  }\n}\n\n// After the loop, push any orgs that were never matched\nfor (const orgName of organisationNames) {\n  if (!matchedOrgs.has(orgName)) {\n    results.push({\n      json: {\n        organisation_name: orgName,\n        hasFound: false,\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        2240
+      ],
+      "id": "db486baf-8871-4f7f-81a4-486508727e72",
+      "name": "INTERCOM CONDITION",
+      "notes": "external_id must begin with p_\nmatch org input vs publisher or developer field in intercom"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "34b2a33f-6a52-4b21-9b96-ab83456b422d",
+              "leftValue": "={{ $json.hasFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2992,
+        2240
+      ],
+      "id": "4b256bd5-47ec-42e9-9689-bb0f2638e911",
+      "name": "HAS FOUND IS TRUE"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "email",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        2224
+      ],
+      "id": "d60554a5-9950-42a1-aef6-8950cfc04caa",
+      "name": "REMOVE DUPLICATES EMAIL"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1349426200,
+          "mode": "list",
+          "cachedResultName": "Intercom Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1349426200"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisation_name }}",
+            "email": "={{ $json.email }}",
+            "name": "={{ $json.name }}",
+            "role": "={{ $json.role }}",
+            "date": "={{ $now.toISODate() }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "game_name": "={{ $json.game_name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3888,
+        2000
+      ],
+      "id": "c1a979e7-fcc2-45c4-9149-94e612a84401",
+      "name": "APPEND: INTERCOM CONTACTS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from previous node\nconst items = $input.all();\n\n// Filter items:\n// - has \"hasFound\" field\n// - hasFound is false\nconst filtered = items.filter(item => \n  item.json.hasOwnProperty('hasFound') && item.json.hasFound === false\n);\n\n// Add source field to each filtered item\nconst result = filtered.map(item => ({\n  json: {\n    ...item.json,\n    source: \"intercom\"\n  }\n}));\n\n// Return filtered results\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        1904
+      ],
+      "id": "c4172acd-c3ec-4bfa-86b2-62ea49d84a32",
+      "name": "INTERCOM: PUBLISHER NOT FOUND"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        2976
+      ],
+      "id": "c9f9a240-0862-4f20-89fd-7a093c71b22e",
+      "name": "AC LOOP"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/organizations?search={{ $json.organisation_name }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        3280
+      ],
+      "id": "649d0789-ab00-4eac-a294-147d0dfac0ea",
+      "name": "AC SEARCH PUBLISHER",
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "Gffzskt10H2YxYgx",
+          "name": "active-campaign-eduardo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous node (organizations search results)\nconst previousData = $input.all();\n\n// Get data from AC LOOP node\nconst acLoopData = $('AC LOOP').all();\n\nconst results = [];\n\nfor (let i = 0; i < acLoopData.length; i++) {\n  const organisation_name = acLoopData[i].json.organisation_name;\n  const organizations = previousData[i].json.organizations || [];\n\n  // Check for EXACT match among all organizations in this result\n  const exactMatch = organizations.find(org => org.name === organisation_name);\n\n  if (exactMatch) {\n    results.push({\n      json: {\n        ...exactMatch,\n        organisation_name,\n        hasFound: true\n      }\n    });\n  } else {\n    results.push({\n      json: {\n        organisation_name,\n        hasFound: false\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        3280
+      ],
+      "id": "e99d7fb6-5092-4137-83de-e91846c44c6c",
+      "name": "MATCHING NAME"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "226a9e56-96de-4cf1-a0d7-c604700f16d6",
+              "leftValue": "={{ $json.hasFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3008,
+        3280
+      ],
+      "id": "7e566fdc-517d-47c2-981b-f9aa6df92f4b",
+      "name": "AC HAS FOUND IS TRUE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c4d3db86-444e-4ab7-89d4-f4c2786e82d0",
+              "name": "organisation_name",
+              "value": "={{ $json.organisation_name }}",
+              "type": "string"
+            },
+            {
+              "id": "049cb724-25e9-4545-a0f0-f0fb71544be1",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "44a0b08c-e3f4-45df-addc-baed33868795",
+              "name": "hasFound",
+              "value": "={{ $json.hasFound }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3360,
+        3264
+      ],
+      "id": "351d4281-4c81-436b-b1f7-df62bba6c92f",
+      "name": "AC IMPORTANT FIELD"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/organizations/{{ $json.id }}/contacts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3728,
+        3264
+      ],
+      "id": "cfb2c856-0ec6-4395-9c6a-87036f733e91",
+      "name": "AC GET ORG ID",
+      "alwaysOutputData": true,
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "2zgZp83VavQKuFe2",
+          "name": "ActiveCampaign account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the previous node (accountContacts data)\nconst accountContactsData = $input.all();\n\n// Get data from the \"AC IMPORTANT FIELD\" node (accounts data)\nconst accountsData = $('AC IMPORTANT FIELD').all();\n\nconst results = [];\n\nfor (const accountItem of accountsData) {\n  const account = accountItem.json;\n  const accountId = account.id;\n\n  // Find matching entry in accountContacts data\n  const matchingEntry = accountContactsData.find(item => {\n    const contacts = item.json.accountContacts;\n    // Check if any contact in this entry has account === accountId\n    return Array.isArray(contacts) && contacts.some(c => c.account === accountId);\n  });\n\n  if (!matchingEntry) {\n    // No match found OR accountContacts is empty — return name + flag\n    results.push({\n      json: {\n        name: account.organisation_name,\n        id: accountId,\n        isAccountContactsEmpty: true\n      }\n    });\n    continue;\n  }\n\n  const contacts = matchingEntry.json.accountContacts;\n  const isEmpty = !Array.isArray(contacts) || contacts.length === 0;\n\n  if (isEmpty) {\n    results.push({\n      json: {\n        id: accountId,\n        name: account.organisation_name,\n        isAccountContactsEmpty: true\n      }\n    });\n  } else {\n    // Return the full accountContacts array with the flag\n    results.push({\n      json: {\n        ...matchingEntry.json,\n        accountName: account.organisation_name,\n        isAccountContactsEmpty: false\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4096,
+        3264
+      ],
+      "id": "91c64db8-cf18-46d3-9198-4002b46c7866",
+      "name": "AC MATCHING ACCOUNT & ID"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f58b530a-e3bb-4b9f-8ddb-021d8e33f954",
+              "leftValue": "={{ $json.isAccountContactsEmpty }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4448,
+        3568
+      ],
+      "id": "27ee6e95-7b4e-4031-a339-7d7a54213938",
+      "name": "AC IS ACCOUNT EMPTY",
+      "notes": "meaning there's an account but no contacts"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/contacts/{{ $json.contact }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5168,
+        3584
+      ],
+      "id": "a87a4188-285e-40b8-bbb9-b1aa8b8ba648",
+      "name": "AC GET DETAILS OF SINGLE CONTACT",
+      "alwaysOutputData": true,
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "2zgZp83VavQKuFe2",
+          "name": "ActiveCampaign account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input data\nconst items = $input.all();\n\nconst output = [];\n\nfor (const item of items) {\n  const accountName = item.json.accountName;\n  const contacts = item.json.accountContacts || [];\n\n  for (const contact of contacts) {\n    output.push({\n      json: {\n        accountName,\n        ...contact\n      }\n    });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4816,
+        3584
+      ],
+      "id": "9d23fbc2-9d9d-437c-b55b-df71bb2a29d3",
+      "name": "FLATTEN"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1784691780,
+          "mode": "list",
+          "cachedResultName": "AC Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1784691780"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.toISODate() }}",
+            "organisation_name": "={{ $json.organisation_name }}",
+            "email": "={{ $json.email }}",
+            "name": "={{ $json.name }}",
+            "role": "={{ $json.role }}",
+            "game_name": "={{ $json.game_name }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6064,
+        3584
+      ],
+      "id": "b2869683-83c9-4ac0-9b4e-a9170b085d2f",
+      "name": "APPEND: AC CONTACTS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ad127df3-3e4a-4acb-b796-2603e01dbaeb",
+              "name": "organisation_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "aaf9d1f2-9df0-44a1-9894-857e6c283b9f",
+              "name": "hasFound",
+              "value": "=false",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4464,
+        3856
+      ],
+      "id": "a750d446-3d48-48ca-89f6-314b0829bab9",
+      "name": "CHANGE VALUE"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from previous node\nconst items = $input.all();\n\n// Filter items:\n// - has \"hasFound\" field\n// - hasFound is false\nconst filtered = items.filter(item => \n  item.json.hasOwnProperty('hasFound') && item.json.hasFound === false\n);\n\n// Add source field to each filtered item\nconst result = filtered.map(item => ({\n  json: {\n    ...item.json,\n    source: \"active campaign\"\n  }\n}));\n\n// Return filtered results\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        2960
+      ],
+      "id": "ec8cec28-0144-4157-9fb9-99eea687646a",
+      "name": "AC: PUBLISHER NOT FOUND"
+    },
+    {
+      "parameters": {
+        "jsCode": "const intercomItems = $('INTERCOM: PUBLISHER NOT FOUND').all();\nconst acItems = $('AC: PUBLISHER NOT FOUND').all();\nconst results = [];\n\nconst processItem = (item) => {\n  const orgName = item.json.organisation_name;\n  if (!orgName) return;\n\n  results.push({\n    json: {\n      ...item.json,\n      organisation_name: orgName.trim(),\n    }\n  });\n};\n\nintercomItems.forEach(processItem);\nacItems.forEach(processItem);\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        4480
+      ],
+      "id": "bf9f2526-8f00-46a2-8b0e-da744d2146d8",
+      "name": "GET NOT FOUND PUBLISHERS"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "c3c0d422-9d50-44a8-af31-43fd6a28f960",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "0b058923-1bb0-48f3-8645-e6410ec62d6e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "929c8ea8-cb74-4c27-aafb-544f0c2c8d8d",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "526b2373-6de7-4476-beaf-204e7a2436f1",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "3fbb8fc8-b502-4891-88bc-4ddda8c8299f",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "b530bceb-5e49-46c8-b2c3-c97fa638dd68",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 912,
+        "width": 688,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        960,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "da45d27f-7f53-46a7-a2d1-3d726fa85e4a",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        352
+      ],
+      "id": "99c4eea8-9b5e-4450-a71b-6a17983f7d28",
+      "name": "DO NOTHING"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "f6190bd3-d5e1-444b-8c65-b5dc57effe95",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 228,
+        "width": 312,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "d76e62a7-90c0-4948-b542-092308b31e46",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2400,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "1677f9aa-c1a8-4bf2-b4d4-283e92e7328f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2768,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "c6c317f7-9ebf-4600-9299-0afc46d5905f",
+      "name": "Sticky Note49"
+    },
+    {
+      "parameters": {
+        "content": "# STEAM",
+        "height": 80,
+        "width": 328,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3120,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "5f4374ec-fa5c-44c3-bc4e-9409c0f110a8",
+      "name": "Sticky Note50"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3120,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "5d897e13-2f42-4c56-9a1f-ae2a6fb63992",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3488,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "c58c955c-ebb8-4c50-9cd0-30660bfdf2d8",
+      "name": "Sticky Note51"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3840,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "7a054950-12df-45b7-bf81-8df36ba85c4b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4208,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "95193f14-c801-4fba-8e1d-6f7dc33d9200",
+      "name": "Sticky Note52"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4208,
+        480
+      ],
+      "typeVersion": 1,
+      "id": "65c6ba67-e43b-492d-9ed6-83d661c8874c",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4560,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "3ae98268-6bf4-4cf6-9b08-accc1f805943",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      game_name_from_sheet: $('LOOP THRU GAME').item.json.name,\n      ...$json.items[0]\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4672,
+        80
+      ],
+      "id": "e82743d4-3c62-4639-93ca-4765a13772f1",
+      "name": "GET FIRST ITEM IN ARRAY"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4912,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "4fa3d344-d14e-4aae-8908-39e6a971b24e",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5280,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "9db5837d-803a-4157-ad44-0523d7bac006",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 444,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4560,
+        480
+      ],
+      "typeVersion": 1,
+      "id": "164f4cf4-8f73-4534-984a-aa55b120bb51",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5632,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "77bdfbd7-1400-4288-96c3-7d444f7e41f2",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 736,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6352,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "299b8bc8-3672-42a6-b605-b22265728fcd",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 500,
+        "width": 444,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        7120,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "d8458a86-199d-4fc4-a71b-df306a440a93",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3120,
+        -448
+      ],
+      "typeVersion": 1,
+      "id": "07ae83cc-11f4-4c6d-8d68-6568ee3bb8f5",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "content": "# MADMIN\n",
+        "height": 80,
+        "width": 328,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3120,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "de79a25d-60de-41c5-bef0-fcdf3c6289cc",
+      "name": "Sticky Note53"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 264,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3488,
+        -448
+      ],
+      "typeVersion": 1,
+      "id": "8c1ba61e-7ce1-4c6b-be01-0e12a7f0915a",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 288,
+        "width": 640,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3856,
+        -448
+      ],
+      "typeVersion": 1,
+      "id": "fd8a55cd-5dde-4ed0-99d8-57af6b0a6053",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 596,
+        "width": 476,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4544,
+        -752
+      ],
+      "typeVersion": 1,
+      "id": "90db8c95-2ac0-4ecb-a700-3198c73e00a2",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "1c7d507f-bd9c-401b-bddd-d10cad3eaa4a",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        2000
+      ],
+      "typeVersion": 1,
+      "id": "b005c106-376d-4a22-a4d4-9a902d986981",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 608,
+        "width": 944,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        1680
+      ],
+      "typeVersion": 1,
+      "id": "63193c44-3815-41a9-8d8b-13468a7a9a3f",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        1840
+      ],
+      "typeVersion": 1,
+      "id": "8d3e9e66-7878-4fe8-89ad-cb8aa82daa74",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "# INTERCOM",
+        "height": 80,
+        "width": 328,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "882adcf2-de81-4596-bdc3-c15da2c7eaed",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2160,
+        1840
+      ],
+      "typeVersion": 1,
+      "id": "596dd6a4-d285-4469-9b54-b43fdf21549c",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2160,
+        2144
+      ],
+      "typeVersion": 1,
+      "id": "ef705240-29ab-4f55-9f95-9f937bc9639e",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        2144
+      ],
+      "typeVersion": 1,
+      "id": "84516d84-9245-44b8-861e-544269c87c46",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 548,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2896,
+        2144
+      ],
+      "typeVersion": 1,
+      "id": "d195da75-cc12-4915-98b9-0a4e3593f89d",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        2144
+      ],
+      "typeVersion": 1,
+      "id": "210de525-ee7e-4f19-a201-8c74217a201c",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 548,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3840,
+        1872
+      ],
+      "typeVersion": 1,
+      "id": "74ece6c1-ba98-45ca-bbaf-ea2ea78ceb55",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        2880
+      ],
+      "typeVersion": 1,
+      "id": "ca9e9e2a-d8c8-4df5-b5eb-0d214f99f659",
+      "name": "Sticky Note58"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2160,
+        2880
+      ],
+      "typeVersion": 1,
+      "id": "8d0ec2d6-7b9b-408d-bb4e-65553181d532",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "content": "# AC",
+        "height": 80,
+        "width": 312,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        2768
+      ],
+      "typeVersion": 1,
+      "id": "d2746862-1ea9-4235-804b-7895515b938b",
+      "name": "Sticky Note57"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2160,
+        3184
+      ],
+      "typeVersion": 1,
+      "id": "5eb66718-a4da-464a-a4e1-92101e28fd2c",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        3184
+      ],
+      "typeVersion": 1,
+      "id": "062969c7-e4ba-4c75-ad0a-3d1d6463d905",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 500,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2896,
+        3184
+      ],
+      "typeVersion": 1,
+      "id": "f2326e7d-b377-48de-b33a-84c7654da8f9",
+      "name": "Sticky Note59"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        3184
+      ],
+      "typeVersion": 1,
+      "id": "6293ab3c-c5fe-4141-806b-fb03b1916528",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 264,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3616,
+        3184
+      ],
+      "typeVersion": 1,
+      "id": "cdeb471b-b4f7-4a16-a2bb-fce0f1e4c76a",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3984,
+        3184
+      ],
+      "typeVersion": 1,
+      "id": "cf63e091-47cf-4d4e-af96-6c9b363f8cd4",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4352,
+        3472
+      ],
+      "typeVersion": 1,
+      "id": "803d4caa-b457-4af7-8dfa-17328a1ca36b",
+      "name": "Sticky Note60"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4352,
+        3776
+      ],
+      "typeVersion": 1,
+      "id": "d779a716-8dc3-44e7-b10f-a3193386cc36",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4704,
+        3472
+      ],
+      "typeVersion": 1,
+      "id": "fe5d1d07-7acd-41b7-af6a-f6cfe371af64",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 264,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5056,
+        3472
+      ],
+      "typeVersion": 1,
+      "id": "e4a6b50a-4d7c-4b54-9364-fc64eb845839",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 484,
+        "width": 492,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5984,
+        3504
+      ],
+      "typeVersion": 1,
+      "id": "13d63a29-8967-41e0-9f02-0cad11e61265",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "# NO FOUND",
+        "height": 80,
+        "width": 312,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        4288
+      ],
+      "typeVersion": 1,
+      "id": "83443a25-59e6-4ae6-b854-60058b0ae3c3",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 720,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        4400
+      ],
+      "typeVersion": 1,
+      "id": "91bea4ac-b468-4f98-bc8f-f89def1e20ea",
+      "name": "Sticky Note61"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 507403341,
+          "mode": "list",
+          "cachedResultName": "Unmatched Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=507403341"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "publisher / developer name": "={{ $json.organisation_name }}",
+            "automation_notes": "={{ $json.organisation_name }} is not found in {{\n  $json.source === 'both'\n    ? 'both Intercom and Active Campaign'\n    : $json.source === 'intercom'\n      ? 'Intercom'\n      : $json.source === 'active campaign'\n        ? 'Active Campaign'\n        : ''\n}}",
+            "date": "={{ $now.toISODate() }}",
+            "status": "pending",
+            "game_name": "={{ $json.game_name }}",
+            "source": "={{ $json.game_source }}",
+            "url": "={{ $json.url }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "publisher / developer name",
+              "displayName": "publisher / developer name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "automation_notes",
+              "displayName": "automation_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2640,
+        4480
+      ],
+      "id": "61a9baef-7cc2-47f9-b826-a61cc0c49a2e",
+      "name": "APPEND: UNMATCHED CONTACTS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 476,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2560,
+        4400
+      ],
+      "typeVersion": 1,
+      "id": "091d113d-9d3f-4b65-96a0-97397b795165",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6000,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "a5ccae05-bcd5-4852-ba91-a39aabefcf47",
+      "name": "Sticky Note63"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "45e1b522-6b96-4e5a-87e1-a61582f2e50c",
+              "leftValue": "={{ $json.publisherHasFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        6096,
+        80
+      ],
+      "id": "ab7d0157-3342-49e1-995c-d4400557ef49",
+      "name": "If",
+      "notes": "check if the publisher is found in madmin"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        6112,
+        624
+      ],
+      "id": "72ee4460-0760-49ef-8f79-52583e9c921f",
+      "name": "PUBLISHER NOT FOUND IN MADMIN"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 228,
+        "width": 520,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6000,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "3836f628-fd08-4a08-a86d-b7e340bb7de0",
+      "name": "Sticky Note64"
+    },
+    {
+      "parameters": {
+        "content": "# FINDING GAMES",
+        "height": 80,
+        "width": 328,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "082036b3-f433-4e78-8708-7ef448528429",
+      "name": "Sticky Note65"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "4e2dcf18-da81-4809-9910-2077c0be1e7a",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "# FINDING CONTACTS",
+        "height": 112,
+        "width": 328,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        1744
+      ],
+      "typeVersion": 1,
+      "id": "5ed0b689-aca6-4735-91a7-69dc255eedaa",
+      "name": "Sticky Note66"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        1888
+      ],
+      "typeVersion": 1,
+      "id": "6a374402-b564-410e-a8c0-815d65a4f15c",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6336,
+        624
+      ],
+      "id": "7dee7a7e-9522-46b7-b2f7-b0883d9d898b",
+      "name": "STEAM WAIT 5 SEC..",
+      "webhookId": "29fe050f-97e0-4078-8b0c-d50e2a6bb9e5"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 30 10 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        80
+      ],
+      "id": "f9a9eefe-d159-4267-88ca-178c50b3356c",
+      "name": "TRIGGER 1",
+      "notes": "10:30AM UK TIME OR 5:30PM PHT"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 11 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -16,
+        1984
+      ],
+      "id": "fec35cd9-d799-4c65-83b5-ad1400b8e621",
+      "name": "TRIGGER 2",
+      "notes": "11:00AM UK TIME OR 6:00PM PHT"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2880,
+        4480
+      ],
+      "id": "7374a147-8104-4ec7-b04a-ddabc1dc7a26",
+      "name": "NO FOUND: WAIT 5 SEC",
+      "webhookId": "0d2c2e4b-26dc-4f64-8110-391515712d82"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4128,
+        2000
+      ],
+      "id": "d7f76155-63d1-44f1-830d-1d8eb4fa2745",
+      "name": "INTERCOM: WAIT 3 SEC",
+      "webhookId": "8bb94526-52ff-462f-ba3b-ef26c449d027"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6320,
+        3584
+      ],
+      "id": "19a2e0bc-f523-4424-af71-4610cb7a4623",
+      "name": "AC: WAIT 3 SEC",
+      "webhookId": "b9baa154-4aed-48d9-a790-c7335da2bbbc"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4832,
+        -672
+      ],
+      "id": "fb082346-660c-4c86-970c-47faf21eca9a",
+      "name": "MADMIN: WAIT 3 SEC",
+      "webhookId": "2d8a33b2-10f8-4344-a32a-2b51394239a8"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        7408,
+        64
+      ],
+      "id": "5689fade-421d-4af0-9708-60d350d6e7d4",
+      "name": "STEAM: WAIT 3 SEC",
+      "webhookId": "29fe050f-97e0-4078-8b0c-d50e2a6bb9e5"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4848,
+        576
+      ],
+      "id": "5cb6a882-43af-4541-a603-fc809fdb55d7",
+      "name": "STEAM: WAIT 3 SEC.",
+      "webhookId": "cdff4d0e-8064-420e-94d9-3beb7825575d"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 507403341,
+          "mode": "list",
+          "cachedResultName": "Unmatched Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=507403341"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        5360
+      ],
+      "id": "984ed431-753f-4277-b7ff-a47b8775088d",
+      "name": "GET: UNMATCHED CONTACTS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        864,
+        5360
+      ],
+      "id": "2972d13c-c64b-4c11-9fde-90a6bd23541b",
+      "name": "AGGREGATE INTO SINGLE LIST"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"LEAD GENERATION - ENRICH DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: The main source of lead generation is competitor websites such as Lurkit, Rainmaker, and Terminal. It scrapes these competitor websites to retrieve game data.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, new data to enrich. View the full details in this <https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?gid=507403341#gid=507403341|Unmatched Contacts tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": \"| Publisher / Developer Name | Status |\\n|---|---|\\n{{ $json.data.map(item => `| ${item['publisher / developer name']} | ${item.status} |`).join('\\\\n') }}\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1152,
+        5360
+      ],
+      "id": "38565638-572e-4f44-a3c9-5c11d4d5e6eb",
+      "name": "SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3008,
+        2480
+      ],
+      "id": "358531d8-da20-47e1-a325-d109dd7e2ca1",
+      "name": "HAS FOUND: FALSE WAIT 2 SEC",
+      "webhookId": "d5f9098b-b62b-4ba2-95ad-1ca10b2594a8"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3008,
+        3488
+      ],
+      "id": "5a4d8e52-d8f5-4897-bdab-65a9a2dc66d0",
+      "name": "AC HAS FOUND: FALSE WAIT 2 SEC",
+      "webhookId": "d5f9098b-b62b-4ba2-95ad-1ca10b2594a8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Extract raw data\nconst records = items.map(item => item.json);\n\n// Group by organisation_name\nconst grouped = {};\n\nfor (const record of records) {\n  const key = record.organisation_name.trim().toUpperCase();\n\n  if (!grouped[key]) {\n    grouped[key] = { ...record };\n  } else {\n    // Duplicate found — merge sources\n    const existingSource = grouped[key].source;\n    const newSource = record.source;\n\n    if (existingSource !== newSource) {\n      grouped[key].source = \"both\";\n    }\n\n    // Merge hasFound — true wins\n    grouped[key].hasFound = grouped[key].hasFound || record.hasFound;\n  }\n}\n\n// Return as n8n items\nreturn Object.values(grouped).map(record => ({ json: record }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        4480
+      ],
+      "id": "a8fbfa82-b690-4d73-b023-3effc61548c9",
+      "name": "MERGE IF SAME ORG",
+      "notes": "check if there's same orgnisation name, if yes merge the data and change the source to both, if no, keep it as is"
+    },
+    {
+      "parameters": {
+        "content": "## Lead Generation - Finding Games\n\n**Purpose:**\n- The purpose of this workflow is to get the game name from competitors, check if it exists in Madmin, and if it does, retrieve the contact. If it does not exist, the workflow checks Steam, retrieves the publisher from Steam, and then gets the contact in Madmin. If the game name still does not exist, it is added to the unmatched games list.\n\n",
+        "height": 240,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "9a6fca8d-902b-4299-b381-16583ee0d29a",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?gid=627973264#gid=627973264\n\n",
+        "height": 136,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "dce4a998-d8cf-4872-9d53-5096ac5f1167",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run everyday, :\n- 10:30 AM UK time OR 5:30 PM PHT\n\n- Retrieve data from the scraped campaign sheet where competitor data is stored, and only get today’s data.\n\n- Check if the game exists in Madmin. If yes, retrieve the contact.\n\n- If not, check Steam, get the publisher, and use that publisher to retrieve the contact in Madmin.\n\n- If the game does not exist in both, store it in the unmatched games list.\n  ",
+        "height": 388,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "97fe6b09-2f40-479e-bc15-7588ef1b20ee",
+      "name": "Sticky Note68"
+    },
+    {
+      "parameters": {
+        "content": "## Lead Generation - Finding Contacts\n\n**Purpose:**\n- The purpose of this workflow is to get the game’s publisher from Madmin and Steam, and use the publisher to check if it exists in both Intercom and ActiveCampaign.\n\n\n",
+        "height": 176,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        1744
+      ],
+      "typeVersion": 1,
+      "id": "361abda9-c5d6-4eec-9b02-a887218f5e3d",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?gid=627973264#gid=627973264\n\n",
+        "height": 136,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        1952
+      ],
+      "typeVersion": 1,
+      "id": "93c053d7-894d-4564-bb50-9c33d52b4ce7",
+      "name": "Sticky Note70"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run everyday, :\n- 11:00 AM UK time OR 6:00 PM PHT\n\n- Retrieve data from the Madmin and Steam sheet\n\n- Check if the publisher exists in Intercom; if yes, retrieve the contacts.\n\n- Check if the publisher exists in ActiveCampaign; if yes, retrieve the contacts.\n\n- If the publisher does not exist in either platform, store it in the unmatched contacts list, then use it for manual enrichment in Clay.\n\n- Send a Slack notification, if there's new data to enrich.\n  ",
+        "height": 420,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        2128
+      ],
+      "typeVersion": 1,
+      "id": "21879346-051c-4567-86aa-191585571bf2",
+      "name": "Sticky Note71"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3046aa27-72f6-4e5b-a33f-128e8c4bfe66",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "c6713462-54f5-458c-a38c-f6fb31b6e19f",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "ebaa550b-72e3-4fdc-9fa5-65b650f58a4e",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "e683f2a7-c258-4ccc-bd7c-e09c0b428c2c",
+              "name": "scraped_at",
+              "value": "={{ $json.scraped_at }}",
+              "type": "string"
+            },
+            {
+              "id": "9595849c-e8fb-4e56-a35b-d174804ba4d6",
+              "name": "source",
+              "value": "lurkit",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        -224
+      ],
+      "id": "3e183a98-b3aa-434a-b1f7-141a9bb2538b",
+      "name": "LURKIT SOURCE FIELD"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "00c3b975-4ebc-4141-9053-dfe1dfa576cc",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "3b104cda-0d9b-45f7-a781-c3e255149935",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "b36ab091-9775-490a-9363-1d7b67d31dbd",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "0142ae6b-a15f-4c3a-b89a-f6ee69eddd26",
+              "name": "scraped_at",
+              "value": "={{ $json.scraped_at }}",
+              "type": "string"
+            },
+            {
+              "id": "9540e9ee-3e34-4b36-8b8d-3b24785751c7",
+              "name": "source",
+              "value": "rainmaker",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        80
+      ],
+      "id": "1e726f39-4b14-4990-9879-0ae7c45fa47f",
+      "name": "RAINMAKER SOURCE FIELD"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "55e21fa3-b006-4ef6-80e1-4878948ea83c",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "80ea4ddc-ff79-4c7f-bd8d-d51d4545db58",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "f8b14857-ed72-4b54-b3a8-af40b9083d93",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "9e1ba792-01d0-4cb4-aef1-eb198c024322",
+              "name": "scraped_at",
+              "value": "={{ $json.scraped_at }}",
+              "type": "string"
+            },
+            {
+              "id": "31acaf37-9842-4b2b-8423-c35927959af7",
+              "name": "source",
+              "value": "terminals",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        416
+      ],
+      "id": "26ad507a-55a5-4400-a589-2dedc653d380",
+      "name": "TERMINALS SOURCE FIELD"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0af86174-a552-4da4-a53f-f7ff7cea9136",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "616e2dba-bcd0-4805-9961-4a4976168435",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "b233ea4d-c7e2-476d-81c0-e01edb43f96f",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "8587f138-4d95-4f14-947d-536cbcaf4546",
+              "name": "scraped_at",
+              "value": "={{ $json.scraped_at }}",
+              "type": "string"
+            },
+            {
+              "id": "dd5b29af-1188-4786-a42f-df94fd8be49c",
+              "name": "source",
+              "value": "={{ $json.source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        64
+      ],
+      "id": "6c86420d-a395-4eaa-9230-5767a98cab0e",
+      "name": "ROW_NUMBER EXIST"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (the main dataset)\nconst previousData = $input.all().map(item => item.json);\n\n// Get the \"ROW_NUMBER EXIST\" node data\nconst rowNumberData = $('ROW_NUMBER EXIST').all().map(item => item.json);\n\n// Normalize string for comparison: lowercase + collapse spaces\nfunction normalize(str) {\n  if (!str) return '';\n  return str.toLowerCase().replace(/\\s+/g, ' ').trim();\n}\n\n// Build a lookup map from the ROW_NUMBER EXIST data keyed by normalized name\nconst rowNumberMap = {};\nfor (const row of rowNumberData) {\n  const key = normalize(row.name);\n  rowNumberMap[key] = row;\n}\n\n// For each item in previous data, find a match and append fields\nconst results = [];\n\nfor (const item of previousData) {\n  const gameKey = normalize(item.game_name);\n  const match = rowNumberMap[gameKey];\n\n  if (match) {\n    results.push({\n      ...item,\n      row_number: match.row_number,\n      url: match.url,\n      scraped_at: match.scraped_at,\n      source: match.source,\n    });\n  } else {\n    // No match found — still include the item, matched fields will be undefined\n    results.push({ ...item });\n  }\n}\n\nreturn results.map(item => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4096,
+        -368
+      ],
+      "id": "cbcaf5f4-48f1-4c57-934e-87cd63cc7440",
+      "name": "MATCHING GAME NAME"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (array of users with steam_appid)\nconst previousNodeData = $input.all().map(item => item.json);\n\n// Get \"GET FIRST ITEM IN ARRAY\" node data\nconst firstItemArray = $('GET FIRST ITEM IN ARRAY').all().map(item => item.json);\n\n// Build a lookup map from the sheet data: id -> game_name_from_sheet\nconst sheetLookup = {};\nfor (const sheetItem of firstItemArray) {\n  sheetLookup[sheetItem.id] = sheetItem.game_name_from_sheet;\n}\n\n// Map over each user row, match steam_appid with id, inject game_name_from_sheet\nconst output = [];\n\nfor (const user of previousNodeData) {\n  const game_name_from_sheet = sheetLookup[user.steam_appid];\n\n  if (game_name_from_sheet !== undefined) {\n    output.push({\n      json: {\n        game_name_from_sheet,\n        ...user\n      }\n    });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6672,
+        64
+      ],
+      "id": "353470e7-ec10-4664-8d33-67c36f44f1ae",
+      "name": "STEAM MATCHING APP ID V2",
+      "notes": "check if steam_appid is match with id, if yes retrieve the game_name_from_sheet"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get previous node data (game users)\nconst previousNodeData = $input.all().map(item => item.json);\n\n// Get ROW_NUMBER EXIST node data\nconst rowNumberExistData = $('ROW_NUMBER EXIST').all().map(item => item.json);\n\nconst results = [];\n\nfor (const gameUser of previousNodeData) {\n  const { game_name_from_sheet } = gameUser;\n\n  // Find matching row in ROW_NUMBER EXIST by name field\n  const matchedRow = rowNumberExistData.find(\n    row => row.name === game_name_from_sheet\n  );\n\n  if (matchedRow) {\n    results.push({\n      json: {\n        game_name_from_sheet: gameUser.game_name_from_sheet,\n        url: matchedRow.url,\n        source: matchedRow.source,\n        steam_appid: gameUser.steam_appid,\n        game_name: gameUser.game_name,\n        organisations_name: gameUser.organisations_name,\n        role: gameUser.role,\n        user_id: gameUser.user_id,\n        email: gameUser.email,\n        first_name: gameUser.first_name,\n        last_name: gameUser.last_name,\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6928,
+        64
+      ],
+      "id": "5bfb8b11-97ed-4897-9a1b-881c03784a6e",
+      "name": "STEAM MATCHING GAME NAME",
+      "notes": "check if game_name_from_sheet field and name field is match, if yes, retrieve the url and source"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2032,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "b2c6992a-0d64-4f13-beb8-e5c89329c7b1",
+      "name": "Sticky Note72"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d4c7d3d8-2812-4c18-b8ac-f22d73efb2b8",
+              "name": "organisation_name",
+              "value": "={{ $json.organisation_name }}",
+              "type": "string"
+            },
+            {
+              "id": "00649622-ab1e-4124-9cbd-88009d1fb853",
+              "name": "game_name",
+              "value": "={{ $json.game_name }}",
+              "type": "string"
+            },
+            {
+              "id": "2c1631d3-a5c1-4c05-ac0c-66749ff52799",
+              "name": "source",
+              "value": "={{ $json.source }}",
+              "type": "string"
+            },
+            {
+              "id": "c4174708-bfb8-4fef-add6-fb711182c0c5",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        1920
+      ],
+      "id": "9b038b12-c186-455b-b580-51e6074deb4c",
+      "name": "GET IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "jsCode": "const previousNodeData = $input.all().map(item => item.json);\nconst importantFieldsData = $('GET IMPORTANT FIELDS').all().map(item => item.json);\n\nconst results = [];\n\npreviousNodeData.forEach(person => {\n  const personOrgName = (person.organisation_name || '').toLowerCase().trim();\n\n  // Get ALL matching games for this org\n  const matches = importantFieldsData.filter(field => {\n    const fieldOrgName = (field.organisation_name || '').toLowerCase().trim();\n    return personOrgName === fieldOrgName;\n  });\n\n  if (matches.length > 0) {\n    // Create one output item per game\n    matches.forEach(match => {\n      results.push({\n        json: {\n          organisation_name: person.organisation_name,\n          game_name: match.game_name,\n          source: match.source,\n          url: match.url,\n          externalId: person.externalId,\n          email: person.email,\n          name: person.name,\n          role: person.role,\n          hasFound: person.hasFound\n        }\n      });\n    });\n  } else {\n    // No match — return person with nulls\n    results.push({\n      json: {\n        organisation_name: person.organisation_name,\n        game_name: null,\n        source: null,\n        url: null,\n        externalId: person.externalId,\n        email: person.email,\n        name: person.name,\n        role: person.role,\n        hasFound: person.hasFound\n      }\n    });\n  }\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3616,
+        2224
+      ],
+      "id": "119cb8aa-9624-4cf0-86ab-ecc2aa004a6e",
+      "name": "INTERCOM: MATCHING ORG NAME",
+      "notes": "check if there's a matching org name, if yes retrieve the game name, source, url"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  if (!item.json || !item.json.contact) {\n    return {\n      json: {\n        organisation_name: \"\",\n        email: \"\",\n        name: \"\",\n        role: \"\",\n        _error: item.json?.error?.message || \"Missing contact data\"\n      }\n    };\n  }\n  const contact = item.json.contact;\n  const accountContacts = item.json.accountContacts;\n  const firstName = (contact.firstName || \"\").trim();\n  const lastName = (contact.lastName || \"\").trim();\n  const fullName = [firstName, lastName].filter(Boolean).join(\" \");\n  const jobTitle = Array.isArray(accountContacts) && accountContacts[0]?.jobTitle\n    ? accountContacts[0].jobTitle.trim()\n    : \"\";\n  return {\n    json: {\n      organisation_name: (contact.orgname || \"\").trim(),\n      email: (contact.email || \"\").trim().toLowerCase(),\n      name: fullName,\n      role: jobTitle,\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5520,
+        3584
+      ],
+      "id": "1e92841f-34d4-4d1e-8e43-00cf190e3ad4",
+      "name": "AC NORMALIZE OUTPUT"
+    },
+    {
+      "parameters": {
+        "jsCode": "const previousNodeData = $input.all().map(item => item.json);\nconst importantFieldsData = $('GET IMPORTANT FIELDS').all().map(item => item.json);\n\nconst normalize = (str) => (str || '').trim().toLowerCase();\n\n// Deduplicate contacts by email + org (or just email if that's unique enough)\nconst seen = new Set();\nconst uniqueContacts = previousNodeData.filter(contact => {\n  const key = `${normalize(contact.email)}|${normalize(contact.organisation_name)}`;\n  if (seen.has(key)) return false;\n  seen.add(key);\n  return true;\n});\n\nconst results = [];\n\nfor (const contact of uniqueContacts) {\n  const matches = importantFieldsData.filter(\n    field => normalize(field.organisation_name) === normalize(contact.organisation_name)\n  );\n\n  if (matches.length > 0) {\n    for (const match of matches) {\n      results.push({\n        json: {\n          organisation_name: contact.organisation_name.trim(),\n          game_name: match.game_name?.trim(),\n          source: match.source?.trim(),\n          url: match.url?.trim(),\n          email: contact.email?.trim(),\n          name: contact.name?.trim(),\n          role: contact.role?.trim()\n        }\n      });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5776,
+        3584
+      ],
+      "id": "5c546ae4-2748-4353-a6ef-199744fa9cd9",
+      "name": "AC MATCHING ORG NAME"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 528,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5424,
+        3472
+      ],
+      "typeVersion": 1,
+      "id": "c32d6c79-79e1-49fc-84ec-f94607fb7199",
+      "name": "Sticky Note73"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "game_name",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        1920
+      ],
+      "id": "8e870269-f289-43f6-96a5-0fcc7f04076c",
+      "name": "REMOVE DUPLICATE GAME NAME"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "game_name",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        672,
+        2080
+      ],
+      "id": "8c85b8c9-e7b6-4246-9319-04d1f36ad7cd",
+      "name": "STEAM: REMOVE DUPLICATE GAME NAME"
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "game_name",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        672,
+        1776
+      ],
+      "id": "09da12b8-3205-4d44-824b-41643adde733",
+      "name": "MADMIN: REMOVE DUPLICATE GAME NAME"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from previous node (current input)\nconst previousNodeItems = $input.all();\n\n// Get all items from \"GET IMPORTANT FIELDS\" node\nconst importantFieldsItems = $('GET IMPORTANT FIELDS').all();\n\n// Extract the raw data arrays\nconst previousData = previousNodeItems.map(item => item.json);\nconst importantFields = importantFieldsItems.map(item => item.json);\n\nconst results = [];\n\nfor (const org of previousData) {\n  const orgNameNormalized = (org.organisation_name || '').toLowerCase().trim();\n\n  // Find all matching games from GET IMPORTANT FIELDS\n  const matchingGames = importantFields.filter(field => {\n    const fieldOrgNormalized = (field.organisation_name || '').toLowerCase().trim();\n    return fieldOrgNormalized === orgNameNormalized;\n  });\n\n  if (matchingGames.length > 0) {\n    // For each matching game, create a merged output item\n    for (const game of matchingGames) {\n      results.push({\n        json: {\n          organisation_name: org.organisation_name,\n          hasFound: org.hasFound,\n          source: org.source,\n          game_name: game.game_name,\n          game_source: game.source,\n          url: game.url,\n        }\n      });\n    }\n  } else {\n    // No match found — still return the org with nulls\n    results.push({\n      json: {\n        organisation_name: org.organisation_name,\n        hasFound: org.hasFound,\n        source: org.source,\n        game_name: null,\n        game_source: null,\n        url: null,\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        4480
+      ],
+      "id": "e8f2b45d-c5be-4aaf-961d-b79be97865f6",
+      "name": "NO FOUND: MATCHING ORG",
+      "notes": "retrieve the game name, source and url if there's a matching org name"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1349426200,
+          "mode": "list",
+          "cachedResultName": "Intercom Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1349426200"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $now.toISODate() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        4864
+      ],
+      "id": "835fe18e-1721-4796-814e-188b842c4bbc",
+      "name": "GET: INTERCOM CONTACTS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"LEAD GENERATION - REVIEW DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: The main source of lead generation is competitor websites such as Lurkit, Rainmaker, and Terminal. It scrapes these competitor websites to retrieve game data.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, please review today's data {{ $now.toFormat('LLLL d, yyyy') }} in the Intercom Contacts tab. View the full details in this <https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?gid=1349426200#gid=1349426200|Intercom Contacts tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": \"| Organisation Name | Game Name | Source |\\n|---|---|---|\\n{{ $json.data.map(item => `| ${item.organisation_name} | ${item.game_name} | ${item.source} |`).join('\\\\n') }}\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1152,
+        4864
+      ],
+      "id": "ac92d9d5-a4a2-4238-b158-05a83d53a869",
+      "name": "INTERCOM: SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        864,
+        4864
+      ],
+      "id": "1dad2749-4207-43e1-b7bb-38975251d1c4",
+      "name": "INTERCOM: AGGREGATE INTO SINGLE LIST"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 380,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        5040
+      ],
+      "typeVersion": 1,
+      "id": "ea18967d-cfeb-4c1b-bb86-56481a31a18a",
+      "name": "Sticky Note75"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        4864
+      ],
+      "id": "f5385f26-3f56-4c44-92a3-fdfe55c63315",
+      "name": "INTERCOM: WAIT 5 SECS",
+      "webhookId": "3eebec7a-ae40-4ac2-8dad-0fd61a7a5fd7"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1784691780,
+          "mode": "list",
+          "cachedResultName": "AC Contacts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1784691780"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "date",
+              "lookupValue": "={{ $now.toISODate() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        5120
+      ],
+      "id": "1b5f4e87-e070-4e64-aac2-96a71f11667a",
+      "name": "GET: AC CONTACTS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"LEAD GENERATION - REVIEW DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: The main source of lead generation is competitor websites such as Lurkit, Rainmaker, and Terminal. It scrapes these competitor websites to retrieve game data.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, please review today's data {{ $now.toFormat('LLLL d, yyyy') }} in the AC Contacts tab. View the full details in this <https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?gid=1784691780#gid=1784691780|AC Contacts tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"markdown\",\n\t\t\t\"text\": \"| Organisation Name | Game Name | Source |\\n|---|---|---|\\n{{ $json.data.map(item => `| ${item.organisation_name} | ${item.game_name} | ${item.source} |`).join('\\\\n') }}\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1152,
+        5120
+      ],
+      "id": "f74c30dc-a421-4312-84db-41076e0ef111",
+      "name": "AC: SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        5120
+      ],
+      "id": "758a2f73-6281-4114-9e91-24d1d4633e0d",
+      "name": "AC: WAIT 5 SECS",
+      "webhookId": "3eebec7a-ae40-4ac2-8dad-0fd61a7a5fd7"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        5360
+      ],
+      "id": "f39dd8de-a17e-4465-9585-dce3bb4648a7",
+      "name": "UC: WAIT 5 SECS",
+      "webhookId": "3eebec7a-ae40-4ac2-8dad-0fd61a7a5fd7"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        864,
+        5120
+      ],
+      "id": "31cc8421-9bdc-40da-880d-1670b99baa7a",
+      "name": "AC: AGGREGATE INTO SINGLE LIST"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 824,
+        "width": 444,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        4768
+      ],
+      "typeVersion": 1,
+      "id": "f774908f-2dff-4050-8be8-0021b98a0cc3",
+      "name": "Sticky Note74"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 832,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        768,
+        4768
+      ],
+      "typeVersion": 1,
+      "id": "382c9caa-0757-45ff-be78-20418595d4a1",
+      "name": "Sticky Note76"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 824,
+        "width": 540,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1088,
+        4768
+      ],
+      "typeVersion": 1,
+      "id": "c1ed2bc9-d642-4676-bcc8-3fdcd18079e7",
+      "name": "Sticky Note77"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        4864
+      ],
+      "id": "6c880049-2c62-4926-bedc-dbbae96dde3e",
+      "name": "INTERCOM: WAIT 2 SEC",
+      "webhookId": "3eebec7a-ae40-4ac2-8dad-0fd61a7a5fd7"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        5120
+      ],
+      "id": "995c805e-e07d-4681-955c-c5e47f8515f5",
+      "name": "AC: WAIT 2 SEC",
+      "webhookId": "3eebec7a-ae40-4ac2-8dad-0fd61a7a5fd7"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        5360
+      ],
+      "id": "795c9cdd-3309-4b7e-bfbb-bcfa046cea69",
+      "name": "UC: WAIT 2 SEC",
+      "webhookId": "3eebec7a-ae40-4ac2-8dad-0fd61a7a5fd7"
+    },
+    {
+      "parameters": {
+        "content": "# SLACK NOTIFICATION",
+        "height": 112,
+        "width": 376,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        4896
+      ],
+      "typeVersion": 1,
+      "id": "9441ed24-dd03-41dd-b375-27b3e04798ed",
+      "name": "Sticky Note67"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 30 11 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        5120
+      ],
+      "id": "e5f427f7-efed-4e79-9da9-90e2f8148601",
+      "name": "TRIGGER 3",
+      "notes": "11:30AM UK TIME OR 6:30PM PHT"
+    },
+    {
+      "parameters": {
+        "content": "## Lead Generation - Slack Notification\n\n**Purpose:**\n- The purpose of this workflow is to retrieve today’s data from Intercom and ActiveCampaign, then send a Slack notification for review.\n\nIt also retrieves data from Unmatched Contacts; if there is a pending status, it sends a Slack notification.\n\n\n\n",
+        "height": 224,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        4896
+      ],
+      "typeVersion": 1,
+      "id": "7579691f-63df-4be9-b06a-53e81954e751",
+      "name": "Sticky Note78"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1327955125,
+          "mode": "list",
+          "cachedResultName": "SALES Pipeline",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1327955125"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisation_name }}",
+            "game_name": "={{ $json.game_name }}",
+            "email": "={{ $json.email }}",
+            "full_name": "={{ $json.full_name }}",
+            "role": "={{ $json.role }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "automation date": "={{ $now.toISODate() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "automation date",
+              "displayName": "automation date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4624,
+        -368
+      ],
+      "id": "e3c10524-8365-454d-8a86-5164ffcc0d94",
+      "name": "APPEND: SALES PIPELINE",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4832,
+        -368
+      ],
+      "id": "639266c4-b0f1-4ca2-8c84-c08cd53052d7",
+      "name": "MADMIN: WAIT 3 SEC.",
+      "webhookId": "2d8a33b2-10f8-4344-a32a-2b51394239a8"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1327955125,
+          "mode": "list",
+          "cachedResultName": "SALES Pipeline",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1327955125"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisations_name }}",
+            "game_name": "={{ $json.game_name }}",
+            "email": "={{ $json.email }}",
+            "full_name": "={{$json.first_name + \" \" + $json.last_name}}",
+            "role": "={{ $json.role }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "automation date": "={{ $now.toISODate() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "automation date",
+              "displayName": "automation date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7184,
+        272
+      ],
+      "id": "8d4d030f-1063-4c83-97cf-8a7c0dba8130",
+      "name": "APPEND: SALES PIPELINE V1",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        7408,
+        272
+      ],
+      "id": "d302e566-fef3-473c-b535-d7b47facc497",
+      "name": "STEAM: WAIT 3 SEC..",
+      "webhookId": "29fe050f-97e0-4078-8b0c-d50e2a6bb9e5"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4128,
+        2224
+      ],
+      "id": "a7d83485-9091-47c9-b3e9-7239d307dfac",
+      "name": "INTERCOM: WAIT 3 SEC...",
+      "webhookId": "8bb94526-52ff-462f-ba3b-ef26c449d027"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1327955125,
+          "mode": "list",
+          "cachedResultName": "SALES Pipeline",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1327955125"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisation_name }}",
+            "email": "={{ $json.email }}",
+            "role": "={{ $json.role }}",
+            "game_name": "={{ $json.game_name }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "automation date": "={{ $now.toISODate() }}",
+            "full_name": "={{ $json.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "automation date",
+              "displayName": "automation date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6064,
+        3776
+      ],
+      "id": "03cf9079-e3da-44d7-8b8d-4b89abd005c6",
+      "name": "APPEND AC: SALES PIPELINE",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        6320,
+        3776
+      ],
+      "id": "1f286a4a-60dd-4125-b865-ee9c8403ff6a",
+      "name": "AC: WAIT 3 SEC.",
+      "webhookId": "b9baa154-4aed-48d9-a790-c7335da2bbbc"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Lead Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1327955125,
+          "mode": "list",
+          "cachedResultName": "SALES Pipeline",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/183FnNcP4inwXqtFztFaekdsoghjI6-EXxPtra_SEgY4/edit#gid=1327955125"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "organisation_name": "={{ $json.organisation_name }}",
+            "email": "={{ $json.email }}",
+            "role": "={{ $json.role }}",
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "game_name": "={{ $json.game_name }}",
+            "automation date": "={{ $now.toISODate() }}",
+            "full_name": "={{ $json.name }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "automation date",
+              "displayName": "automation date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "full_name",
+              "displayName": "full_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "role",
+              "displayName": "role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "organisation_name",
+              "displayName": "organisation_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Assigned To",
+              "displayName": "Assigned To",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3888,
+        2224
+      ],
+      "id": "53d601bc-76a2-4cf0-8b46-9bb70d805e9e",
+      "name": "APPEND INTERCOM: SALES PIPELINE",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "LURKIT": {
+      "main": [
+        [
+          {
+            "node": "LURKIT DATE FILTER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TERMINAL RECENT RELEASE": {
+      "main": [
+        [
+          {
+            "node": "TERMINAL DATE FILTER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAINMAKER": {
+      "main": [
+        [
+          {
+            "node": "RAINMAKER DATE FILTER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LURKIT DATE FILTER": {
+      "main": [
+        [
+          {
+            "node": "LURKIT SOURCE FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAINMAKER DATE FILTER": {
+      "main": [
+        [
+          {
+            "node": "RAINMAKER SOURCE FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TERMINAL DATE FILTER": {
+      "main": [
+        [
+          {
+            "node": "TERMINALS SOURCE FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF THERE'S EMPTY OBJECT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF THERE'S EMPTY OBJECT": {
+      "main": [
+        [
+          {
+            "node": "ROW_NUMBER EXIST",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DO NOTHING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CATALOGUE_PRODUCTS TABLE": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF THE GAME NAME EXIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF THE GAME NAME EXIST": {
+      "main": [
+        [
+          {
+            "node": "GAME FOUND IN MADMIN",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GAME NOT FOUND IN MADMIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TABLE RELATIONSHIPS": {
+      "main": [
+        [
+          {
+            "node": "MATCHING ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GAME FOUND IN MADMIN": {
+      "main": [
+        [
+          {
+            "node": "TABLE RELATIONSHIPS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MATCHING ID": {
+      "main": [
+        [
+          {
+            "node": "MATCHING GAME NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GAME NOT FOUND IN MADMIN": {
+      "main": [
+        [
+          {
+            "node": "LOOP THRU GAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP THRU GAME": {
+      "main": [
+        [],
+        [
+          {
+            "node": "CHECK GAME ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK TOTAL RETURN": {
+      "main": [
+        [
+          {
+            "node": "GET FIRST ITEM IN ARRAY",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET LOOP THRU GAME DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET LOOP THRU GAME DATA": {
+      "main": [
+        [
+          {
+            "node": "APPEND: UNMATCHED GAMES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: UNMATCHED GAMES": {
+      "main": [
+        [
+          {
+            "node": "STEAM: WAIT 3 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK GAME ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "CHECK TOTAL RETURN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK APP ID ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "STEAM NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "STEAM: TABLE RELATIONSHIPS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM: TABLE RELATIONSHIPS": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM MATCHING APP ID": {
+      "main": [
+        [
+          {
+            "node": "STEAM MATCHING APP ID V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: STEAM MATCHES": {
+      "main": [
+        [
+          {
+            "node": "STEAM: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "APPEND: MADMIN MATCHES",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "APPEND: SALES PIPELINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM MATCHES": {
+      "main": [
+        [
+          {
+            "node": "STEAM: REMOVE DUPLICATE GAME NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MADMIN MATCHES": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: REMOVE DUPLICATE GAME NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE": {
+      "main": [
+        [
+          {
+            "node": "REMOVE DUPLICATE GAME NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM LOOP": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: PUBLISHER NOT FOUND",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INTERCOM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM CONDITION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM CONDITION": {
+      "main": [
+        [
+          {
+            "node": "HAS FOUND IS TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HAS FOUND IS TRUE": {
+      "main": [
+        [
+          {
+            "node": "REMOVE DUPLICATES EMAIL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HAS FOUND: FALSE WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REMOVE DUPLICATES EMAIL": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: MATCHING ORG NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: INTERCOM CONTACTS": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC LOOP": {
+      "main": [
+        [
+          {
+            "node": "AC: PUBLISHER NOT FOUND",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AC SEARCH PUBLISHER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC SEARCH PUBLISHER": {
+      "main": [
+        [
+          {
+            "node": "MATCHING NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MATCHING NAME": {
+      "main": [
+        [
+          {
+            "node": "AC HAS FOUND IS TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC HAS FOUND IS TRUE": {
+      "main": [
+        [
+          {
+            "node": "AC IMPORTANT FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AC HAS FOUND: FALSE WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC IMPORTANT FIELD": {
+      "main": [
+        [
+          {
+            "node": "AC GET ORG ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC GET ORG ID": {
+      "main": [
+        [
+          {
+            "node": "AC MATCHING ACCOUNT & ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC MATCHING ACCOUNT & ID": {
+      "main": [
+        [
+          {
+            "node": "AC IS ACCOUNT EMPTY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC IS ACCOUNT EMPTY": {
+      "main": [
+        [
+          {
+            "node": "CHANGE VALUE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FLATTEN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FLATTEN": {
+      "main": [
+        [
+          {
+            "node": "AC GET DETAILS OF SINGLE CONTACT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC GET DETAILS OF SINGLE CONTACT": {
+      "main": [
+        [
+          {
+            "node": "AC NORMALIZE OUTPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: AC CONTACTS": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHANGE VALUE": {
+      "main": [
+        [
+          {
+            "node": "AC LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: PUBLISHER NOT FOUND": {
+      "main": [
+        []
+      ]
+    },
+    "GET NOT FOUND PUBLISHERS": {
+      "main": [
+        [
+          {
+            "node": "MERGE IF SAME ORG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET FIRST ITEM IN ARRAY": {
+      "main": [
+        [
+          {
+            "node": "CHECK APP ID ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "STEAM MATCHING APP ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PUBLISHER NOT FOUND IN MADMIN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUBLISHER NOT FOUND IN MADMIN": {
+      "main": [
+        [
+          {
+            "node": "STEAM WAIT 5 SEC..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM WAIT 5 SEC..": {
+      "main": [
+        [
+          {
+            "node": "LOOP THRU GAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 1": {
+      "main": [
+        [
+          {
+            "node": "LURKIT",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RAINMAKER",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TERMINAL RECENT RELEASE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 2": {
+      "main": [
+        [
+          {
+            "node": "MADMIN MATCHES",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "STEAM MATCHES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: UNMATCHED CONTACTS": {
+      "main": [
+        [
+          {
+            "node": "NO FOUND: WAIT 5 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: WAIT 3 SEC": {
+      "main": [
+        []
+      ]
+    },
+    "AC: WAIT 3 SEC": {
+      "main": [
+        []
+      ]
+    },
+    "APPEND: MADMIN MATCHES": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM: WAIT 3 SEC": {
+      "main": [
+        []
+      ]
+    },
+    "STEAM: WAIT 3 SEC.": {
+      "main": [
+        [
+          {
+            "node": "LOOP THRU GAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: UNMATCHED CONTACTS": {
+      "main": [
+        [
+          {
+            "node": "AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HAS FOUND: FALSE WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC HAS FOUND: FALSE WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "AC LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE IF SAME ORG": {
+      "main": [
+        [
+          {
+            "node": "NO FOUND: MATCHING ORG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LURKIT SOURCE FIELD": {
+      "main": [
+        [
+          {
+            "node": "MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RAINMAKER SOURCE FIELD": {
+      "main": [
+        [
+          {
+            "node": "MERGE DATA",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "TERMINALS SOURCE FIELD": {
+      "main": [
+        [
+          {
+            "node": "MERGE DATA",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "ROW_NUMBER EXIST": {
+      "main": [
+        [
+          {
+            "node": "CATALOGUE_PRODUCTS TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MATCHING GAME NAME": {
+      "main": [
+        [
+          {
+            "node": "GET NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM MATCHING APP ID V2": {
+      "main": [
+        [
+          {
+            "node": "STEAM MATCHING GAME NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM MATCHING GAME NAME": {
+      "main": [
+        [
+          {
+            "node": "APPEND: STEAM MATCHES",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "APPEND: SALES PIPELINE V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "AC LOOP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "INTERCOM LOOP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET NOT FOUND PUBLISHERS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: MATCHING ORG NAME": {
+      "main": [
+        [
+          {
+            "node": "APPEND INTERCOM: SALES PIPELINE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "APPEND: INTERCOM CONTACTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC NORMALIZE OUTPUT": {
+      "main": [
+        [
+          {
+            "node": "AC MATCHING ORG NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC MATCHING ORG NAME": {
+      "main": [
+        [
+          {
+            "node": "APPEND: AC CONTACTS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "APPEND AC: SALES PIPELINE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REMOVE DUPLICATE GAME NAME": {
+      "main": [
+        [
+          {
+            "node": "GET IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM: REMOVE DUPLICATE GAME NAME": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "MADMIN: REMOVE DUPLICATE GAME NAME": {
+      "main": [
+        [
+          {
+            "node": "MERGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NO FOUND: MATCHING ORG": {
+      "main": [
+        [
+          {
+            "node": "APPEND: UNMATCHED CONTACTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: INTERCOM CONTACTS": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: SEND A MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: WAIT 5 SECS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AC CONTACTS": {
+      "main": [
+        [
+          {
+            "node": "AC: AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: SEND A MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 5 SECS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEND A MESSAGE": {
+      "main": [
+        [
+          {
+            "node": "UC: WAIT 5 SECS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "AC: SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "GET: INTERCOM CONTACTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "GET: AC CONTACTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UC: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "GET: UNMATCHED CONTACTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 3": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "INTERCOM: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UC: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: SALES PIPELINE": {
+      "main": [
+        [
+          {
+            "node": "MADMIN: WAIT 3 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: SALES PIPELINE V1": {
+      "main": [
+        [
+          {
+            "node": "STEAM: WAIT 3 SEC..",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM: WAIT 3 SEC..": {
+      "main": [
+        [
+          {
+            "node": "LOOP THRU GAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: WAIT 3 SEC...": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND AC: SALES PIPELINE": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 3 SEC.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: WAIT 3 SEC.": {
+      "main": [
+        [
+          {
+            "node": "AC LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND INTERCOM: SALES PIPELINE": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: WAIT 3 SEC...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "f88fbe8d-5d37-4e3d-8b54-ea978667b4a3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "XOVXbdtyhWAKhhll",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    },
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    }
+  ]
+}
