@@ -1,0 +1,749 @@
+{
+  "name": "AutoLead - Remove Completed Status",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 968,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        112,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "23f52284-a2ce-4141-814a-b436d23c239b",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 960,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        432,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "27156c3a-ed61-4007-b860-a19021163ca3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 964,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        752,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "0efda1ef-4ce2-4b19-8950-f1ac4200abf7",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 964,
+        "width": 492,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "34399654-c074-434a-9190-4e4588042673",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1556989707,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1556989707"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "completed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c54104a0-c907-4c6d-bdaf-ae3f0be29a02",
+      "name": "NEW & NEW TO LEAD",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "row_number",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        528,
+        0
+      ],
+      "id": "3bf80d90-f470-4474-b4d0-64fee83782e2",
+      "name": "NEW & NEW TO LEAD: SORT ROW_NUMBER BY DESC",
+      "notes": "We sort the rows in descending order to solve the delete row issue in Google Sheets. If we sort in ascending order, it removes the smaller row number first, which causes the row indices to shift.\n\nFor example, if we delete row numbers 1 and 6:\n\nIf we delete row 1 first, row 6 becomes row 5, since the rows shift up.\nWe are not dynamically updating the row numbers, so this causes issues.\n\nInstead, we delete in descending order:\n\nDelete row 6 first, then row 1.\nThis way, row 1 remains unchanged when row 6 is deleted."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1556989707,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1556989707"
+        },
+        "startIndex": "={{ $json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        16
+      ],
+      "id": "8a51d55d-b040-49d5-8da7-2de77541dfe4",
+      "name": "NEW & NEW TO LEAD: DELETE ROWS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        848,
+        0
+      ],
+      "id": "e25ffe14-d059-4fac-907f-e803fbe8b2dc",
+      "name": "NEW & NEW TO LEAD: LOOP"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New Steam Release - 90d",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1061239865,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit#gid=1061239865"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "completed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        352
+      ],
+      "id": "ed19fbc9-b15a-4c93-a895-a8cd1c7b84c8",
+      "name": "NEW STEAM RELEASE - 90D",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "row_number",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        528,
+        352
+      ],
+      "id": "505c5ff4-67db-4b04-8c03-522074f257c1",
+      "name": "NEW STEAM RELEASE - 90D: SORT ROW_NUMBER BY DESC",
+      "notes": "We sort the rows in descending order to solve the delete row issue in Google Sheets. If we sort in ascending order, it removes the smaller row number first, which causes the row indices to shift.\n\nFor example, if we delete row numbers 1 and 6:\n\nIf we delete row 1 first, row 6 becomes row 5, since the rows shift up.\nWe are not dynamically updating the row numbers, so this causes issues.\n\nInstead, we delete in descending order:\n\nDelete row 6 first, then row 1.\nThis way, row 1 remains unchanged when row 6 is deleted."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        848,
+        352
+      ],
+      "id": "81734bc9-08da-4081-b561-517dc33b5fb8",
+      "name": "NEW STEAM RELEASE - 90D: LOOP"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New Steam Release - 90d",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1061239865,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit#gid=1061239865"
+        },
+        "startIndex": "={{ $json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        368
+      ],
+      "id": "f2f8f48d-d580-4d97-a508-6fd318db0cde",
+      "name": "NEW STEAM RELEASE - 90D: DELETE ROWS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        368
+      ],
+      "id": "2fb12943-8791-4878-b694-f2ea76cbb879",
+      "name": "NEW STEAM RELEASE - 90D: WAIT 2 SECS",
+      "webhookId": "75ad2255-0031-4633-a7be-bb9d5d08e278"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "b76bc111-ce06-4be8-9851-236545480669",
+      "name": "NEW & NEW TO LEAD: WAIT 2 SECS",
+      "webhookId": "75ad2255-0031-4633-a7be-bb9d5d08e278"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL Leadgen - TBA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 897883231,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit#gid=897883231"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "completed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        704
+      ],
+      "id": "8e803059-dd36-4095-8c57-ea6a643c342c",
+      "name": "LEADGEN - TBA",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "row_number",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        528,
+        704
+      ],
+      "id": "68af79e6-f376-47a4-8fef-60f48e951c86",
+      "name": "LEADGEN - TBA: SORT ROW_NUMBER BY DESC",
+      "notes": "We sort the rows in descending order to solve the delete row issue in Google Sheets. If we sort in ascending order, it removes the smaller row number first, which causes the row indices to shift.\n\nFor example, if we delete row numbers 1 and 6:\n\nIf we delete row 1 first, row 6 becomes row 5, since the rows shift up.\nWe are not dynamically updating the row numbers, so this causes issues.\n\nInstead, we delete in descending order:\n\nDelete row 6 first, then row 1.\nThis way, row 1 remains unchanged when row 6 is deleted."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        848,
+        704
+      ],
+      "id": "c3545fbd-a7fe-4fce-adac-ef7380a4e493",
+      "name": "LEADGEN - TBA: LOOP"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL Leadgen - TBA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 897883231,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit#gid=897883231"
+        },
+        "startIndex": "={{ $json.row_number }}"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        720
+      ],
+      "id": "78038d31-78eb-4a72-a4c2-93a5ffaf0c65",
+      "name": "LEADGEN - TBA: DELETE ROWS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1392,
+        720
+      ],
+      "id": "5637948c-5a68-40c2-8c38-7b9835bb32d4",
+      "name": "LEADGEN - TBA: WAIT 2 SECS",
+      "webhookId": "75ad2255-0031-4633-a7be-bb9d5d08e278"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 19,20 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "51c05dcb-be6a-4c8f-8636-c51dc424ea12",
+      "name": "TRIGGER 1",
+      "notes": "every day 7:00pm uk time (2:00am pht) and 8:00pm uk time (3:00am pht) "
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 19,20 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        352
+      ],
+      "id": "ff9e853a-a8c5-483e-84d3-a2e9136c534e",
+      "name": "TRIGGER 2",
+      "notes": "every day 7:10pm uk time (2:10am pht) and 8:10pm uk time (3:10am pht) "
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 20 19,20 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        704
+      ],
+      "id": "d226a1b9-73d0-4c7a-987f-51627e5fe1f7",
+      "name": "TRIGGER 3",
+      "notes": "every day 7:20pm uk time (2:20am pht) and 8:20pm uk time (3:20am pht) "
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 968,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -208,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "1515af6d-1ce0-445c-8c94-2d9739b89475",
+      "name": "Sticky Note50"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "NEW & NEW TO LEAD": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW TO LEAD: SORT ROW_NUMBER BY DESC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW & NEW TO LEAD: SORT ROW_NUMBER BY DESC": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW TO LEAD: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW & NEW TO LEAD: DELETE ROWS": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW TO LEAD: WAIT 2 SECS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW & NEW TO LEAD: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "NEW & NEW TO LEAD: DELETE ROWS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW STEAM RELEASE - 90D": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: SORT ROW_NUMBER BY DESC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW STEAM RELEASE - 90D: SORT ROW_NUMBER BY DESC": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW STEAM RELEASE - 90D: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: DELETE ROWS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW STEAM RELEASE - 90D: DELETE ROWS": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: WAIT 2 SECS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW STEAM RELEASE - 90D: WAIT 2 SECS": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW & NEW TO LEAD: WAIT 2 SECS": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW TO LEAD: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEADGEN - TBA": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA: SORT ROW_NUMBER BY DESC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEADGEN - TBA: SORT ROW_NUMBER BY DESC": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEADGEN - TBA: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "LEADGEN - TBA: DELETE ROWS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEADGEN - TBA: DELETE ROWS": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA: WAIT 2 SECS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEADGEN - TBA: WAIT 2 SECS": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 1": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW TO LEAD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 2": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 3": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "0d6c3a81-72ca-40c1-9b73-c52043b52334",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "CDTpFfkiDzToYJzq",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
