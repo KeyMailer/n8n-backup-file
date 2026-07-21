@@ -1,0 +1,574 @@
+{
+  "name": "AutoLead - Slack Notification No Result",
+  "nodes": [
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"AL - New & New Lead - ENRICH DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: AutoLead (AL) primarily uses Madmin as its main data source. It is available in four variants: AL - New & New Lead, AL - New Steam Release - 90d, AL - Reactivation Leadgen, and AL - Leadgen - TBA.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, Please enrich the following pending data. View the full details in this <https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?gid=1556989707#gid=1556989707|No Results tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        512,
+        304
+      ],
+      "id": "f11a948f-72e1-4eed-abc1-2b17011fc8d6",
+      "name": "NEW & NEW LEAD: SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        208,
+        304
+      ],
+      "id": "873e037c-72e5-4ebb-ab06-27488fd493f9",
+      "name": "NEW & NEW LEAD: AGGREGATE INTO SINGLE LIST"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        208,
+        512
+      ],
+      "id": "f6ed82f6-8545-4619-8941-1eef0863037a",
+      "name": "NEW STEAM RELEASE - 90D: AGGREGATE INTO SINGLE LIST"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New & New to Lead",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1556989707,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tcH9p_Zx-4UlC3fpccLAjdCWNFlDaS_Hr5eueEv2aBA/edit#gid=1556989707"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        304
+      ],
+      "id": "4351bdfd-75b0-459f-ab35-e96d6b86cc9d",
+      "name": "GET: AL - NEW & NEW LEAD",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL New Steam Release - 90d",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1061239865,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit#gid=1061239865"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        512
+      ],
+      "id": "0ec858a9-7254-4c00-8384-4b8390d39c6e",
+      "name": "GET: AL - NEW STEAM RELEASE - 90D",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"AL - New Steam Release - 90d - ENRICH DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: AutoLead (AL) primarily uses Madmin as its main data source. It is available in four variants: AL - New & New Lead, AL - New Steam Release - 90d, AL - Reactivation Leadgen, and AL - Leadgen - TBA.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, Please enrich the following pending data. View the full details in this <https://docs.google.com/spreadsheets/d/1t9jYjDAbIkXz1zGxd41DXJSaCgaBnqPZ7hlSF2d0Tos/edit?gid=1061239865#gid=1061239865|No Results tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        512,
+        512
+      ],
+      "id": "4c6bc706-f737-4ed8-bd49-b0c140471c7b",
+      "name": "NEW STEAM RELEASE - 90D: SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "18BX6R492N903_GlhGMQtd54Ofbw1YO1t2C7glzRRXXg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL Reactivation Leadgen",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18BX6R492N903_GlhGMQtd54Ofbw1YO1t2C7glzRRXXg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1890839396,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18BX6R492N903_GlhGMQtd54Ofbw1YO1t2C7glzRRXXg/edit#gid=1890839396"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        720
+      ],
+      "id": "716f4283-df6e-40df-b747-69962c55c308",
+      "name": "GET: AL - REACTIVATION LEADGEN",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        208,
+        720
+      ],
+      "id": "5b5d44df-9ab4-46a0-a76f-91ccb3a4cb39",
+      "name": "REACTIVATION LEADGEN: AGGREGATE INTO SINGLE LIST",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"AL - Reactivation Leadgen - ENRICH DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: AutoLead (AL) primarily uses Madmin as its main data source. It is available in four variants: AL - New & New Lead, AL - New Steam Release - 90d, AL - Reactivation Leadgen, and AL - Leadgen - TBA.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, Please enrich the following pending data. View the full details in this <https://docs.google.com/spreadsheets/d/18BX6R492N903_GlhGMQtd54Ofbw1YO1t2C7glzRRXXg/edit?gid=1890839396#gid=1890839396|No Results tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        512,
+        720
+      ],
+      "id": "227cc8eb-9fab-4cad-aee8-a7f082f19393",
+      "name": "REACTIVATION LEADGEN: SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AL Leadgen - TBA",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 897883231,
+          "mode": "list",
+          "cachedResultName": "No Results",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit#gid=897883231"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "clay_enrichment_status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        928
+      ],
+      "id": "8a1e62bf-0441-41c6-821a-f6042931b075",
+      "name": "GET: AL - LEADGEN - TBA",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        208,
+        928
+      ],
+      "id": "94448d6a-5666-45c0-bf2e-f01dd7fa559a",
+      "name": "LEADGEN - TBA: AGGREGATE INTO SINGLE LIST"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"AL - Leadgen - TBA - ENRICH DATA\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"Overview: AutoLead (AL) primarily uses Madmin as its main data source. It is available in four variants: AL - New & New Lead, AL - New Steam Release - 90d, AL - Reactivation Leadgen, and AL - Leadgen - TBA.\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"rich_text\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"rich_text_section\",\n\t\t\t\t\t\"elements\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\t\t\"text\": \"System Message\",\n\t\t\t\t\t\t\t\"style\": {\n\t\t\t\t\t\t\t\t\"bold\": true\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"Hi <@U09QB4NKR70>, Please enrich the following pending data. View the full details in this <https://docs.google.com/spreadsheets/d/1kVe9Iyy4PL9LxCf8PzRzjdQ8XoEsU7P7qAdeVFCcLLU/edit?gid=897883231#gid=897883231|No Results tab>.\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        512,
+        928
+      ],
+      "id": "2c4d7516-73c0-49f5-831f-1274a53ed896",
+      "name": "LEADGEN - TBA: SEND A MESSAGE",
+      "webhookId": "97fc10f8-076e-4639-b00c-7bb93efc36d1",
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 30 11 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -496,
+        640
+      ],
+      "id": "942c24ba-927c-4c9f-9816-7357b274e75d",
+      "name": "TRIGGER",
+      "notes": "11:30AM UK TIME OR 6:30PM PHT"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 380,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        544
+      ],
+      "typeVersion": 1,
+      "id": "f16fcd8a-c17f-41e2-bbf3-98d7216dee97",
+      "name": "Sticky Note75"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 960,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        112,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "62647031-28b1-4175-9045-89fec0ccb4e6",
+      "name": "Sticky Note76"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 952,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        432,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "5cea2d0b-af80-4173-958e-be524174c535",
+      "name": "Sticky Note77"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 952,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -208,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "1af7698e-425e-4544-8979-4faddd921730",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "NEW & NEW LEAD: AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW LEAD: SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NEW STEAM RELEASE - 90D: AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AL - NEW & NEW LEAD": {
+      "main": [
+        [
+          {
+            "node": "NEW & NEW LEAD: AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AL - NEW STEAM RELEASE - 90D": {
+      "main": [
+        [
+          {
+            "node": "NEW STEAM RELEASE - 90D: AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AL - REACTIVATION LEADGEN": {
+      "main": [
+        [
+          {
+            "node": "REACTIVATION LEADGEN: AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REACTIVATION LEADGEN: AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "REACTIVATION LEADGEN: SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AL - LEADGEN - TBA": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA: AGGREGATE INTO SINGLE LIST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LEADGEN - TBA: AGGREGATE INTO SINGLE LIST": {
+      "main": [
+        [
+          {
+            "node": "LEADGEN - TBA: SEND A MESSAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "GET: AL - NEW & NEW LEAD",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: AL - NEW STEAM RELEASE - 90D",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: AL - LEADGEN - TBA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "37284110-6a83-408e-b5ca-3c975baf1432",
+  "meta": {
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "JoaNLrVHJKXfJhSK",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
