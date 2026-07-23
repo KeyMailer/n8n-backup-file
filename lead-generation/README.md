@@ -34,8 +34,9 @@
 
 - Integrate Jestr Detected into a lead generation workflow
 
-## 06
+## 07 & 08
 
 ### Slack Message for Jestr Detected
 
 - Add Jestr Detected as a source in slack message description
+- Remove the table block
