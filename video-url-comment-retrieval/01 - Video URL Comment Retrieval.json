@@ -1,0 +1,1444 @@
+{
+  "name": "Video URL Comment Retrieval",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nreturn [{\n  json: item.body\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        272
+      ],
+      "id": "6e78e588-2418-45bd-a76d-c7b73b047bb7",
+      "name": "GET BODY",
+      "notes": "get only the body field"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const url = item.json.url || \"\";\n  const isVOD = url.includes(\"/videos\");\n\n  return {\n    json: {\n      ...item.json,\n      isVOD: isVOD\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        272
+      ],
+      "id": "5dece5b3-c523-47a2-a15d-28fda172f79f",
+      "name": "TWITCH: VALIDATE URL",
+      "notes": "check if the url is video, if yes add a isVOD: true, if not, isVOD: false"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.social }}",
+                    "rightValue": "youtube",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "ce438ea8-0cfc-4b0b-8def-9438b19b1160"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "youtube"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c5551cff-5241-4218-9b3e-02c56d660486",
+                    "leftValue": "={{ $json.social }}",
+                    "rightValue": "twitch",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "twitch"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fa8dcb0a-1fa4-49e6-964b-69d5374eec63",
+                    "leftValue": "={{ $json.social }}",
+                    "rightValue": "invalid",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "invalid"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        256
+      ],
+      "id": "ec3cedc0-fbc4-48e1-9231-62db9354d4b0",
+      "name": "SOCIAL IDENTIFICATION"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - \"Run Once for All Items\" mode\n\nconst results = [];\n\nfor (const item of $input.all()) {\n  const url = item.json.url || '';\n  const sheetUrl = item.json.sheetUrl || '';\n  let social = 'invalid';\n\n  if (/(?:youtube\\.com|youtu\\.be)/i.test(url)) {\n    social = 'youtube';\n  } else if (/twitch\\.tv/i.test(url)) {\n    social = 'twitch';\n  }\n\n  results.push({\n    json: {\n      url,\n      sheetUrl,\n      social\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        272
+      ],
+      "id": "5bd40961-419d-474c-b3b9-50683b9397fb",
+      "name": "IDENTIFY SOCIAL BASED ON URL",
+      "notes": "Determine whether the platform is YouTube or Twitch based on the URL.\nsocial: twitch\nsocial: youtube\nsocial: invalid (if the URL is neither Twitch nor YouTube)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d22a3c84-d009-4d59-8218-6db35d79aeee",
+              "leftValue": "={{ $json.isVOD }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1216,
+        272
+      ],
+      "id": "8eb887dc-be90-47f2-b63f-3fe0feeeafc3",
+      "name": "TWITCH: ISVOD TRUE",
+      "notes": "proceed if isVOD is true"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1792,
+        256
+      ],
+      "id": "840b866b-06ee-49ae-aa9c-17e21068b667",
+      "name": "TWITCH: WAIT 3 SEC",
+      "webhookId": "1a97e4d8-7ecb-41c1-9b5b-4c922b8c0b43"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://twitchdownloader:8090/download/chat",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "vod_id",
+              "value": "={{ $json.url.split('videos/')[1] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1536,
+        256
+      ],
+      "id": "70658b9a-69a8-441d-9ba2-642f2aa9513d",
+      "name": "TWITCH: POST TWITCH DOWNLOADER",
+      "notes": "request to http://twitchdownloader:8090/download/chat to download the chat of the video and splice the url to send only the vod id"
+    },
+    {
+      "parameters": {
+        "url": "=http://twitchdownloader:8090/file/{{ $json.file.split('/').pop() }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2016,
+        256
+      ],
+      "id": "1c4f79a9-39e8-4123-ad37-c94f5e2e2d7b",
+      "name": "TWITCH: GET TWITCH DOWNLOADER",
+      "notes": "request to http://twitchdownloader:8090/file/ and only pass the id to retrieve the file generated by POST request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node — Run Once for All Items\n// Normalizes Twitch VOD chat export → one item per comment\n\nconst output = [];\n\nfor (const item of $input.all()) {\n  // Upstream may arrive as the object itself or wrapped in an array\n  const records = Array.isArray(item.json) ? item.json : [item.json];\n\n  for (const record of records) {\n    const streamer = record.streamer || {};\n    const video = record.video || {};\n    const comments = record.comments || [];\n\n    for (const comment of comments) {\n      const commenter = comment.commenter || {};\n      const message = comment.message || {};\n\n     output.push({\n        json: {\n          streamer_name: streamer.name ?? null,\n          streamer_id: streamer.id ?? null,\n          \"video title\": video.title ?? null,\n          \"video created at\": video.created_at ?? null,\n          \"video game\": video.game ?? null,\n          \"commenter display name\": commenter.display_name ?? null,\n          body: message.body ?? null,\n        },\n      });\n    }\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        256
+      ],
+      "id": "7466a21d-efbf-4f42-9a4a-e8ea70b295ad",
+      "name": "TWITCH: FLATTEN JSON",
+      "notes": "flatten the json structure and only retrieve the necessary field\n\nDocument format:\nStreamer : {\n Streamer_name: name, \n Streamer_id: id\n}\n\nVideo : {\n Video_title: title, \n Video_created_at: created_at\n Video_viewcount: viewCount\n Video_game: game\n}\n\nComments: {\n  Commenter: {\n   Commenter_display_name: display_name, \n}\n} \n\n Message: {\n  Body: body\n}\n"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3152,
+        256
+      ],
+      "id": "e19d056e-98fe-4698-803d-0f1fe3ba0a75",
+      "name": "TWITCH: LOOP"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3712,
+        272
+      ],
+      "id": "12b8a791-cd40-4d83-844c-decd1aace32d",
+      "name": "TWITCH: WAIT 2 SEC",
+      "webhookId": "717badcf-be6d-4b9f-9eb5-71b0a29d15f3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Get the TWITCH: VALIDATE URL node (single item, 2 nodes back) ---\nconst validate = $('TWITCH: VALIDATE URL').first().json;\n\n// --- Splice the gid out of the sheetUrl ---\n// e.g. ...edit?gid=1824875887#gid=1824875887  ->  \"1824875887\"\nfunction extractGid(sheetUrl) {\n  if (!sheetUrl) return null;\n  const match = String(sheetUrl).match(/[?&#]gid=([0-9]+)/);\n  return match ? match[1] : null;\n}\nconst sheetUrlgid = extractGid(validate.sheetUrl);\n\n// --- Get the previous node data (the comments array) ---\nconst items = $input.all();\n\n// --- Merge validate data onto every comment row ---\nreturn items.map((item) => {\n  const d = item.json;\n  return {\n    json: {\n      url: validate.url,\n      sheetUrl: validate.sheetUrl,\n      sheetUrlgid: sheetUrlgid,\n      social: validate.social,\n      isVOD: validate.isVOD,\n      streamer_id: d.streamer_id,\n      streamer_name: d.streamer_name,\n      video_title: d.video_title,\n      video_created_at: d.video_created_at,\n      video_game: d.video_game,\n      commenter_display_name: d.commenter_display_name,\n      comments: d.comments,\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2832,
+        256
+      ],
+      "id": "9ae92926-107d-4276-966d-eafdbe11e830",
+      "name": "TWITCH: MERGE DATA",
+      "notes": "merge previous node and  TWITCH: VALIDATE URL node and extract the GID from google sheet url"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst isValidYouTubeUrl = (url) => {\n  if (!url || typeof url !== 'string') return false;\n\n  // Matches https://youtu.be/VIDEO_ID (optionally with query params like ?si=...)\n  const shortPattern = /^https:\\/\\/youtu\\.be\\/[A-Za-z0-9_-]{11}(\\?.*)?$/;\n\n  // Matches https://www.youtube.com/watch?v=VIDEO_ID (optionally with extra query params)\n  const longPattern = /^https:\\/\\/(www\\.)?youtube\\.com\\/watch\\?v=[A-Za-z0-9_-]{11}(&.*)?$/;\n\n  return shortPattern.test(url) || longPattern.test(url);\n};\n\nreturn items.map(item => {\n  const isVOD = isValidYouTubeUrl(item.json.url);\n\n  return {\n    json: {\n      ...item.json,\n      isVOD: isVOD\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -464
+      ],
+      "id": "329ce56f-4407-4dac-a664-625ca0e80595",
+      "name": "YT: VALIDATE URL",
+      "notes": "check if the url is video, if yes add a isVOD: true, if not, isVOD: false"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d22a3c84-d009-4d59-8218-6db35d79aeee",
+              "leftValue": "={{ $json.isVOD }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1232,
+        -464
+      ],
+      "id": "b6b13153-9d49-402e-9a86-d4bd121aa5e2",
+      "name": "YT: ISVOD TRUE",
+      "notes": "proceed if isVOD is true"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/commentThreads",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "part",
+              "value": "snippet"
+            },
+            {
+              "name": "videoId",
+              "value": "={{ $json.url.match(/(?:youtu\\.be\\/|[?&]v=)([A-Za-z0-9_-]{11})/)?.[1] }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "pageToken",
+                    "value": "={{ $response.body.nextPageToken }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.nextPageToken }}",
+              "requestInterval": 8000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1552,
+        -480
+      ],
+      "id": "486aa63e-d011-49a5-b57e-5d04f87c93e9",
+      "name": "HTTP Request2",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "L3nuPjdrJiQamOpM",
+          "name": "n8n-justin-youtube-account"
+        }
+      },
+      "notes": "GET https://www.googleapis.com/youtube/v3/commentThreads\n\n- Give me the comments/comment threads that match my request.\n\nWhat does part=snippet mean? \n\n- For commentThreads, the available parts include: id, snippet, replies (but we don't retrieve the replies in this case)\n\n- you're asking YouTube to return the basic information about each comment thread.\n\nWhat does maxResults=100 mean?\n\n- Give me a maximum of 100 comment threads in this API response.\n- For example, if the video has 2,500 comments and you use maxResults=100 You don't get all 2,500 comments.\n- Then YouTube gives you a \"nextPageToken\": \"...\" You use that token to get the next 100.\n\n--\n\nVIDEO ID:\n- can handle https://youtu.be/fWssgnf6fOY?si=KAXDuFmg96bPuFZi OR https://www.youtube.com/watch?v=4Bb20KFo89A auto splice to get the id from URL\n\n--\n\nENABLE PAGINATION OPTION TO RETRIEVE ALL COMMENTS\n\n- keep paginating as long as nextPageToken exists in the response; stop once it's missing\n"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten YouTube commentThreadListResponse pages into simple comment objects\n\nconst output = [];\n\n// Loop through each input item (each item = one page/response from previous node)\nfor (const item of $input.all()) {\n  const data = item.json;\n\n  // Handle case where the previous node outputs each page as its own item,\n  // and each page has an \"items\" array of commentThreads\n  const threads = data.items || [];\n\n  for (const thread of threads) {\n    const snippet = thread?.snippet?.topLevelComment?.snippet;\n\n    if (!snippet) continue;\n\n    output.push({\n      json: {\n        comments: snippet.textOriginal,\n        author_display_name: snippet.authorDisplayName,\n        author_id: snippet.authorChannelId?.value\n      }\n    });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        -480
+      ],
+      "id": "54a345fd-cc5b-471a-8acb-a2721b45c6c3",
+      "name": "YT: FLATTEN JSON"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b3b6070-b420-46c0-94ab-2d6653d8f04d",
+              "name": "streamer_id",
+              "value": "={{ $json.streamer_id }}",
+              "type": "number"
+            },
+            {
+              "id": "d6b9a8d2-6fa4-4fd0-8b2c-e4201374a0f9",
+              "name": "streamer_name",
+              "value": "={{ $json.streamer_name }}",
+              "type": "string"
+            },
+            {
+              "id": "28e1b711-7479-4bd1-91be-7d37f4e90c9d",
+              "name": "video_title",
+              "value": "={{ $json[\"video title\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "25b34a39-0f3c-4ff2-a5f4-ed061be7b32a",
+              "name": "video_created_at",
+              "value": "={{ $json[\"video created at\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6aca4b5a-02f7-46c6-b1fb-10a6d7cabcc5",
+              "name": "video_game",
+              "value": "={{ $json[\"video game\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "376c930e-4cc6-474e-a79b-23efcaeb6bbf",
+              "name": "commenter_display_name",
+              "value": "={{ $json[\"commenter display name\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "a4c460fa-3043-46df-88e9-7064f61a88cf",
+              "name": "comments",
+              "value": "={{ $json.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2560,
+        256
+      ],
+      "id": "87f6514f-9299-4918-9cd0-b1ab0ded0e73",
+      "name": "TWITCH: FIELD NAMING CONVENTION",
+      "notes": "these fields should match with column in sheet they configure in google sheet"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the \"YT: VALIDATE URL\" node (previous-previous node)\nconst validateData = $('YT: VALIDATE URL').first().json;\n\n// Splice the gid out of the sheetUrl\n// e.g. https://docs.google.com/spreadsheets/d/.../edit?gid=596025108#gid=596025108\nconst gidMatch = validateData.sheetUrl.match(/gid=(\\d+)/);\nconst sheetUrlgid = gidMatch ? gidMatch[1] : null;\n\n// Get comment items from the immediately previous node\nconst items = $input.all();\n\n// Merge validate data onto each comment item\nreturn items.map(item => {\n  return {\n    json: {\n      url: validateData.url,\n      sheetUrl: validateData.sheetUrl,\n      sheetUrlgid: sheetUrlgid,\n      social: validateData.social,\n      isVOD: validateData.isVOD,\n      comments: item.json.comments,\n      author_display_name: item.json.author_display_name,\n      author_id: item.json.author_id\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        -480
+      ],
+      "id": "66f0a4c0-d29e-4a2d-aa64-c9c3a287c608",
+      "name": "YT: MERGE DATA",
+      "notes": "merge the previous node data and the YT: VALIDATE URL node\n\nextract the gid from the sheetURL"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2352,
+        -480
+      ],
+      "id": "5036873a-4c57-4aec-8bf0-224379648ffe",
+      "name": "YT: LOOP"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.sheetUrl }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.sheetUrlgid }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "author_id",
+              "displayName": "author_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "author_display_name",
+              "displayName": "author_display_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2672,
+        -464
+      ],
+      "id": "98814654-8238-4db2-875f-c6c06ab915c9",
+      "name": "YT: APPEND DYNAMICALLY",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      },
+      "notes": "map automatically,\n\npass the sheet url dynamically and and gid url\n\ncheck if the field loop node is match with the sheet column if yes append it.\n\nif field loop does not exist in column, ignore that field and don't save it\n\nonly append the matching field / column\n"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.sheetUrl }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.sheetUrlgid }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "streamer_id",
+              "displayName": "streamer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "streamer_name",
+              "displayName": "streamer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "video_title",
+              "displayName": "video_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "video_created_at",
+              "displayName": "video_created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "video_game",
+              "displayName": "video_game",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "commenter_display_name",
+              "displayName": "commenter_display_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "comments",
+              "displayName": "comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3488,
+        272
+      ],
+      "id": "9450423c-aa28-4247-8bb9-d44988ae8f70",
+      "name": "TWITCH: APPEND DYNAMICALLY",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      },
+      "notes": "map automatically,\n\npass the sheet url dynamically and and gid url\n\ncheck if the field loop node is match with the sheet column if yes append it.\n\nif field loop does not exist in column, ignore that field and don't save it\n\nonly append the matching field / column\n"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2912,
+        -464
+      ],
+      "id": "2659b1f1-b111-4a2b-bbc9-63e8f0369efc",
+      "name": "YT: WAIT 2 SEC",
+      "webhookId": "717badcf-be6d-4b9f-9eb5-71b0a29d15f3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vucr",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        272
+      ],
+      "id": "007acfc3-d82d-4204-bf4f-14ab03c3ea95",
+      "name": "TRIGGER",
+      "webhookId": "bcb0c9a7-b8ea-4beb-8fb9-7f2b471940b5"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -384,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "32fb5e53-a656-4e6e-aa6e-fa5ae7feed58",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 496,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -64,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "4590faf3-bfa9-4b76-b1be-e8a4b9fe4d05",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "ff1086b6-3c00-456c-8019-8377091caefd",
+      "name": "Sticky Note63"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "5435cc68-8f78-43c4-adf6-254d3fd67619",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "4dcaf227-578f-4518-89b4-b27f7ba6a547",
+      "name": "Sticky Note61"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 716,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1456,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "050e3720-98a1-4750-87e2-07db0cca5646",
+      "name": "Sticky Note60"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 816,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2208,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "672c91f3-8a4b-4e6a-b444-75c5b0f3bf49",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3056,
+        192
+      ],
+      "typeVersion": 1,
+      "id": "72e70439-0c7d-4a5f-a01a-53d47e989f63",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 468,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3376,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "be5e8820-5a25-48bd-ac32-014b89a4a2df",
+      "name": "Sticky Note86"
+    },
+    {
+      "parameters": {
+        "content": "# TWITCH",
+        "height": 80,
+        "width": 288,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "84f9c00b-45b9-4f65-9f54-49bc6f9546ff",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        -544
+      ],
+      "typeVersion": 1,
+      "id": "15025869-ed4d-47bb-a9df-288eea22703f",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        -544
+      ],
+      "typeVersion": 1,
+      "id": "1c03496e-9dbf-4fa4-8490-c5b315ee97d9",
+      "name": "Sticky Note64"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1456,
+        -544
+      ],
+      "typeVersion": 1,
+      "id": "cb46f217-c1da-4752-a3ca-7cdb79a7077d",
+      "name": "Sticky Note65"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 464,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1776,
+        -544
+      ],
+      "typeVersion": 1,
+      "id": "7339320f-8dc2-40ed-befc-7dcc48150dfe",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2272,
+        -544
+      ],
+      "typeVersion": 1,
+      "id": "b0e69e26-c3f3-4138-a5d5-024d04a59c31",
+      "name": "Sticky Note67"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 468,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2592,
+        -736
+      ],
+      "typeVersion": 1,
+      "id": "84cbffcd-6edf-40d0-8c48-71f18f987347",
+      "name": "Sticky Note87"
+    },
+    {
+      "parameters": {
+        "content": "# YOUTUBE",
+        "height": 80,
+        "width": 288,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        816,
+        -640
+      ],
+      "typeVersion": 1,
+      "id": "c952504f-228a-4d38-94c9-b7eaf6caa225",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": 200,\n  \"message\": \"Twitch comments retrieved successfully.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        3488,
+        80
+      ],
+      "id": "a6236e93-c5ce-4a43-b709-d2979e2d4d29",
+      "name": "TWITCH: RESPOND TO WEBHOOK",
+      "notes": "respond when done"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": 200,\n  \"message\": \"YouTube comments retrieved successfully.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2672,
+        -656
+      ],
+      "id": "786a691f-3a6d-4d8f-b6bd-059384b061e9",
+      "name": "YT: RESPOND TO WEBHOOK",
+      "notes": "respond when done"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": 500,\n  \"message\": \"The Twitch VOD is not valid.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1232,
+        576
+      ],
+      "id": "922d8395-8225-41cc-9652-fa55a8c69b46",
+      "name": "TWITCH: ISVOD FALSE RESPOND TO WEBHOOK",
+      "notes": "to test the error message just change the status code in this node to 500 or any status code error"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": 500,\n  \"message\": \"The YouTube VOD is not valid.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1232,
+        -160
+      ],
+      "id": "39577c66-ebd3-425e-9f74-8eb66d13d3a8",
+      "name": "YT: ISVOD FALSE RESPOND TO WEBHOOK",
+      "notes": "to test the error message just change the status code in this node to 500 or any status code error"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Failed\n",
+        "height": 260,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "b5d17bf0-320a-4e9f-a439-f7fa96fdc500",
+      "name": "Sticky Note88"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Failed\n",
+        "height": 260,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1136,
+        -240
+      ],
+      "typeVersion": 1,
+      "id": "be3a9d68-05f0-4efa-8720-dad4cba288fb",
+      "name": "Sticky Note89"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": 500,\n  \"message\": \"Invalid URL. Please enter a valid YouTube or Twitch URL.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        576,
+        576
+      ],
+      "id": "48df89ec-9234-4d0f-b3a9-1483c25c7a2e",
+      "name": "IDENTIFICATION INVALID: RESPOND TO WEBHOOK",
+      "notes": "to test the error message just change the status code in this node to 500 or any status code error"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Failed\n",
+        "height": 260,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        464,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "bbfa143d-36bc-4f67-a998-11e4207dfaab",
+      "name": "Sticky Note90"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET BODY": {
+      "main": [
+        [
+          {
+            "node": "IDENTIFY SOCIAL BASED ON URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOCIAL IDENTIFICATION": {
+      "main": [
+        [
+          {
+            "node": "YT: VALIDATE URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TWITCH: VALIDATE URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IDENTIFICATION INVALID: RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDENTIFY SOCIAL BASED ON URL": {
+      "main": [
+        [
+          {
+            "node": "SOCIAL IDENTIFICATION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: VALIDATE URL": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: ISVOD TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: ISVOD TRUE": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: POST TWITCH DOWNLOADER",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TWITCH: ISVOD FALSE RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: GET TWITCH DOWNLOADER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: POST TWITCH DOWNLOADER": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: GET TWITCH DOWNLOADER": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: FLATTEN JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: FLATTEN JSON": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: FIELD NAMING CONVENTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: LOOP": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TWITCH: APPEND DYNAMICALLY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: VALIDATE URL": {
+      "main": [
+        [
+          {
+            "node": "YT: ISVOD TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: ISVOD TRUE": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YT: ISVOD FALSE RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "YT: FLATTEN JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: FIELD NAMING CONVENTION": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: FLATTEN JSON": {
+      "main": [
+        [
+          {
+            "node": "YT: MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "YT: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: LOOP": {
+      "main": [
+        [
+          {
+            "node": "YT: RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "YT: APPEND DYNAMICALLY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: APPEND DYNAMICALLY": {
+      "main": [
+        [
+          {
+            "node": "YT: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: APPEND DYNAMICALLY": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "GET BODY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TWITCH: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "TWITCH: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YT: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "YT: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "3aecd732-ca89-4146-8f0c-ed3bc1dc62ef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "WFoy9TY7MrVzDmfZ",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
