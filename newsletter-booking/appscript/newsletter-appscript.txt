@@ -1,0 +1,243 @@
+// ============================================================
+// LOCK GATEKEEPER — No data processing here.
+// Apps Script only manages the lock; n8n does everything else.
+//
+// Supports per-scope locking so Influencer and Press
+// submissions run in parallel without blocking each other.
+//
+// n8n usage:
+//   POST { "action": "acquire", "scope": "influencer" }
+//   POST { "action": "acquire", "scope": "press"      }
+//   POST { "action": "release", "token": "...", "scope": "influencer" }
+//   POST { "action": "release", "token": "...", "scope": "press"      }
+//   GET  ?action=status&scope=influencer
+//   GET  ?action=status            ← shows all scopes
+// ============================================================
+
+const LOCK_TIMEOUT_MS = 60000; // 60 s — adjust to your worst-case n8n run time
+const VALID_SCOPES    = ["influencer", "press", "both"];
+
+// ============================================================
+// KEY HELPERS
+// ============================================================
+
+function getLockKeys(scope) {
+  const base = "activeLockToken" + (scope ? "_" + scope : "");
+  return { storeKey: base, expireKey: base + "_exp" };
+}
+
+function sanitizeScope(raw) {
+  const s = (raw || "").toLowerCase().trim();
+  if (!s) return null; // falls back to global lock if no scope given
+  if (!VALID_SCOPES.includes(s)) return null;
+  return s;
+}
+
+// ============================================================
+// ENTRY POINTS
+// ============================================================
+
+function doPost(e) {
+  const params = parseParams(e);
+  const action = (params.action || "").toLowerCase();
+  const scope  = sanitizeScope(params.scope);
+
+  if (action === "acquire") return acquireLock(scope);
+  if (action === "release") return releaseLock(params.token, scope);
+  if (action === "status")  return lockStatus(scope);
+
+  return jsonResponse({
+    success: false,
+    error: "Unknown action. Use 'acquire', 'release', or 'status'.",
+    validScopes: VALID_SCOPES
+  });
+}
+
+function doGet(e) {
+  // Only allow status checks via GET — never acquisition via browser URL
+  const params = parseParams(e);
+  const action = (params.action || "").toLowerCase();
+  const scope  = sanitizeScope(params.scope);
+
+  if (action === "status") return lockStatus(scope);
+
+  return jsonResponse({
+    success: false,
+    error: "GET only supports 'status'. Use POST for 'acquire' and 'release'."
+  });
+}
+
+// ============================================================
+// ACQUIRE — called by n8n BEFORE processing
+// ============================================================
+
+function acquireLock(scope) {
+  const { storeKey, expireKey } = getLockKeys(scope);
+  const lock = LockService.getScriptLock();
+
+  // Grab LockService lock so the check-and-set below is atomic
+  try {
+    lock.waitLock(LOCK_TIMEOUT_MS);
+  } catch (e) {
+    return jsonResponse({
+      success: false,
+      scope,
+      error: "Server busy – could not acquire internal lock. Retry shortly.",
+      retryAfterMs: 3000
+    });
+  }
+
+  try {
+    const props       = PropertiesService.getScriptProperties();
+    const storedToken = props.getProperty(storeKey);
+    const expiresAt   = Number(props.getProperty(expireKey) || 0);
+
+    // Check INSIDE the LockService lock — now atomic
+    if (storedToken && Date.now() < expiresAt) {
+      return jsonResponse({
+        success: false,
+        scope,
+        error: `Server busy – another ${scope || "global"} submission holds the lock. Retry shortly.`,
+        retryAfterMs: 3000,
+        lockExpiresAt: expiresAt
+      });
+    }
+
+    // No active lock — issue a new token
+    const token        = Utilities.getUuid();
+    const newExpiresAt = Date.now() + LOCK_TIMEOUT_MS;
+
+    props.setProperties({
+      [storeKey]:  token,
+      [expireKey]: String(newExpiresAt)
+    });
+
+    return jsonResponse({
+      success:   true,
+      scope,
+      token,
+      expiresAt: newExpiresAt
+    });
+
+  } finally {
+    // Always release the LockService lock — our token system takes over from here
+    lock.releaseLock();
+  }
+}
+
+// ============================================================
+// RELEASE — called by n8n AFTER processing
+// ============================================================
+
+function releaseLock(token, scope) {
+  if (!token) {
+    return jsonResponse({ success: false, scope, error: "Missing token." });
+  }
+
+  const { storeKey, expireKey } = getLockKeys(scope);
+  const lock = LockService.getScriptLock();
+
+  // Guard the delete so a concurrent acquire can't slip in mid-release
+  try {
+    lock.waitLock(LOCK_TIMEOUT_MS);
+  } catch (e) {
+    return jsonResponse({
+      success: false,
+      scope,
+      error: "Could not acquire internal lock to release. Retry shortly.",
+      retryAfterMs: 3000
+    });
+  }
+
+  try {
+    const props       = PropertiesService.getScriptProperties();
+    const storedToken = props.getProperty(storeKey);
+    const expiresAt   = Number(props.getProperty(expireKey) || 0);
+
+    // Lock already expired — treated as success (n8n can proceed)
+    if (!storedToken || Date.now() > expiresAt) {
+      return jsonResponse({
+        success: true,
+        scope,
+        note: "Lock had already expired or was never held."
+      });
+    }
+
+    // Wrong token — reject (different process owns the lock)
+    if (token !== storedToken) {
+      return jsonResponse({
+        success: false,
+        scope,
+        error: "Invalid token. Lock belongs to a different process."
+      });
+    }
+
+    // Valid token — clear the lock
+    props.deleteProperty(storeKey);
+    props.deleteProperty(expireKey);
+
+    return jsonResponse({ success: true, scope, released: true });
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// ============================================================
+// STATUS — optional diagnostic endpoint
+// ============================================================
+
+function lockStatus(scope) {
+  const props = PropertiesService.getScriptProperties();
+  const now   = Date.now();
+
+  // If a specific scope is requested, return just that one
+  if (scope) {
+    const { storeKey, expireKey } = getLockKeys(scope);
+    const storedToken = props.getProperty(storeKey);
+    const expiresAt   = Number(props.getProperty(expireKey) || 0);
+    const isLocked    = !!(storedToken && now < expiresAt);
+
+    return jsonResponse({
+      success:     true,
+      scope,
+      locked:      isLocked,
+      expiresAt:   isLocked ? expiresAt : null,
+      remainingMs: isLocked ? (expiresAt - now) : 0
+    });
+  }
+
+  // No scope — return status of ALL scopes at once
+  const statuses = {};
+  VALID_SCOPES.forEach(s => {
+    const { storeKey, expireKey } = getLockKeys(s);
+    const storedToken = props.getProperty(storeKey);
+    const expiresAt   = Number(props.getProperty(expireKey) || 0);
+    const isLocked    = !!(storedToken && now < expiresAt);
+
+    statuses[s] = {
+      locked:      isLocked,
+      expiresAt:   isLocked ? expiresAt : null,
+      remainingMs: isLocked ? (expiresAt - now) : 0
+    };
+  });
+
+  return jsonResponse({ success: true, scopes: statuses });
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function parseParams(e) {
+  if (e && e.postData && e.postData.contents) {
+    try { return JSON.parse(e.postData.contents); } catch (_) {}
+  }
+  return (e && e.parameter) ? e.parameter : {};
+}
+
+function jsonResponse(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+}

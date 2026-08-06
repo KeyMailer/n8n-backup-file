@@ -24,3 +24,7 @@ This document outlines the updates made to the existing automation workflow and 
 ### Backend / n8n
 
 - No changes were made to the existing n8n workflow or logic.
+
+## 03 - Apps Script and Google sheet append Error Message
+
+- show an error message when there's an error with apps script or google sheet append section
