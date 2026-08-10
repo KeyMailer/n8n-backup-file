@@ -15,3 +15,9 @@
 ### Append: No Result Output Node
 
 - Add column for clay enricment status and automation timestamp
+
+## 04
+
+### Add New Pipeline
+
+- Add a new pipeline to validate if the publisher/developer name field is empty.
