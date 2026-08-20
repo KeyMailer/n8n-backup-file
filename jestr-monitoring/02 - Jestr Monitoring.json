@@ -1,0 +1,987 @@
+{
+  "name": "Jestr Monitoring",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e6e40031-c429-44ac-b33a-8c4ca008116d",
+              "leftValue": "={{ $json.scraped_at.slice(0, 10) }}",
+              "rightValue": "={{ DateTime.now().toFormat('yyyy-MM-dd') }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        480,
+        -688
+      ],
+      "id": "63766855-d1fd-4740-922a-8e1322ec17e6",
+      "name": "FILTER DATE",
+      "notes": "retrieve only the data if the scraped_at is equal to today"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4",
+          "mode": "list",
+          "cachedResultName": "Scraped-Campaigns",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 944518375,
+          "mode": "list",
+          "cachedResultName": "Jestr Detected",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit#gid=944518375"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.game }}",
+            "url": "={{ $json.url }}",
+            "scraped_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        -688
+      ],
+      "id": "62b5d35a-558e-45be-86ff-9ea51ba2a7ac",
+      "name": "APPEND: SCRAPED CAMPAIGNS",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE",
+          "mode": "list",
+          "cachedResultName": "Steam Curator: Jestr Detected",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1511328336,
+          "mode": "list",
+          "cachedResultName": "Game List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit#gid=1511328336"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        112,
+        -688
+      ],
+      "id": "0890e6d6-51b3-482c-9bad-f71887c7b7b8",
+      "name": "STEAM CURATOR: JESTR DETECTED",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 10 * * 3"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        -688
+      ],
+      "id": "1766da28-8d0b-4692-9772-e22b3bba1ddd",
+      "name": "TRIGGER 10 AM OR 5 PM PHT",
+      "notes": "Every Wednesday at 10:00 AM (5:00 PM PHT) "
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -368,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "70a5e08f-07d9-4537-b9ee-a15d5f9b19ec",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "b01bf7ed-7eb3-421a-8c59-5a4942b8205b",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "e19c03d2-3fa5-4772-bc0c-94664fe86e7a",
+      "name": "Sticky Note72"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 332,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "c058a0ef-e8a0-4166-971f-6e389ed00191",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Jestr Monitoring\n\n**Purpose:**\n- The purpose of this workflow is to send the data from Steam Curator: Jestr Detected Sheet to Scraped Campaigns (Jestr Detected tab) sheet.",
+        "height": 176,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -768
+      ],
+      "typeVersion": 1,
+      "id": "93ec14d2-b692-44b1-891f-ff207fa22c34",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (Steam Curator: Jestr Detected)**:\nhttps://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit?gid=1511328336#gid=1511328336\n\n**Google Sheets (Scraped Campaigns)**:\nhttps://docs.google.com/spreadsheets/d/1iaLrv838PIgd2AbMes4NVmwvqjFrUKI7cclZ-Svrko4/edit?gid=944518375#gid=944518375\n\n\n",
+        "height": 264,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "aecff964-2867-4f06-95a0-7337110bfe10",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run wednesday, :\n- 10:00 AM UK time OR 5:00 PM PHT\n\n- Retrieve data from the steam curator: Jestr Detected\n\n- Check if the date is today, If yes retrieve. If no, do nothing.\n\n- Append to scraped campaigns (jestr detected tab)\n\n  ",
+        "height": 244,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "b88fc5e5-359a-460e-aa06-538e27b3f7d1",
+      "name": "Sticky Note68"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node — \"Run Once for All Items\"\n\nfunction decodeHtml(str) {\n  return str\n    .replace(/&quot;/g, '\"')\n    .replace(/&#039;/g, \"'\")\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .trim();\n}\n\nfunction parseBlocks(html) {\n  const results = [];\n  const blocks = html.split('<div data-panel=').slice(1);\n\n  for (const block of blocks) {\n    const appIdMatch = block.match(/data-ds-appid=\"(\\d+)\"/);\n    const nameMatch = block.match(/alt=\"([^\"]+)\"/);\n    const urlMatch = block.match(/href=\"([^\"]+)\"\\s+class=\"recommendation_link\"/);\n    const recTypeMatch = block.match(/color_(not_)?recommended['\"]?>([^<]+)</);\n    const descMatch = block.match(/recommendation_desc\">\\s*([\\s\\S]*?)\\s*<\\/div>/);\n\n    if (!appIdMatch) continue;\n\n    results.push({\n      app_id: appIdMatch[1],\n      name: nameMatch ? decodeHtml(nameMatch[1]) : null,\n      recommendation: recTypeMatch ? decodeHtml(recTypeMatch[2]) : null,\n      description: descMatch ? decodeHtml(descMatch[1]) : null,\n      url: urlMatch ? decodeHtml(urlMatch[1]) : null,\n    });\n  }\n  return results;\n}\n\nconst allItems = $input.all();\nconst allResults = [];\n\nfor (const item of allItems) {\n  const raw = item.json;\n  const page = Array.isArray(raw) ? raw[0] : raw;\n  const html = page.results_html || '';\n  allResults.push(...parseBlocks(html));\n}\n\nreturn allResults.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -1872
+      ],
+      "id": "2d4e7cbd-1c79-45b8-b5ce-0a0c3b5e00d8",
+      "name": "FIX THE OUTPUT"
+    },
+    {
+      "parameters": {
+        "url": "https://store.steampowered.com/curator/46172544-Jestr-Detected/ajaxgetfilteredrecommendations/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "count",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json, text/javascript, */*; q=0.01"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "en-US,en;q=0.9"
+            },
+            {
+              "name": "Referer",
+              "value": "https://store.steampowered.com/curator/46172544-Jestr-Detected/"
+            },
+            {
+              "name": "Origin",
+              "value": "https://store.steampowered.com"
+            },
+            {
+              "name": "X-Requested-With",
+              "value": "XMLHttpRequest"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "start",
+                    "value": "={{ $pageCount * 100 }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $pageCount * 100 >= $response.body.total_count }}",
+              "requestInterval": 2500
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        128,
+        -1872
+      ],
+      "id": "a3896fb2-05d7-4d8c-aad1-ad2ecf58c7f2",
+      "name": "GET JESTR DETECTED DATA"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE",
+          "mode": "list",
+          "cachedResultName": "Steam Curator: Jestr Detected",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1511328336,
+          "mode": "list",
+          "cachedResultName": "Game List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit#gid=1511328336"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        -1568
+      ],
+      "id": "8df2837e-b3c1-4446-8e91-326abcbaf400",
+      "name": "GET EXISTING DATA IN STEAM CURATOR SHEET",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "app_id",
+              "field2": "appid"
+            }
+          ]
+        },
+        "fuzzyCompare": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        -1712
+      ],
+      "id": "9da1d369-d21e-4737-b421-a4d2080aca2f",
+      "name": "COMPARE APP ID",
+      "notes": "compare app_id (input a) if its already exist in appid (input b)"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE",
+          "mode": "list",
+          "cachedResultName": "Steam Curator: Jestr Detected",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1511328336,
+          "mode": "list",
+          "cachedResultName": "Game List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit#gid=1511328336"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "appid": "={{ $json.app_id }}",
+            "game": "={{ $json.name }}",
+            "recommendation": "={{ $json.recommendation }}",
+            "review": "={{ $json.description }}",
+            "url": "={{ $json.url }}",
+            "scraped_at": "={{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }}",
+            "publishers": "={{ $json.publisher }}",
+            "developer": "={{ $json.developer }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "appid",
+              "displayName": "appid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "game",
+              "displayName": "game",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recommendation",
+              "displayName": "recommendation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review",
+              "displayName": "review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scraped_at",
+              "displayName": "scraped_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publishers",
+              "displayName": "publishers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "developer",
+              "displayName": "developer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2448,
+        -1712
+      ],
+      "id": "4a43ef18-15de-4462-a9f6-51d94df2d939",
+      "name": "APPEND NON-EXISTING APP ID",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "if app id doesn't exist in sheet append it."
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/appdetails?appids={{ $json.app_id }}&cc=us&l=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        -1712
+      ],
+      "id": "00fb8159-4ea1-43cd-99e9-c43bfa0291cc",
+      "name": "CHECK APP ID ON STEAM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dd404d7-11c0-4b26-b24a-47a3c3a60e4c",
+              "name": "publisher",
+              "value": "={{ Object.values($json)[0].data.publishers.join('; ') }}",
+              "type": "string"
+            },
+            {
+              "id": "9cfa65ca-fff8-4593-b796-7fca2dfc8296",
+              "name": "developer",
+              "value": "={{ Object.values($json)[0].data.developers.join('; ') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1872,
+        -1712
+      ],
+      "id": "c01dc7c6-3b1a-4a29-ac63-3434a04347be",
+      "name": "STEAM PUBLISHER AND DEVELOPER FIELDS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the immediately previous node\nconst previousNodeItems = $input.all();\n\n// Get data from the node named \"LOOP\"\nconst loopOverItems = $('LOOP').all();\n\n// Merge them together (by index; if previousNode only has 1 item, reuse it for all)\nconst merged = loopOverItems.map((loopItem, index) => {\n  const prevItem = previousNodeItems[index] || previousNodeItems[0] || { json: {} };\n\n  return {\n    json: {\n      app_id: loopItem.json.app_id,\n      name: loopItem.json.name,\n      recommendation: loopItem.json.recommendation,\n      description: loopItem.json.description,\n      url: loopItem.json.url,\n      publisher: prevItem.json.publisher,\n      developer: prevItem.json.developer,\n    }\n  };\n});\n\nreturn merged;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        -1712
+      ],
+      "id": "b100b1e1-9971-4943-b901-f7ea10f957e7",
+      "name": "MERGE DATA"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1200,
+        -1728
+      ],
+      "id": "cfa7306c-41f5-4545-8b2a-05bfba5eece8",
+      "name": "LOOP"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 616,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        -1952
+      ],
+      "typeVersion": 1,
+      "id": "f89ee6c2-1ef8-4f7e-ac28-36dfc90c1794",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -1952
+      ],
+      "typeVersion": 1,
+      "id": "70c3bfaa-7a8c-4224-8f07-a4fde55c1fab",
+      "name": "Sticky Note73"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 288,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        736,
+        -1776
+      ],
+      "typeVersion": 1,
+      "id": "ec0fecbf-47f8-45f3-a0a4-f1f706006348",
+      "name": "Sticky Note74"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        -1808
+      ],
+      "typeVersion": 1,
+      "id": "1d8090a3-ec4c-4ce6-992b-63306741479d",
+      "name": "Sticky Note50"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1424,
+        -1808
+      ],
+      "typeVersion": 1,
+      "id": "9233aa3a-187d-459c-8b73-3868cbb2d2ed",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1792,
+        -1808
+      ],
+      "typeVersion": 1,
+      "id": "69354caa-c9d3-4dee-b25d-7b2aae3de245",
+      "name": "Sticky Note75"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 332,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2336,
+        -1808
+      ],
+      "typeVersion": 1,
+      "id": "de8ace08-7437-4292-a10e-0665c7d007a4",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 7 * * 3"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        -1712
+      ],
+      "id": "ac82b503-e418-47ac-8063-33ec0dc65738",
+      "name": "TRIGGER 7 AM OR 2 PM PHT",
+      "notes": "Every Wednesday at 7:00 AM (2:00 PM PHT) "
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -368,
+        -1792
+      ],
+      "typeVersion": 1,
+      "id": "5a6bc9a7-566d-4984-88a6-bffb52b6341f",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Jestr Monitoring\n\n**Purpose:**\n- The purpose of this workflow is to request data from the Steam API to retrieve the Jestr Detected data.\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -1792
+      ],
+      "typeVersion": 1,
+      "id": "e520d826-e828-40ce-8c9d-13b09031d408",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (Steam Curator: Jestr Detected)**:\nhttps://docs.google.com/spreadsheets/d/1f8aLVluFHMucGVEEebiaaICtwbM6T99zEvNnY24FhSE/edit?gid=1511328336#gid=1511328336\n\n**Steam API (JESTR DETECTED DATA)**:\nhttps://store.steampowered.com/curator/46172544-Jestr-Detected/ajaxgetfilteredrecommendations/\n\n**Steam API (RETRIEVE THE DETAILS OF APP ID)**:\nhttps://store.steampowered.com/api/appdetails?appids={{ $json.app_id }}&cc=us&l=en\n\n",
+        "height": 328,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -1600
+      ],
+      "typeVersion": 1,
+      "id": "2a2e43e5-1369-499a-87ad-5a1e68685172",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run wednesday, :\n- 7:00 AM UK time OR 2:00 PM PHT\n\n- Retrieve data from the steam curator steam api\n\n- It checks whether the App ID is already stored in Google Sheets. If it doesn’t exist, the workflow appends it; if it already exists, the workflow ignores it.\n\n- Append to jestr detected sheet (game list  tab)\n\n  ",
+        "height": 276,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -1232
+      ],
+      "typeVersion": 1,
+      "id": "d88877e4-34ba-4b34-a043-393fa47f2aa1",
+      "name": "Sticky Note69"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "FILTER DATE": {
+      "main": [
+        [
+          {
+            "node": "APPEND: SCRAPED CAMPAIGNS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM CURATOR: JESTR DETECTED": {
+      "main": [
+        [
+          {
+            "node": "FILTER DATE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 10 AM OR 5 PM PHT": {
+      "main": [
+        [
+          {
+            "node": "STEAM CURATOR: JESTR DETECTED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FIX THE OUTPUT": {
+      "main": [
+        [
+          {
+            "node": "COMPARE APP ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET JESTR DETECTED DATA": {
+      "main": [
+        [
+          {
+            "node": "FIX THE OUTPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET EXISTING DATA IN STEAM CURATOR SHEET": {
+      "main": [
+        [
+          {
+            "node": "COMPARE APP ID",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "COMPARE APP ID": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK APP ID ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "STEAM PUBLISHER AND DEVELOPER FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND NON-EXISTING APP ID": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "STEAM PUBLISHER AND DEVELOPER FIELDS": {
+      "main": [
+        [
+          {
+            "node": "MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "APPEND NON-EXISTING APP ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "CHECK APP ID ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER 7 AM OR 2 PM PHT": {
+      "main": [
+        [
+          {
+            "node": "GET JESTR DETECTED DATA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET EXISTING DATA IN STEAM CURATOR SHEET",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "51f29c89-cc05-416f-bd55-fe0d3f8d9d8a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "id": "qU35tAxVtFApayze",
+  "tags": [
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
