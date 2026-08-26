@@ -5961,6 +5961,50 @@
       "typeVersion": 1,
       "id": "6b89ee16-625f-4f3e-8784-be78cf93413f",
       "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## CM Task Monitoring - Per List\n\n**Purpose:**\n- The purpose of this workflow is to retrieve tasks from a specific list and generate an AI summary of them.\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2848,
+        -4352
+      ],
+      "typeVersion": 1,
+      "id": "7c73dd84-eb44-4ffd-8c21-ea1e143301bd",
+      "name": "Sticky Note110"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Website URL**:\nhttps://neightn-booking.indie-demo.com/ms-todo/ai-note-generator\n\n**Webhook URL testing**:\nhttps://neightn.indie-demo.com/webhook-test/ms-todo/ai-note-generator\n\n**Webhook URL Production**:\nhttps://neightn.indie-demo.com/webhook/ms-todo/ai-note-generator\n\n\n",
+        "height": 280,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2848,
+        -4160
+      ],
+      "typeVersion": 1,
+      "id": "44608aea-b61e-483d-b4de-38434cdfad3f",
+      "name": "Sticky Note111"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This workflow is triggered when the user clicks the Generate Notes button on the /ms-todo/ai-note-generator page.\n\n- Retrieve specific Microsoft To Do lists.\n\n- Retrieve all tasks under list.\n\n- Send the retrieved data to the react app for display. (raw output)\n\n- Save the ai summary in google docs url provided\n\n**Important Notes:**\n\n- Ignore any lists that do not contain any tasks\n",
+        "height": 388,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2848,
+        -3840
+      ],
+      "typeVersion": 1,
+      "id": "902dd1bd-1c95-4a65-bb16-7a797538067e",
+      "name": "Sticky Note129"
     }
   ],
   "pinData": {},
@@ -8100,7 +8144,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "errorWorkflow": "HrRA6Gjil21fGmZd"
   },
-  "versionId": "9b252e57-6059-41c2-bc41-114a4f2a82e9",
+  "versionId": "7132095e-bc00-4748-9824-078847ce5b1b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
