@@ -21,3 +21,15 @@
 ### Add New Pipeline
 
 - Add a new pipeline to validate if the publisher/developer name field is empty.
+
+## 05
+
+### Before the handle duplicate publisher / developer name
+
+- ...
+
+## 06
+
+### Handle Duplicate publisher / developer name
+
+- implement a row number match on
