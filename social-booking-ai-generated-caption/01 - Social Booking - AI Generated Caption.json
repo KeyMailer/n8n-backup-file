@@ -1,0 +1,4791 @@
+{
+  "name": "Social Booking - AI Generated Caption",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0997b455-a4a0-4575-8d26-de19c71d95af",
+              "leftValue": "={{ DateTime.fromFormat($json.submitted_at, 'MMMM dd yyyy, HH:mm').hasSame(DateTime.now(), 'day') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        -16
+      ],
+      "id": "6796280f-bcbe-4f31-9694-666a29d9bb05",
+      "name": "FILTER SUBMITTED AT",
+      "notes": "retrieve only if submitted_at is today"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "09a6203c-c897-4a0d-975e-17535d660631",
+              "leftValue": "={{ $json.ai_drafted_caption }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        -16
+      ],
+      "id": "63b6aea6-ddfd-4f5b-9f61-f5c772f80884",
+      "name": "CHECK IF AI DRAFTED CAPTION IS EMPTY",
+      "notes": "if ai drafted caption is empty meaning we didn't generate a caption yet to that column so we proceed.\n\nbut if ai drafted caption is not empty, we ignore it."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        336,
+        -16
+      ],
+      "id": "e15e9bc9-501a-4fd7-84c5-1c5296bfe664",
+      "name": "GET: SOCIAL BOOKING TAB",
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eefdb7bb-4e08-4e7a-a18b-1a9a11070f31",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "cf85f6bb-159b-41e4-863b-a45fdca1d71a",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "3f112855-65e3-4d4f-9486-aa7b7e87dcb2",
+              "name": "product_id",
+              "value": "={{ $json.product_madmin_link.match(/\\d+$/)[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "e1231dac-3fdd-497d-82fa-023fb74ee1ac",
+              "name": "product_name",
+              "value": "={{ $json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "5061b6ac-3b35-456d-8da0-9e58a362bf6f",
+              "name": "ad_type",
+              "value": "={{ $json.ad_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1392,
+        -32
+      ],
+      "id": "71bd0333-369e-4cd0-8a96-771bf3e8bf54",
+      "name": "GET ONLY IMPORTANT FIELDS"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "312e5888-6fa8-4815-b54a-b716eb0d6e8c",
+              "leftValue": "={{ $json.ad_type }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1616,
+        -32
+      ],
+      "id": "17753fbd-2f9b-4fbb-87a6-e1c184b3b874",
+      "name": "CHECK IF AD TYPE IS NOT EMPTY",
+      "notes": "for safety purpose, we check if the ad type is not empty. if not, proceed, if empty do nothing (there's a problem it shouldn't be empty)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cb229b78-73fd-42ca-9ce2-1d0c96760a23",
+              "leftValue": "={{ $json.ad_type }}",
+              "rightValue": "Bronze",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "eec36147-7975-4a64-81a9-44e58222652a",
+              "leftValue": "={{ $json.ad_type }}",
+              "rightValue": "Silver",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        -32
+      ],
+      "id": "2c646788-7250-4ae4-af35-976614fe40f4",
+      "name": "IDENTIFY AD TYPE",
+      "notes": "true branch if the ad type is bronze or silver\nfalse branch if the ad type is gold above"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2624,
+        -608
+      ],
+      "id": "b962db89-e521-462d-ac31-fca17c8fa75d",
+      "name": "BS: LOOP"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/storesearch/?term={{ encodeURIComponent($json.product_name) }}&cc=US&l=en",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2992,
+        -592
+      ],
+      "id": "e3d27ab5-b58a-41a0-95c8-5b5a16093ea0",
+      "name": "BS: CHECK GAME ON STEAM"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d1f870e-7e0e-42fe-a12f-7038f7f79551",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3344,
+        -592
+      ],
+      "id": "2f1dc6db-bdfd-4ba3-95f4-bcb0b640dc3f",
+      "name": "BS: CHECK TOTAL RETURN",
+      "notes": "if the total is 0 meaning the game didn't exist or not found in steam"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bbde1fa6-719a-4549-9925-096e6ecff17b",
+              "name": "row_number",
+              "value": "={{ $('BS: LOOP').item.json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "6d6434d8-3176-411f-a632-5b9a0151a5bb",
+              "name": "id",
+              "value": "={{ $('BS: LOOP').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "08cf6556-714e-45ed-a2d5-c592887381b8",
+              "name": "product_id",
+              "value": "={{ $('BS: LOOP').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b54246d4-7c68-4f37-8508-6797fe28ffe6",
+              "name": "product_name",
+              "value": "={{ $('BS: LOOP').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4852ad39-7148-4b69-b3f9-4626f80ccc6f",
+              "name": "ad_type",
+              "value": "={{ $('BS: LOOP').item.json.ad_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3360,
+        -304
+      ],
+      "id": "782ac9ff-4038-4ba5-8659-f1e2ffc81634",
+      "name": "RETRIEVE BS: LOOP DATA V1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the immediate previous node\nconst previousNodeItems = $input.all();\n\n// Get data from \"Loop Over Items\" node (previous-previous node)\nconst loopOverItems = $('BS: LOOP').all();\n\n// Build a Set of product_name values (lowercased, trimmed) for matching\nconst productNames = new Set(\n  loopOverItems.map(item => (item.json.product_name || '').trim().toLowerCase())\n);\n\nconst results = [];\n\nfor (const entry of previousNodeItems) {\n  // Handle the case where the previous node's data is wrapped like { total, items: [...] }\n  const appsList = Array.isArray(entry.json.items) ? entry.json.items : [entry.json];\n\n  for (const app of appsList) {\n    const appName = (app.name || '').trim().toLowerCase();\n\n    if (productNames.has(appName)) {\n      results.push({ json: app });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3712,
+        -608
+      ],
+      "id": "1f8ebb48-02f3-440c-a022-ef64f0811077",
+      "name": "BS: MATCH PRODUCT NAME",
+      "alwaysOutputData": true,
+      "notes": "the previous node may return an items more than 1. now to retrieve the real data.\n\nwe compare if the items.name and product_name (from BS: LOOP) is match.\n\nif match return the previous data, the one that its match.\n\nif there's no match, return an empty object { }"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - runs once per item (default mode)\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  const isEmpty = Object.keys(data).length === 0;\n\n  results.push({\n    json: {\n      ...data,\n      match: !isEmpty\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3936,
+        -608
+      ],
+      "id": "0f62a6cc-3530-4a5d-814f-ca3e7f681667",
+      "name": "BS: ADD MATCH FIELD",
+      "notes": "if the previous node return an empty object meaning there's no match so set the match field to false.\n\nif the previous node return a data meaning there's a match so set the match field to true."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ab418a2b-1cfc-4b64-a5f7-8b9175e026d9",
+              "leftValue": "={{ $json.match }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4240,
+        -608
+      ],
+      "id": "2c393110-dc2c-424d-be69-69b973722608",
+      "name": "BS: IS MATCH TRUE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bbde1fa6-719a-4549-9925-096e6ecff17b",
+              "name": "row_number",
+              "value": "={{ $('BS: LOOP').item.json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "6d6434d8-3176-411f-a632-5b9a0151a5bb",
+              "name": "id",
+              "value": "={{ $('BS: LOOP').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "08cf6556-714e-45ed-a2d5-c592887381b8",
+              "name": "product_id",
+              "value": "={{ $('BS: LOOP').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b54246d4-7c68-4f37-8508-6797fe28ffe6",
+              "name": "product_name",
+              "value": "={{ $('BS: LOOP').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4852ad39-7148-4b69-b3f9-4626f80ccc6f",
+              "name": "ad_type",
+              "value": "={{ $('BS: LOOP').item.json.ad_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        4256,
+        -288
+      ],
+      "id": "2165168c-696f-4bcb-a82c-b2e28b29f5b1",
+      "name": "RETRIEVE BS: LOOP DATA V2"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ai_drafted_caption": "generate your own caption"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "internal_review",
+              "displayName": "internal_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "client_review",
+              "displayName": "client_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assets_status",
+              "displayName": "assets_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ready_status",
+              "displayName": "ready_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transfer_status",
+              "displayName": "transfer_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total impressions",
+              "displayName": "Total impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Influencers",
+              "displayName": "Clicks Influencers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks trailer",
+              "displayName": "Clicks trailer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Press",
+              "displayName": "Clicks Press",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total clicks",
+              "displayName": "Total clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total likes",
+              "displayName": "total likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total comments",
+              "displayName": "total comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total shares",
+              "displayName": "total shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Missing",
+              "displayName": "Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Impressions",
+              "displayName": "Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "engagements",
+              "displayName": "engagements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "replies",
+              "displayName": "replies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retweets",
+              "displayName": "retweets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reach",
+              "displayName": "reach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "comments ",
+              "displayName": "comments ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "shares",
+              "displayName": "shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4608,
+        -288
+      ],
+      "id": "26800714-ad09-41f2-bfb8-f9f9de397f4e",
+      "name": "UPDATE SOCIAL BOOKING BY ID V2",
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ai_drafted_caption": "generate your own caption"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "internal_review",
+              "displayName": "internal_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "client_review",
+              "displayName": "client_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assets_status",
+              "displayName": "assets_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ready_status",
+              "displayName": "ready_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transfer_status",
+              "displayName": "transfer_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total impressions",
+              "displayName": "Total impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Influencers",
+              "displayName": "Clicks Influencers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks trailer",
+              "displayName": "Clicks trailer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Press",
+              "displayName": "Clicks Press",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total clicks",
+              "displayName": "Total clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total likes",
+              "displayName": "total likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total comments",
+              "displayName": "total comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total shares",
+              "displayName": "total shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Missing",
+              "displayName": "Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Impressions",
+              "displayName": "Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "engagements",
+              "displayName": "engagements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "replies",
+              "displayName": "replies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retweets",
+              "displayName": "retweets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reach",
+              "displayName": "reach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "comments ",
+              "displayName": "comments ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "shares",
+              "displayName": "shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3712,
+        -304
+      ],
+      "id": "12f61ccd-6154-48e4-9bae-1250af2c79ac",
+      "name": "UPDATE SOCIAL BOOKING BY ID V1",
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/appdetails?appids={{ $json.id }}&cc=us&l=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4608,
+        -624
+      ],
+      "id": "bc3cfa8d-39b7-476b-808e-fe8d107f1355",
+      "name": "BS: CHECK APP ID ON STEAM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "18a2e549-47cf-4df2-be55-ddc1ddcc8e6e",
+              "name": "game_name",
+              "value": "={{Object.values($json)[0].data.name}}",
+              "type": "string"
+            },
+            {
+              "id": "1dd404d7-11c0-4b26-b24a-47a3c3a60e4c",
+              "name": "game_description",
+              "value": "={{ Object.values($json)[0].data.short_description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4976,
+        -624
+      ],
+      "id": "02d84bcd-91f6-4e4e-9824-8083d6b007e9",
+      "name": "BS: STEAM NECESSARY FIELDS"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fefa5f0d-3404-4701-b3a6-5a42d6b60616",
+              "name": "row_number",
+              "value": "={{ $('BS: LOOP').item.json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "e5e34908-3e67-4647-adf5-c1ed061f01d1",
+              "name": "id",
+              "value": "={{ $('BS: LOOP').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ffffab3c-3e57-4c21-8f81-c490701a42f8",
+              "name": "product_id",
+              "value": "={{ $('BS: LOOP').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "1115d5eb-8638-401d-8287-6d86411881e0",
+              "name": "product_name",
+              "value": "={{ $('BS: LOOP').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f1c418cc-cb24-44f1-9b09-ef114d100e19",
+              "name": "ad_type",
+              "value": "={{ $('BS: LOOP').item.json.ad_type }}",
+              "type": "string"
+            },
+            {
+              "id": "0a945d90-dcc0-4818-81e7-9d7d98dfc986",
+              "name": "ai_drafted_caption",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        5696,
+        -624
+      ],
+      "id": "0c907f0b-b068-46be-be59-078c3e95ee2f",
+      "name": "RETRIEVE BS: LOOP DATA V3"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ai_drafted_caption": "={{ $json.ai_drafted_caption }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "internal_review",
+              "displayName": "internal_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "client_review",
+              "displayName": "client_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assets_status",
+              "displayName": "assets_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ready_status",
+              "displayName": "ready_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transfer_status",
+              "displayName": "transfer_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total impressions",
+              "displayName": "Total impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Influencers",
+              "displayName": "Clicks Influencers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks trailer",
+              "displayName": "Clicks trailer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Press",
+              "displayName": "Clicks Press",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total clicks",
+              "displayName": "Total clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total likes",
+              "displayName": "total likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total comments",
+              "displayName": "total comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total shares",
+              "displayName": "total shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Missing",
+              "displayName": "Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Impressions",
+              "displayName": "Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "engagements",
+              "displayName": "engagements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "replies",
+              "displayName": "replies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retweets",
+              "displayName": "retweets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reach",
+              "displayName": "reach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "comments ",
+              "displayName": "comments ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "shares",
+              "displayName": "shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6032,
+        -624
+      ],
+      "id": "0e12c200-1c68-47d0-8026-e10f6fb67915",
+      "name": "UPDATE SOCIAL BOOKING BY ID V3",
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write one social media caption for the video game below.\n\nGAME NAME:\n{{ $json.game_name }}\n\nDESCRIPTION:\n{{ $json.game_description }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Rules:\n- Output ONE caption only.\n- The caption must be exactly ONE sentence on a SINGLE line.\n- Maximum 200 characters.\n- Plain text only.\n- Do NOT use hashtags.\n- Do NOT use emojis.\n- Do NOT use markdown.\n- Do NOT use quotation marks.\n- Do NOT output JSON, arrays, labels, explanations, or additional text.\n- Use ONLY information from the description.\n- Never invent prices, release dates, platforms, review scores, features, or claims not present in the description.\n- If the description is empty or too vague to caption, output exactly: NO_DESCRIPTION\n\nYour entire response must contain ONLY the caption."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "2be06349-16c8-4ee7-88dd-1b187508a2c6",
+      "name": "BS: GENERATE SOCIAL CAPTION",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5264,
+        -624
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "notes": "One general caption, not one per platform. Outputs only { text }, which is why ATTACH CAPTION re-joins product_id and description afterwards."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2624,
+        592
+      ],
+      "id": "05ad77b6-07dc-420b-9817-267e4aeb29be",
+      "name": "GP: LOOP"
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/storesearch/?term={{ encodeURIComponent($json.product_name) }}&cc=US&l=en",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2992,
+        608
+      ],
+      "id": "b56397e6-1012-4ac9-9812-1ddeb585a32e",
+      "name": "GP: CHECK GAME ON STEAM"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d1f870e-7e0e-42fe-a12f-7038f7f79551",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3344,
+        608
+      ],
+      "id": "d772b499-d747-4808-a540-bdcc1c410cf3",
+      "name": "GP: CHECK TOTAL RETURN",
+      "notes": "if the total is 0 meaning the game didn't exist or not found in steam"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bbde1fa6-719a-4549-9925-096e6ecff17b",
+              "name": "row_number",
+              "value": "={{ $('GP: LOOP').item.json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "6d6434d8-3176-411f-a632-5b9a0151a5bb",
+              "name": "id",
+              "value": "={{ $('GP: LOOP').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "08cf6556-714e-45ed-a2d5-c592887381b8",
+              "name": "product_id",
+              "value": "={{ $('GP: LOOP').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b54246d4-7c68-4f37-8508-6797fe28ffe6",
+              "name": "product_name",
+              "value": "={{ $('GP: LOOP').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4852ad39-7148-4b69-b3f9-4626f80ccc6f",
+              "name": "ad_type",
+              "value": "={{ $('GP: LOOP').item.json.ad_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3360,
+        896
+      ],
+      "id": "b87c65a3-7922-445c-b70b-de878ce48713",
+      "name": "RETRIEVE GP: LOOP DATA V1"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ai_drafted_caption": "generate your own caption"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "internal_review",
+              "displayName": "internal_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "client_review",
+              "displayName": "client_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assets_status",
+              "displayName": "assets_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ready_status",
+              "displayName": "ready_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transfer_status",
+              "displayName": "transfer_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total impressions",
+              "displayName": "Total impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Influencers",
+              "displayName": "Clicks Influencers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks trailer",
+              "displayName": "Clicks trailer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Press",
+              "displayName": "Clicks Press",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total clicks",
+              "displayName": "Total clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total likes",
+              "displayName": "total likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total comments",
+              "displayName": "total comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total shares",
+              "displayName": "total shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Missing",
+              "displayName": "Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Impressions",
+              "displayName": "Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "engagements",
+              "displayName": "engagements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "replies",
+              "displayName": "replies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retweets",
+              "displayName": "retweets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reach",
+              "displayName": "reach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "comments ",
+              "displayName": "comments ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "shares",
+              "displayName": "shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3696,
+        896
+      ],
+      "id": "420aca6f-3b9e-4368-90ce-69f59ca63a78",
+      "name": "UPDATE SOCIAL BOOKING BY ID V4",
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the immediate previous node\nconst previousNodeItems = $input.all();\n\n// Get data from \"Loop Over Items\" node (previous-previous node)\nconst loopOverItems = $('GP: LOOP').all();\n\n// Build a Set of product_name values (lowercased, trimmed) for matching\nconst productNames = new Set(\n  loopOverItems.map(item => (item.json.product_name || '').trim().toLowerCase())\n);\n\nconst results = [];\n\nfor (const entry of previousNodeItems) {\n  // Handle the case where the previous node's data is wrapped like { total, items: [...] }\n  const appsList = Array.isArray(entry.json.items) ? entry.json.items : [entry.json];\n\n  for (const app of appsList) {\n    const appName = (app.name || '').trim().toLowerCase();\n\n    if (productNames.has(appName)) {\n      results.push({ json: app });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3696,
+        592
+      ],
+      "id": "07ef0b3d-8722-4eda-a84b-103503c18737",
+      "name": "GP: MATCH PRODUCT NAME",
+      "alwaysOutputData": true,
+      "notes": "the previous node may return an items more than 1. now to retrieve the real data.\n\nwe compare if the items.name and product_name (from BS: LOOP) is match.\n\nif match return the previous data, the one that its match.\n\nif there's no match, return an empty object { }"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - runs once per item (default mode)\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  const isEmpty = Object.keys(data).length === 0;\n\n  results.push({\n    json: {\n      ...data,\n      match: !isEmpty\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3936,
+        592
+      ],
+      "id": "24d00f5e-2774-46ea-a370-63a7e1022235",
+      "name": "GP: ADD MATCH FIELD",
+      "notes": "if the previous node return an empty object meaning there's no match so set the match field to false.\n\nif the previous node return a data meaning there's a match so set the match field to true."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ab418a2b-1cfc-4b64-a5f7-8b9175e026d9",
+              "leftValue": "={{ $json.match }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4256,
+        592
+      ],
+      "id": "cfe84120-2187-4d3e-996c-50d53c3941c9",
+      "name": "GP: IS MATCH TRUE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bbde1fa6-719a-4549-9925-096e6ecff17b",
+              "name": "row_number",
+              "value": "={{ $('GP: LOOP').item.json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "6d6434d8-3176-411f-a632-5b9a0151a5bb",
+              "name": "id",
+              "value": "={{ $('GP: LOOP').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "08cf6556-714e-45ed-a2d5-c592887381b8",
+              "name": "product_id",
+              "value": "={{ $('GP: LOOP').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b54246d4-7c68-4f37-8508-6797fe28ffe6",
+              "name": "product_name",
+              "value": "={{ $('GP: LOOP').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4852ad39-7148-4b69-b3f9-4626f80ccc6f",
+              "name": "ad_type",
+              "value": "={{ $('GP: LOOP').item.json.ad_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        4256,
+        880
+      ],
+      "id": "aecedb36-ac49-4da5-8716-d401d28f05e9",
+      "name": "RETRIEVE GP: LOOP DATA V2"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ai_drafted_caption": "generate your own caption"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "internal_review",
+              "displayName": "internal_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "client_review",
+              "displayName": "client_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assets_status",
+              "displayName": "assets_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ready_status",
+              "displayName": "ready_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transfer_status",
+              "displayName": "transfer_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total impressions",
+              "displayName": "Total impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Influencers",
+              "displayName": "Clicks Influencers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks trailer",
+              "displayName": "Clicks trailer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Press",
+              "displayName": "Clicks Press",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total clicks",
+              "displayName": "Total clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total likes",
+              "displayName": "total likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total comments",
+              "displayName": "total comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total shares",
+              "displayName": "total shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Missing",
+              "displayName": "Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Impressions",
+              "displayName": "Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "engagements",
+              "displayName": "engagements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "replies",
+              "displayName": "replies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retweets",
+              "displayName": "retweets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reach",
+              "displayName": "reach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "comments ",
+              "displayName": "comments ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "shares",
+              "displayName": "shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4608,
+        880
+      ],
+      "id": "e44b20f8-ec6e-4f9d-b139-078d08763030",
+      "name": "UPDATE SOCIAL BOOKING BY ID V5",
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://store.steampowered.com/api/appdetails?appids={{ $json.id }}&cc=us&l=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4624,
+        576
+      ],
+      "id": "810ac7f4-7aa2-4c71-9ee6-8387bb3006e9",
+      "name": "GP: CHECK APP ID ON STEAM"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "18a2e549-47cf-4df2-be55-ddc1ddcc8e6e",
+              "name": "game_name",
+              "value": "={{Object.values($json)[0].data.name}}",
+              "type": "string"
+            },
+            {
+              "id": "1dd404d7-11c0-4b26-b24a-47a3c3a60e4c",
+              "name": "game_description",
+              "value": "={{ Object.values($json)[0].data.short_description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4976,
+        576
+      ],
+      "id": "3dbe9488-ea0c-41ef-ac58-d8410bd38711",
+      "name": "GP: STEAM NECESSARY FIELDS"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write one social media caption for the video game below.\n\nGAME NAME:\n{{ $json.game_name }}\n\nDESCRIPTION:\n{{ $json.game_description }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Rules:\n- Output ONE caption only.\n- The caption must be exactly ONE sentence on a SINGLE line.\n- Maximum 200 characters.\n- Plain text only.\n- Do NOT use hashtags.\n- Do NOT use emojis.\n- Do NOT use markdown.\n- Do NOT use quotation marks.\n- Do NOT output JSON, arrays, labels, explanations, or additional text.\n- Use ONLY information from the description.\n- Never invent prices, release dates, platforms, review scores, features, or claims not present in the description.\n- If the description is empty or too vague to caption, output exactly: NO_DESCRIPTION\n\nYour entire response must contain ONLY the caption."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "299691a1-98d3-4a31-a68d-f99020d88eea",
+      "name": "GP: GENERATE SOCIAL CAPTION",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5264,
+        576
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "notes": "One general caption, not one per platform. Outputs only { text }, which is why ATTACH CAPTION re-joins product_id and description afterwards."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Translate the social media caption below into Spanish.\n\nENGLISH CAPTION:\n{{ $('GP: GENERATE SOCIAL CAPTION').item.json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You localize video game social media captions into Spanish (es-ES).\n\nRules:\n- Output ONE caption only, written in Spanish.\n- The caption must be exactly ONE sentence on a SINGLE line.\n- Maximum 200 characters.\n- Plain text only.\n- Do NOT use hashtags.\n- Do NOT use emojis.\n- Do NOT use markdown.\n- Do NOT use quotation marks.\n- Do NOT output JSON, arrays, labels, language names, explanations, or additional text.\n- Do NOT add any information that is not in the English caption.\n- Keep the game title exactly as written in the English caption; do not translate it.\n- If the English caption is exactly NO_DESCRIPTION, output exactly: NO_DESCRIPTION\n\nYour entire response must contain ONLY the Spanish caption."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "06862d78-6b54-4f5a-83dd-ca3074430e16",
+      "name": "GP: TRANSLATE CAPTION - ES",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5264,
+        832
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "notes": "Translates the ENGLISH caption, read via $('GP: GENERATE SOCIAL CAPTION').item.json.text — NOT the caption from the node immediately upstream. Wiring is sequential only to keep the four calls in one lane; ES/JA/ZH all localize the same English source, so the four languages say the same thing. Passes NO_DESCRIPTION through unchanged."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Translate the social media caption below into Japanese.\n\nENGLISH CAPTION:\n{{ $('GP: GENERATE SOCIAL CAPTION').item.json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You localize video game social media captions into Japanese (ja-JP).\n\nRules:\n- Output ONE caption only, written in Japanese.\n- The caption must be exactly ONE sentence on a SINGLE line.\n- Maximum 200 characters.\n- Plain text only.\n- Do NOT use hashtags.\n- Do NOT use emojis.\n- Do NOT use markdown.\n- Do NOT use quotation marks.\n- Do NOT output JSON, arrays, labels, language names, explanations, or additional text.\n- Do NOT output romaji, furigana, or an English gloss.\n- Do NOT add any information that is not in the English caption.\n- Keep the game title exactly as written in the English caption; do not translate or transliterate it.\n- If the English caption is exactly NO_DESCRIPTION, output exactly: NO_DESCRIPTION\n\nYour entire response must contain ONLY the Japanese caption."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "57576652-46a8-4556-a457-600c48ee62b4",
+      "name": "GP: TRANSLATE CAPTION - JA",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5264,
+        1056
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "notes": "Translates the ENGLISH caption, read via $('GP: GENERATE SOCIAL CAPTION').item.json.text — NOT the Spanish caption from the node immediately upstream. Passes NO_DESCRIPTION through unchanged."
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Translate the social media caption below into Simplified Chinese.\n\nENGLISH CAPTION:\n{{ $('GP: GENERATE SOCIAL CAPTION').item.json.text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You localize video game social media captions into Simplified Chinese (zh-CN).\n\nRules:\n- Output ONE caption only, written in Simplified Chinese characters.\n- The caption must be exactly ONE sentence on a SINGLE line.\n- Maximum 200 characters.\n- Plain text only.\n- Do NOT use hashtags.\n- Do NOT use emojis.\n- Do NOT use markdown.\n- Do NOT use quotation marks.\n- Do NOT output JSON, arrays, labels, language names, explanations, or additional text.\n- Do NOT output pinyin, Traditional characters, or an English gloss.\n- Do NOT add any information that is not in the English caption.\n- Keep the game title exactly as written in the English caption; do not translate or transliterate it.\n- If the English caption is exactly NO_DESCRIPTION, output exactly: NO_DESCRIPTION\n\nYour entire response must contain ONLY the Simplified Chinese caption."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "26c9e8dd-a72f-4629-b4a3-dee8ccbe5f74",
+      "name": "GP: TRANSLATE CAPTION - ZH",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        5264,
+        1264
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "notes": "Translates the ENGLISH caption, read via $('GP: GENERATE SOCIAL CAPTION').item.json.text — NOT the Japanese caption from the node immediately upstream. Passes NO_DESCRIPTION through unchanged."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e01",
+              "name": "row_number",
+              "value": "={{ $('GP: LOOP').item.json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e02",
+              "name": "id",
+              "value": "={{ $('GP: LOOP').item.json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e03",
+              "name": "product_id",
+              "value": "={{ $('GP: LOOP').item.json.product_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e04",
+              "name": "product_name",
+              "value": "={{ $('GP: LOOP').item.json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e05",
+              "name": "ad_type",
+              "value": "={{ $('GP: LOOP').item.json.ad_type }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e06",
+              "name": "ai_drafted_caption",
+              "value": "={{ $('GP: GENERATE SOCIAL CAPTION').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e07",
+              "name": "ai_drafted_caption_es",
+              "value": "={{ $('GP: TRANSLATE CAPTION - ES').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e08",
+              "name": "ai_drafted_caption_ja",
+              "value": "={{ $('GP: TRANSLATE CAPTION - JA').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c2d4-1111-4a01-9f01-0a1b2c3d4e09",
+              "name": "ai_drafted_caption_zh",
+              "value": "={{ $('GP: TRANSLATE CAPTION - ZH').item.json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8723b767-4808-4b6b-b035-e63f422c19f9",
+      "name": "RETRIEVE GP: LOOP DATA V3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        5888,
+        1264
+      ],
+      "notes": "The caption chains output only { text }, so this re-joins the GP: LOOP row identity with all four captions. Each caption is pulled by explicit node name rather than from $json, so the source of each language is readable at a glance."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id"
+          ],
+          "value": {
+            "id": "={{ $json.id }}",
+            "ai_drafted_caption": "={{ $json.ai_drafted_caption }}",
+            "ai_drafted_caption_es": "={{ $json.ai_drafted_caption_es }}",
+            "ai_drafted_caption_ja": "={{ $json.ai_drafted_caption_ja }}",
+            "ai_drafted_caption_zh": "={{ $json.ai_drafted_caption_zh }}"
+          },
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2be52a1b-74bf-4ac8-a751-33b87f7f3146",
+      "name": "UPDATE SOCIAL BOOKING BY ID V6",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        6240,
+        1264
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      },
+      "notes": "Writes the four GP captions back to the Social Booking tab, matched on id. Only the four caption columns are mapped; every other column is left as-is."
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */15 * * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        -16
+      ],
+      "id": "e2df2b9c-ff24-4e48-a002-f5f0ae8fab2a",
+      "name": "EVERY 15 MINS",
+      "notes": "every 15 mins"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "b99c8661-5e49-4b72-8780-b60f16c678b4",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        176
+      ],
+      "id": "4d28a23a-09b9-4e26-8bc5-70df8eda30a9",
+      "name": "DO NOTHING"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "1d8450e6-45f3-4041-99ca-19e106c89a1b",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "94dbe295-26e7-45ed-be64-a289388808de",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 436,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        960,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "22b82555-82a0-430a-b189-b58af26029bd",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 480,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1312,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "91dd5677-1006-4e61-81ff-9ae3c284ec8b",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1824,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "2a0e8627-acd2-4a40-ae7c-9a1cd4bcdfee",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "3feabb14-9b8a-4ec4-9c46-88689f302e2a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# AD TYPE: BRONZE & SILVER\n\n- Generate only the English AI-generated caption.",
+        "height": 112,
+        "width": 3712,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        -832
+      ],
+      "typeVersion": 1,
+      "id": "729831cd-63ea-4cd0-a24e-a0efcb3f82fc",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2880,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "f6630f8c-96a7-49b6-88a6-283f571e3952",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "d07e58e6-dd11-431c-ae9e-b6d397ea8635",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "5947851a-c730-41dc-af42-830301eb2b71",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3600,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "86106e90-42b4-4573-9d11-2cbbe56bb340",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3600,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "5a7ff84d-a768-4a63-8b8d-47dee75cadfc",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4144,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "4bb82c2b-a2c9-4513-9a1c-0f60bc48f6f0",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4144,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "40f58c4f-238f-4de1-a0d7-68da6cc86075",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4496,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "9572a051-e55a-412d-8e8d-c64cf48059cb",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4496,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "cb7af6dd-949d-401d-ab53-77617ee7343d",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4864,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "07af45ae-7e99-4728-9c27-9f6abed0e062",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5216,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "e6ac2c0a-a8de-49b9-8e74-04dfe999babb",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5584,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "34a8567d-bf96-44a7-a297-f0e0b962c19c",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5936,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "2ccd275b-9a8e-4bab-9854-12775f3a62c7",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "628241a7-3657-41b4-8fe5-1e9cab14fda9",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "# AD TYPE: GOLD & PLAT\n\n- Generate English, Spanish(es), Japanese(ja), Chinese(zh) AI-generated caption.",
+        "height": 112,
+        "width": 3712,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2528,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "85707401-8afc-4e30-8a4d-49616fca1418",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2880,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "88afddc6-2236-4e5e-827c-d7d038187670",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "2d447a64-a7c6-4a71-b945-a00379dcd64c",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "13e4f904-30db-4db7-a2ee-0199e341bd93",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3600,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "4e1ae691-bebf-4059-9abf-cd5a22e94ce0",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3600,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "617bddae-71b0-4fee-ae75-7137ad3d56a6",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4144,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "a92cb612-3d41-4a27-9128-e80f9a79c9f0",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4496,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "df01ee87-09af-41b7-ad77-6efcab7be4fa",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4144,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "1ed47f63-22ad-4806-875f-726240f5224e",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 332,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4496,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "a98b03dd-96d1-4e18-974e-d7d031963f4d",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4864,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "5cf94ea8-a635-47e0-84e8-ba1d3333c038",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5568,
+        576
+      ],
+      "id": "a579a2da-92d8-4b17-8cc5-815e672de303",
+      "name": "GP: WAIT 5 SEC V1",
+      "webhookId": "07498e61-f554-463a-8bae-ff9c9ad331ec"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5568,
+        832
+      ],
+      "id": "dd6b8e84-d065-4b5f-ab4c-03f9a8f14906",
+      "name": "GP: WAIT 5 SEC V2",
+      "webhookId": "07498e61-f554-463a-8bae-ff9c9ad331ec"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5584,
+        1056
+      ],
+      "id": "f0677b98-94ff-4701-9dec-92bd370441ec",
+      "name": "GP: WAIT 5 SEC V3",
+      "webhookId": "07498e61-f554-463a-8bae-ff9c9ad331ec"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 904,
+        "width": 524,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5216,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "21a144d7-f4aa-4c23-8321-8e99e346ef53",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "model": "qwen2.5:7b-instruct",
+        "options": {
+          "think": false,
+          "temperature": 0.7
+        }
+      },
+      "id": "8629b2ae-e4c0-4565-a314-05598e82cd8a",
+      "name": "OLLAMA MODEL",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        6672,
+        208
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "mSHFNBdd2RKsD5ph",
+          "name": "ais-ollama-client-facing"
+        }
+      },
+      "notes": "think:false — qwen2.5-instruct is not a thinking model, so thinking mode is disabled to keep the raw caption as the output."
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        5776,
+        1200
+      ],
+      "typeVersion": 1,
+      "id": "1b0aec64-1137-4432-9567-f32a6d36249e",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 332,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        6128,
+        1200
+      ],
+      "typeVersion": 1,
+      "id": "530a9ac0-974d-4f5e-9d2d-ec6710984d2f",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "## Social Booking - AI Generated Caption\n\n**Purpose:**\n- The purpose of this workflow is to generate captions based on the SteamDB description of the game.\n\n- If the game’s ad type is Bronze or Silver, the workflow will only generate an English version.\n\n- If the ad type is Gold or Platinum, the workflow will generate English, Spanish, Japanese, and Chinese versions.\n\n",
+        "height": 272,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "436107e5-dccb-4a2e-9a7e-405cc83fbb0c",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n\n* This workflow will run every 15 minutes.\n\n* Retrieve data from the **Social Booking** tab and filter by **Submitted At**. If the submission date is today, proceed. If not, ignore it.\n* Check if the **AI Drafted Caption** column is empty. If it is empty, proceed. If not, ignore it.\n* Retrieve only the required fields.\n* Check if the **Ad Type** field is not empty.\n* Identify the ad type:\n\n  * **Bronze / Silver:** Generate an English caption only.\n  * **Gold / Platinum:** Generate English, Spanish(es), Japanese(ja), and Chinese(zh) captions.\n* Check if the game exists on Steam.\n\n  * If the game does not exist on Steam, update the **Social Booking** tab with: **\"Generate your own caption.\"**\n  * If the game exists on Steam, retrieve its description.\n* Use the **game name** and **Steam description** to generate the AI caption(s).\n* Update the **Social Booking** tab with the generated caption(s).\n\n",
+        "height": 564,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "659ae3c3-7c24-4fd2-99e7-9f6dafbc8f6e",
+      "name": "Sticky Note69"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "FILTER SUBMITTED AT": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF AI DRAFTED CAPTION IS EMPTY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF AI DRAFTED CAPTION IS EMPTY": {
+      "main": [
+        [
+          {
+            "node": "GET ONLY IMPORTANT FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DO NOTHING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: SOCIAL BOOKING TAB": {
+      "main": [
+        [
+          {
+            "node": "FILTER SUBMITTED AT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET ONLY IMPORTANT FIELDS": {
+      "main": [
+        [
+          {
+            "node": "CHECK IF AD TYPE IS NOT EMPTY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK IF AD TYPE IS NOT EMPTY": {
+      "main": [
+        [
+          {
+            "node": "IDENTIFY AD TYPE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDENTIFY AD TYPE": {
+      "main": [
+        [
+          {
+            "node": "BS: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "BS: CHECK GAME ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: CHECK GAME ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "BS: CHECK TOTAL RETURN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: CHECK TOTAL RETURN": {
+      "main": [
+        [
+          {
+            "node": "BS: MATCH PRODUCT NAME",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RETRIEVE BS: LOOP DATA V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE BS: LOOP DATA V1": {
+      "main": [
+        [
+          {
+            "node": "UPDATE SOCIAL BOOKING BY ID V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: MATCH PRODUCT NAME": {
+      "main": [
+        [
+          {
+            "node": "BS: ADD MATCH FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: ADD MATCH FIELD": {
+      "main": [
+        [
+          {
+            "node": "BS: IS MATCH TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: IS MATCH TRUE": {
+      "main": [
+        [
+          {
+            "node": "BS: CHECK APP ID ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RETRIEVE BS: LOOP DATA V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE BS: LOOP DATA V2": {
+      "main": [
+        [
+          {
+            "node": "UPDATE SOCIAL BOOKING BY ID V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE SOCIAL BOOKING BY ID V2": {
+      "main": [
+        [
+          {
+            "node": "BS: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE SOCIAL BOOKING BY ID V1": {
+      "main": [
+        [
+          {
+            "node": "BS: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: CHECK APP ID ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "BS: STEAM NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: STEAM NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "BS: GENERATE SOCIAL CAPTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE BS: LOOP DATA V3": {
+      "main": [
+        [
+          {
+            "node": "UPDATE SOCIAL BOOKING BY ID V3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE SOCIAL BOOKING BY ID V3": {
+      "main": [
+        [
+          {
+            "node": "BS: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BS: GENERATE SOCIAL CAPTION": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE BS: LOOP DATA V3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "GP: CHECK GAME ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: CHECK GAME ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "GP: CHECK TOTAL RETURN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: CHECK TOTAL RETURN": {
+      "main": [
+        [
+          {
+            "node": "GP: MATCH PRODUCT NAME",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RETRIEVE GP: LOOP DATA V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE GP: LOOP DATA V1": {
+      "main": [
+        [
+          {
+            "node": "UPDATE SOCIAL BOOKING BY ID V4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: MATCH PRODUCT NAME": {
+      "main": [
+        [
+          {
+            "node": "GP: ADD MATCH FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: ADD MATCH FIELD": {
+      "main": [
+        [
+          {
+            "node": "GP: IS MATCH TRUE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: IS MATCH TRUE": {
+      "main": [
+        [
+          {
+            "node": "GP: CHECK APP ID ON STEAM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "RETRIEVE GP: LOOP DATA V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE GP: LOOP DATA V2": {
+      "main": [
+        [
+          {
+            "node": "UPDATE SOCIAL BOOKING BY ID V5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: CHECK APP ID ON STEAM": {
+      "main": [
+        [
+          {
+            "node": "GP: STEAM NECESSARY FIELDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: STEAM NECESSARY FIELDS": {
+      "main": [
+        [
+          {
+            "node": "GP: GENERATE SOCIAL CAPTION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: GENERATE SOCIAL CAPTION": {
+      "main": [
+        [
+          {
+            "node": "GP: WAIT 5 SEC V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: TRANSLATE CAPTION - ES": {
+      "main": [
+        [
+          {
+            "node": "GP: WAIT 5 SEC V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: TRANSLATE CAPTION - JA": {
+      "main": [
+        [
+          {
+            "node": "GP: WAIT 5 SEC V3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: TRANSLATE CAPTION - ZH": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE GP: LOOP DATA V3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE GP: LOOP DATA V3": {
+      "main": [
+        [
+          {
+            "node": "UPDATE SOCIAL BOOKING BY ID V6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EVERY 15 MINS": {
+      "main": [
+        [
+          {
+            "node": "GET: SOCIAL BOOKING TAB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE SOCIAL BOOKING BY ID V4": {
+      "main": [
+        [
+          {
+            "node": "GP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE SOCIAL BOOKING BY ID V5": {
+      "main": [
+        [
+          {
+            "node": "GP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: WAIT 5 SEC V1": {
+      "main": [
+        [
+          {
+            "node": "GP: TRANSLATE CAPTION - ES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: WAIT 5 SEC V2": {
+      "main": [
+        [
+          {
+            "node": "GP: TRANSLATE CAPTION - JA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GP: WAIT 5 SEC V3": {
+      "main": [
+        [
+          {
+            "node": "GP: TRANSLATE CAPTION - ZH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OLLAMA MODEL": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BS: GENERATE SOCIAL CAPTION",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "GP: GENERATE SOCIAL CAPTION",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "GP: TRANSLATE CAPTION - ES",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "GP: TRANSLATE CAPTION - JA",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "GP: TRANSLATE CAPTION - ZH",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE SOCIAL BOOKING BY ID V6": {
+      "main": [
+        [
+          {
+            "node": "GP: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "executionTimeout": -1
+  },
+  "versionId": "0ebe91f2-f707-4464-b6b8-ed5b4db00715",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [],
+  "id": "yGxrZxA5R0ISkJoh",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

@@ -15,3 +15,7 @@
 ### Change the workflow
 
 - Added a new scope option (All Users / Single User) and a new pipeline for Single User. Previously, the workflow retrieved tasks for all users by default. Now, users can select a specific user instead of retrieving data for everyone.
+
+## 04 - DOM Account
+
+- remove dom's account

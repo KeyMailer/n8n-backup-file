@@ -1,0 +1,1349 @@
+{
+  "name": "Social Booking - Transfer Data x Slack Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 134788380,
+          "mode": "list",
+          "cachedResultName": "LOCKED Ads to Be SCHEDULED",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=134788380"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "id",
+              "lookupValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1456,
+        16
+      ],
+      "id": "a7db1202-ea3d-4f81-b6b0-1728cd2d43da",
+      "name": "GET: LOCKED ADS TO BE SCHEDULED",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "transfer_status": "Transferred"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption",
+              "displayName": "ai_drafted_caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_es",
+              "displayName": "ai_drafted_caption_es",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_ja",
+              "displayName": "ai_drafted_caption_ja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ai_drafted_caption_zh",
+              "displayName": "ai_drafted_caption_zh",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "internal_review",
+              "displayName": "internal_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "client_review",
+              "displayName": "client_review",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "assets_status",
+              "displayName": "assets_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ready_status",
+              "displayName": "ready_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "transfer_status",
+              "displayName": "transfer_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total impressions",
+              "displayName": "Total impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Influencers",
+              "displayName": "Clicks Influencers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks trailer",
+              "displayName": "Clicks trailer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Clicks Press",
+              "displayName": "Clicks Press",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total clicks",
+              "displayName": "Total clicks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "CTR",
+              "displayName": "CTR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total likes",
+              "displayName": "total likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total comments",
+              "displayName": "total comments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total shares",
+              "displayName": "total shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Missing",
+              "displayName": "Missing",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Impressions",
+              "displayName": "Impressions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "engagements",
+              "displayName": "engagements",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "likes",
+              "displayName": "likes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "replies",
+              "displayName": "replies",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "retweets",
+              "displayName": "retweets",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reach",
+              "displayName": "reach",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "comments ",
+              "displayName": "comments ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "shares",
+              "displayName": "shares",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1776,
+        -528
+      ],
+      "id": "8561b84a-2859-4e09-88f5-f7081713d1f3",
+      "name": "UPDATE: SOCIAL BOOKING TAB",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      },
+      "notes": "update the id of social booking tab to transferred"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 134788380,
+          "mode": "list",
+          "cachedResultName": "LOCKED Ads to Be SCHEDULED",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=134788380"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "point_person": "={{ $json.point_person }}",
+            "product_name": "={{ $json.product_name }}",
+            "output_folder": "={{ $json.output_folder }}",
+            "social_post_type": "={{ $json.social_post_type }}",
+            "ad_type": "={{ $json.ad_type }}",
+            "platform": "={{ $json.platform }}",
+            "date_scheduled": "={{ $json.date_scheduled }}",
+            "copy": "={{ $json.copy }}",
+            "notes": "={{ $json.notes }}",
+            "Timeslot": "={{ $json.Timeslot }}",
+            "org_madmin_link": "={{ $json.org_madmin_link }}",
+            "product_madmin_link": "={{ $json.product_madmin_link }}",
+            "submitted_at": "={{ $json.submitted_at }}",
+            "transffered_at": "={{ $now.toFormat(\"MMMM dd yyyy hh:mm a\") }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "point_person",
+              "displayName": "point_person",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output_folder",
+              "displayName": "output_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "social_post_type",
+              "displayName": "social_post_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ad_type",
+              "displayName": "ad_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "date_scheduled",
+              "displayName": "date_scheduled",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "copy",
+              "displayName": "copy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timeslot",
+              "displayName": "Timeslot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "org_madmin_link",
+              "displayName": "org_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "product_madmin_link",
+              "displayName": "product_madmin_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "transffered_at",
+              "displayName": "transffered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1984,
+        -752
+      ],
+      "id": "87224c94-b9b4-418a-adc8-dfc945a18cbb",
+      "name": "APPEND: LOCKED ADS TO BE SCHEDULED",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      },
+      "notes": "transfer the data from social booking tab to locked ads to be scheduled tab"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1760260695,
+          "mode": "list",
+          "cachedResultName": "Social Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1d2OFRNY6hNo_xvgCsnDQiNJJButSuVLlgzdOA8r3Psg/edit#gid=1760260695"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ready_status",
+              "lookupValue": "Approved"
+            },
+            {
+              "lookupColumn": "transfer_status",
+              "lookupValue": "Not Transferred"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        0
+      ],
+      "id": "b9f9ff9b-6469-494c-8fdc-4feaa8b0a278",
+      "name": "GET: SOCIAL BOOKING DATA",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "uK8ukluJTR2q9zC7",
+          "name": "km-tin-social-booking"
+        }
+      },
+      "notes": "retrieve the data\n\nif ready_status is approved \nAND\nif transfer_status is not transferred"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        736,
+        0
+      ],
+      "id": "c3ced050-6ee3-4f6e-b247-11a0e77700dc",
+      "name": "LOOP"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  const isEmpty = Object.keys(data).length === 0;\n\n  if (isEmpty) {\n    // ID doesn't exist yet → pull data from \"REATE AN ID AND IMPORTANT FIELD\" node\n    const editFieldsData = $('IMPORTANT FIELD').first().json;\n\n    results.push({\n      json: {\n        ...editFieldsData,\n        id_exist: false\n      }\n    });\n  } else {\n    // ID already exists → keep data from previous node, just flag it\n    results.push({\n      json: {\n        ...data,\n        id_exist: true\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        16
+      ],
+      "id": "a4fbef3e-d795-4470-8156-da443a82ec3d",
+      "name": "CHECK ID EXISTENCE",
+      "notes": "Object.keys(data).length === 0 checks if the incoming item is {} (your \"id doesn't exist\" case).\n\nIf empty → it fetches the item(s) from the node named \"REATE AN ID AND IMPORTANT FIELD\" using $('Edit Fields').first().json, spreads that data, and adds id_exist: false.\n\nIf not empty → it spreads the existing data from the previous node and adds id_exist: true."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "27b0af86-257b-4fb7-9c6a-65ad1d0a2a49",
+              "leftValue": "={{ $json.id_exist }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1088,
+        -272
+      ],
+      "id": "0163cf2b-d2d6-4f2a-8bcd-9264ba6f3253",
+      "name": "FILTER BY ID EXIST FIELD"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        -272
+      ],
+      "id": "e7d0ccb2-1311-4fce-a14a-26955fffc028",
+      "name": "AGGREATE DATA"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */15 * * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e57786ba-3439-4df5-8360-b197e66cae24",
+      "name": "EVERY 15 MINS",
+      "notes": "every 15 mins"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1776,
+        -752
+      ],
+      "id": "94cd19d3-e232-42a0-b88e-b61c9a6083c9",
+      "name": "WAIT 5 SECONDS",
+      "webhookId": "71c69a52-4498-482e-b0d1-0a67e3d32902"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0B13F26C6N",
+          "mode": "list",
+          "cachedResultName": "n8n-notifications"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n  \"blocks\": [\n    {\n      \"type\": \"header\",\n      \"text\": {\n        \"type\": \"plain_text\",\n        \"text\": \"SOCIAL BOOKING NOTIFICATION\",\n        \"emoji\": true\n      }\n    },\n    {\n      \"type\": \"divider\"\n    },\n    {\n      \"type\": \"markdown\",\n      \"text\": \"Hi <@U0B18NFQNJK>, there's new data in the *Locked Ads to Be Scheduled* tab. Please check it.\"\n    },\n    {\n      \"type\": \"markdown\",\n      \"text\": \"| ID | Point Person | Product Name |\\n|---|---|---|\\n{{ $input.all()[0].json.data.map(row => `| ${row.id} | ${row.point_person} | ${row.product_name} |`).join('\\\\n') }}\"\n    }\n  ]\n}",
+        "text": "test",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1776,
+        -272
+      ],
+      "id": "23a1e580-09ed-40ce-b008-dff122694af0",
+      "name": "SEND MESSAGE TO N8N NOTIFICATIONS",
+      "webhookId": "9c2bf15a-ca6a-4303-88af-dcb4794c3947",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "slackApi": {
+          "id": "n8i8LFD1olQ3N4hM",
+          "name": "n8n-notifications"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -112,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "df8c1c93-115c-4fb1-8027-46c1714b9ade",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        256,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "51c9dbdc-e8ab-4955-aa22-174f3eef9a27",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 276,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "071de732-51c2-4af4-9597-d9518d4929d0",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 560,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        976,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "8af913a3-2eff-4dbb-90ca-1542eb434705",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1344,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "7107dcfb-9a33-4c9f-a886-fc0b87aa79f2",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1712,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "d65cb487-467e-41bf-a90c-69245a7dd0ed",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1344,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "437b557f-8a8d-4636-a496-fc679377a479",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 708,
+        "width": 460,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1712,
+        -832
+      ],
+      "typeVersion": 1,
+      "id": "8d326445-2868-4126-aa33-904d341846f3",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Social Booking - Transfer Data x Slack Notification\n\n**Purpose:**\n- The purpose of this workflow is to transfer data from the Social Booking tab to the Locked Ads tab when the ready_status changes to Approved.\n\n",
+        "height": 192,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -592,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "4e979fae-2a22-4958-ac5a-201209655a65",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n\n* This workflow will run every 15 minutes.\n\n* Retrieve data from the Social Booking tab where \n`ready_status` is **Approved** and `transfer_status` is **Not Transferred**.\n\n* Check if the ID already exists in the Locked Ads tab. If it exists, ignore it; otherwise, proceed.\n\n* Transfer the data from the Social Booking tab to the Locked Ads tab.\n\n* Update the `transfer_status` in the Social Booking tab to **Transferred**.\n\n* Notify David about the newly transferred data.\n",
+        "height": 372,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -592,
+        144
+      ],
+      "typeVersion": 1,
+      "id": "1cd029cc-4e6a-4927-8a75-ca75e682fe74",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8765cabe-b7fc-4eb6-b2cf-0972fe4f309e",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "cbccb523-ef4e-4f50-b70d-dbe8cf33ec57",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2bdf45e2-1809-4e7b-b603-ed031541c1f5",
+              "name": "point_person",
+              "value": "={{ $json.point_person }}",
+              "type": "string"
+            },
+            {
+              "id": "94065cb8-500e-4980-a583-c9f107201d96",
+              "name": "product_name",
+              "value": "={{ $json.product_name }}",
+              "type": "string"
+            },
+            {
+              "id": "836434b0-45eb-4c27-8d05-59f596333675",
+              "name": "output_folder",
+              "value": "={{ $json.output_folder }}",
+              "type": "string"
+            },
+            {
+              "id": "6a4f391d-66b8-4cd3-9ce2-75d6c919e8ba",
+              "name": "social_post_type",
+              "value": "={{ $json.social_post_type }}",
+              "type": "string"
+            },
+            {
+              "id": "08edc024-f647-4b88-bff5-d7bcd0fcda1d",
+              "name": "ad_type",
+              "value": "={{ $json.ad_type }}",
+              "type": "string"
+            },
+            {
+              "id": "7b0478ac-2c39-4c18-bc26-4b2c2ef94aa4",
+              "name": "platform",
+              "value": "={{ $json.platform }}",
+              "type": "string"
+            },
+            {
+              "id": "f1a13ab3-558e-48c1-a5d3-4c4a6a582697",
+              "name": "date_scheduled",
+              "value": "={{ $json.date_scheduled }}",
+              "type": "string"
+            },
+            {
+              "id": "908c427c-3f8c-4dc2-b69f-7ab63c02089d",
+              "name": "copy",
+              "value": "={{ $json.copy }}",
+              "type": "string"
+            },
+            {
+              "id": "75808a9d-9dc4-4986-9335-0d20af6546f8",
+              "name": "notes",
+              "value": "={{ $json.notes }}",
+              "type": "string"
+            },
+            {
+              "id": "2dc4332c-3679-4bb0-9842-c582f9f9f4d1",
+              "name": "Timeslot",
+              "value": "={{ $json.Timeslot }}",
+              "type": "string"
+            },
+            {
+              "id": "ed487112-0221-4b95-9fd8-69179839ea3b",
+              "name": "org_madmin_link",
+              "value": "={{ $json.org_madmin_link }}",
+              "type": "string"
+            },
+            {
+              "id": "5b9cc366-3ed1-4305-a7c6-d2c19f250842",
+              "name": "product_madmin_link",
+              "value": "={{ $json.product_madmin_link }}",
+              "type": "string"
+            },
+            {
+              "id": "da0ef710-e330-4777-a9e3-52e0698fee48",
+              "name": "submitted_at",
+              "value": "={{ $json.submitted_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "4ef9fcae-46dc-48b8-9e24-82599817eec3",
+      "name": "IMPORTANT FIELD",
+      "notes": "retrieve only the necessary field to transfer"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET: LOCKED ADS TO BE SCHEDULED": {
+      "main": [
+        [
+          {
+            "node": "CHECK ID EXISTENCE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: SOCIAL BOOKING DATA": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP": {
+      "main": [
+        [
+          {
+            "node": "FILTER BY ID EXIST FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IMPORTANT FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK ID EXISTENCE": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER BY ID EXIST FIELD": {
+      "main": [
+        [
+          {
+            "node": "WAIT 5 SECONDS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UPDATE: SOCIAL BOOKING TAB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AGGREATE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AGGREATE DATA": {
+      "main": [
+        [
+          {
+            "node": "SEND MESSAGE TO N8N NOTIFICATIONS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EVERY 15 MINS": {
+      "main": [
+        [
+          {
+            "node": "GET: SOCIAL BOOKING DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 5 SECONDS": {
+      "main": [
+        [
+          {
+            "node": "APPEND: LOCKED ADS TO BE SCHEDULED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEND MESSAGE TO N8N NOTIFICATIONS": {
+      "main": [
+        []
+      ]
+    },
+    "APPEND: LOCKED ADS TO BE SCHEDULED": {
+      "main": [
+        []
+      ]
+    },
+    "IMPORTANT FIELD": {
+      "main": [
+        [
+          {
+            "node": "GET: LOCKED ADS TO BE SCHEDULED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "executionTimeout": -1
+  },
+  "versionId": "c4b1a3fe-585f-4133-b849-a452457b9d8a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [],
+  "id": "n2LUcvP1KH6hXHRg",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

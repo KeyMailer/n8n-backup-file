@@ -28,3 +28,7 @@ This document outlines the updates made to the existing automation workflow and 
 ## 03 - Apps Script and Google sheet append Error Message
 
 - show an error message when there's an error with apps script or google sheet append section
+
+## 04 - Validate Product link
+
+- validate if product link is visible or not. if not reject it.

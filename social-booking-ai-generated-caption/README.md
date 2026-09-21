@@ -3,7 +3,3 @@
 ## 01 - Original Workflow
 
 ---
-
-## 02 - DOM Account
-
-- remove dom's account
