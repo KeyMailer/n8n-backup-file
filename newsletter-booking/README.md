@@ -29,6 +29,6 @@ This document outlines the updates made to the existing automation workflow and 
 
 - show an error message when there's an error with apps script or google sheet append section
 
-## 04 - Validate Product link
+## 04 / 05 - Validate Product link / Post Deployment fixes
 
 - validate if product link is visible or not. if not reject it.
