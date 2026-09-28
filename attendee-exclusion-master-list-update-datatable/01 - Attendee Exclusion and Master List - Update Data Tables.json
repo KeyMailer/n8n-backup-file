@@ -1157,6 +1157,51 @@
       "id": "4f2badfd-eaf1-43a7-97e7-255a6c8f42c4",
       "name": "EVERYDAY AT 6PM PHT",
       "notes": "6:00:00 PM every day.\n\n6PM - PHT\n1AM - BST"
+    },
+    {
+      "parameters": {
+        "content": "## Attendee Exclusion and Master List - Update Data Tables\n\n**Purpose:**\n- The purpose of this workflow is to update the Data Table master list by syncing the data from the Google Sheets master list to the Data Table master list.",
+        "height": 192,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "0397598d-b1de-4d51-9a82-add585bfb080",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- Runs every day at 6:00 PM PHT / 11:00 AM BST.\n\n- Retrieves the four master lists from Google Sheets.\n\n- Compares the Google Sheets master lists against the Data Table master list.\n\n- If there are new records or changes, the workflow inserts or updates the corresponding records in the Data Table\n\n- If a record exists in the Data Table but no longer exists in the Google Sheets master lists, the workflow removes it from the Data Table\n\n- Google Sheets serves as the source of truth and is always treated as the most up-to-date version of the master lists.\n",
+        "height": 340,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "80a2c160-413b-409e-a858-40ad2faf4888",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets Master List**:\nhttps://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?gid=0#gid=0",
+        "height": 168,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "e79baf6b-e734-432b-83ff-ef90606f37e7",
+      "name": "Sticky Note58"
     }
   ],
   "pinData": {},
@@ -1569,7 +1614,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "ea506cfc-a6e0-4a50-ad14-611630992277",
+  "versionId": "617558ce-0907-4da7-86a4-faf793fcdfb9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
