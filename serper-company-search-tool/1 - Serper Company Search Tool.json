@@ -1,0 +1,229 @@
+{
+  "name": "Serper Company Search Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        5344
+      ],
+      "typeVersion": 1,
+      "id": "2bbd86d0-8356-466d-b183-a6a17bb8a884",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "query"
+            }
+          ]
+        }
+      },
+      "id": "d1cae205-d0dd-4c2c-a85e-58d4597add64",
+      "name": "WHEN CALLED AS A TOOL",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        5408
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"q\": \"{{ $json.query }}\"}",
+        "options": {}
+      },
+      "id": "0c7edc36-a6be-4bfa-803f-d3a286baad2d",
+      "name": "SEARH SERPER",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -144,
+        5408
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "C7yR6oEQYACreTX3",
+          "name": "km-serper"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const organic = item.json.organic || [];\n  if (!organic.length) {\n    return { json: { ok: false, error: 'no_results', message: 'Serper returned no organic results for this query.' } };\n  }\n  const top = organic[0];\n  return { json: { ok: true, title: top.title || '', link: top.link || '', snippet: top.snippet || '' } };\n});"
+      },
+      "id": "aec19338-64b4-4a62-8ac2-0a3e5e901090",
+      "name": "EXTRACT TOP RESULT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        5312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const err = item.json.error || item.json;\n  const message = (err && (err.message || err.description)) || 'Serper request failed';\n  return { json: { ok: false, error: 'upstream_error', message } };\n});"
+      },
+      "id": "4357a22a-06b8-43da-84dc-dacd5a42106f",
+      "name": "REPORT SEARCH FAILURE",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        5520
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -240,
+        5344
+      ],
+      "typeVersion": 1,
+      "id": "2fdb0091-a1b5-443b-bd2f-c05ca7a5f5bc",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 496,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        80,
+        5216
+      ],
+      "typeVersion": 1,
+      "id": "a64b281d-45a3-42bd-83ad-678e3185fb6e",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Serper Company Search Tool\n\n**Purpose:**\n- The purpose of this tool is to determine the type or industry of a company using Serper.\n\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1040,
+        5344
+      ],
+      "typeVersion": 1,
+      "id": "d56d7286-f96f-42e5-b956-a0b9d08dc49f",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- This tool is triggered when it is called by an AI agent\n\n- It searches for the specified company using the Serper HTTP API\n\n- It Retrieves the top search result from Serper\n\n- The top result is then used to determine the company's type or industry \n",
+        "height": 212,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1040,
+        5536
+      ],
+      "typeVersion": 1,
+      "id": "df4a1d44-ae95-4a99-a991-f2c707aa5f88",
+      "name": "Sticky Note62"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WHEN CALLED AS A TOOL": {
+      "main": [
+        [
+          {
+            "node": "SEARH SERPER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEARH SERPER": {
+      "main": [
+        [
+          {
+            "node": "EXTRACT TOP RESULT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "REPORT SEARCH FAILURE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "3e4b075d-0731-4bcf-a8bc-4167e9d8fd11",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [],
+  "id": "zaiI4CtmV4xX5ohC",
+  "tags": [
+    {
+      "updatedAt": "2026-09-22T11:14:39.202Z",
+      "createdAt": "2026-09-22T11:14:39.202Z",
+      "id": "k4869ev0vRdTYEjR",
+      "name": "tool"
+    },
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
