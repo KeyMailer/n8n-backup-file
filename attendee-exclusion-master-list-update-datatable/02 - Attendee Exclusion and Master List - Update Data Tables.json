@@ -1206,7 +1206,10 @@
     {
       "parameters": {
         "path": "data-sync",
-        "options": {}
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://neightn-booking.indie-demo.com"
+        }
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
@@ -1217,6 +1220,38 @@
       "id": "4f83d48c-9bf8-46a8-96a7-e9ea7f893a8d",
       "name": "WEBHOOK",
       "webhookId": "7c0d41a8-a054-4d74-8618-2b81dde3cb9c"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        384,
+        1840
+      ],
+      "id": "fc6dec1e-98f7-43d6-b5da-c85636cc87dc",
+      "name": "RESPOND TO WEBHOOK"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Respond to Webhook\n",
+        "height": 292,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        1728
+      ],
+      "typeVersion": 1,
+      "id": "cf00f3c6-5985-49af-82bc-d53ffc6683ff",
+      "name": "Sticky Note115"
     }
   ],
   "pinData": {},
@@ -1661,6 +1696,11 @@
             "node": "GET: PREVIOUS EVENT EXCL DATA TABLE",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -1675,7 +1715,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "b46ac746-81c0-4c3a-9620-f107c0b85984",
+  "versionId": "25b6ef26-81dc-47fa-a7f9-b545ac391bdb",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
