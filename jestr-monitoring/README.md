@@ -15,3 +15,9 @@
 ### SOURCE FIELD
 
 - Add a Source field column to both the sheet and n8n. The source will be extracted from the Review field.
+
+## 03
+
+### Trigger
+
+- Change from weekly to daily
