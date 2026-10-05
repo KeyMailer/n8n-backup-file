@@ -1,0 +1,674 @@
+{
+  "name": "Jestr Campaigns Monitoring",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "eb4f8064-b9b1-4baa-9f8c-a7eab4c60f3d",
+      "name": "EVERY DAY AT 7:00AM BST OR 2:00PM PHT",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -256,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1xzbhK55Pn518rbPr9Dp1N_EyF6L7A_qW2SAxFtu7rCI",
+          "cachedResultName": "AI Automation: Jestr Campaigns Monitoring"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "0",
+          "cachedResultName": "Campaigns List"
+        },
+        "options": {}
+      },
+      "id": "d512db69-f8aa-493d-aa97-5bd4b93f4f0e",
+      "name": "READ CAMPAIGNS ALREADY LOGGED",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        -16
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "Duplicate guard: campaign_id values already in the sheet are skipped downstream. \n\nalwaysOutputData keeps the run alive on an empty sheet (first run); only the extract node reads this, and it tolerates the empty item."
+    },
+    {
+      "parameters": {
+        "url": "https://www.jestr.gg/campaigns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "pagination": {
+            "pagination": {
+              "paginationMode": "responseContainsNextURL",
+              "nextURL": "={{ 'https://www.jestr.gg' + (($response.body.match(/aria-label=\"Go to next page\" href=\"([^\"]+)\"/) || [])[1] || '/campaigns').replace(/&amp;/g, '&') }}",
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.includes('aria-label=\"Go to next page\"') }}",
+              "limitPagesFetched": true,
+              "maxRequests": 25,
+              "requestInterval": 1000
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "19ecc697-36dc-4e5e-a81f-8dc9f34d0ef6",
+      "name": "RETRIEVE CAMPAIGN LISTING PAGES",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        384,
+        -16
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Follows the \"Go to next page\" link until it disappears (the last page has none). \n\nLogged out, jestr.gg shows only 2 pages; ?page=3+ just repeats page 2, so a page-number loop would never end. \n\nCapped at 25 pages."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cards live in the Next.js flight payload (self.__next_f.push chunks), not in plain HTML:\n// the visible markup only shows 3 tags + \"+N\", the payload has the full list and the raw image URL.\nconst decodeFlightRows = (html) => {\n  const chunks = [...html.matchAll(/self\\.__next_f\\.push\\(\\[1,\"((?:[^\"\\\\]|\\\\.)*)\"\\]\\)/g)];\n  const flight = chunks.map(m => JSON.parse('\"' + m[1] + '\"')).join('');\n  const utf8Bytes = (cp) => cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;\n  const rows = {};\n  let pos = 0;\n  while (pos < flight.length) {\n    const colon = flight.indexOf(':', pos);\n    if (colon < 0) break;\n    const id = flight.slice(pos, colon);\n    // \"id:T<hex byte length>,<text>\" rows carry raw text with no trailing newline\n    const textRow = flight.slice(colon + 1).match(/^T([0-9a-f]+),/);\n    if (textRow) {\n      let bytes = parseInt(textRow[1], 16);\n      let end = colon + 1 + textRow[0].length;\n      while (bytes > 0 && end < flight.length) {\n        const cp = flight.codePointAt(end);\n        bytes -= utf8Bytes(cp);\n        end += cp > 0xffff ? 2 : 1;\n      }\n      pos = end;\n      continue;\n    }\n    let newline = flight.indexOf('\\n', colon);\n    if (newline < 0) newline = flight.length;\n    const payload = flight.slice(colon + 1, newline);\n    if (/^[0-9a-f]+$/.test(id) && (payload[0] === '[' || payload[0] === '{')) {\n      try { rows[id] = JSON.parse(payload); } catch (e) { /* not a JSON row */ }\n    }\n    pos = newline + 1;\n  }\n  return rows;\n};\n\nconst UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;\nconst REF = /^\\$L([0-9a-f]+)$/;\n\n// First href / image / name / tags under one card. \"$L<id>\" strings point at streamed rows.\nconst readCard = (node, card, rows) => {\n  if (typeof node === 'string') {\n    const ref = node.match(REF);\n    if (ref && rows[ref[1]] && !card.seen.has(ref[1])) { card.seen.add(ref[1]); readCard(rows[ref[1]], card, rows); }\n    return card;\n  }\n  if (!Array.isArray(node)) return card;\n  if (node[0] === '$' && node[3] && typeof node[3] === 'object') {\n    const props = node[3];\n    if (!card.path && typeof props.href === 'string' && props.href.startsWith('/campaigns/')) card.path = props.href;\n    if (!card.image_url && typeof props.src === 'string') { card.image_url = props.src; card.campaign_title = props.alt || ''; }\n    if (!card.game_name && node[1] === 'p' && typeof props.children === 'string') card.game_name = props.children;\n    if (!card.tags && Array.isArray(props.tags)) card.tags = props.tags.map(t => t.name);\n    readCard(props.children, card, rows);\n  } else {\n    for (const child of node) readCard(child, card, rows);\n  }\n  return card;\n};\n\n// A card is a React element keyed by the campaign UUID that links to /campaigns/...\nconst findCards = (node, out, rows) => {\n  if (!Array.isArray(node)) return;\n  if (node[0] === '$' && typeof node[2] === 'string' && UUID.test(node[2])) {\n    const card = readCard(node, { campaign_id: node[2], seen: new Set() }, rows);\n    if (card.path) { out.push(card); return; }\n  }\n  for (const child of node) {\n    if (Array.isArray(child)) findCards(child, out, rows);\n    else if (child && typeof child === 'object' && child.children) findCards([child.children], out, rows);\n  }\n};\n\nconst campaigns = new Map();\nfor (const page of $input.all()) {\n  const rows = decodeFlightRows(page.json.data || '');\n  const cards = [];\n  for (const row of Object.values(rows)) findCards(row, cards, rows);\n  for (const card of cards) if (!campaigns.has(card.campaign_id)) campaigns.set(card.campaign_id, card);\n}\n\nif (campaigns.size === 0) {\n  throw new Error('No campaigns found on jestr.gg/campaigns. The page structure has probably changed; the parser in this node needs updating.');\n}\n\nconst alreadyLogged = new Set(\n  $('READ CAMPAIGNS ALREADY LOGGED').all().map(row => String(row.json.campaign_id || '').trim()).filter(Boolean)\n);\n\nreturn [...campaigns.values()]\n  .filter(card => !alreadyLogged.has(card.campaign_id))\n  .map(card => ({\n    json: {\n      campaign_id: card.campaign_id,\n      game_name: card.game_name || '',\n      campaign_title: card.campaign_title || '',\n      campaign_url: 'https://www.jestr.gg' + card.path,\n      image_url: card.image_url || '',\n      tags: (card.tags || []).join(', '),\n    },\n  }));\n"
+      },
+      "id": "f3304b03-58f5-4aea-8309-3e708969e2d5",
+      "name": "EXTRACT NEW CAMPAIGNS FROM LISTING",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        -16
+      ],
+      "notes": "Parses the Next.js page data (not the visible HTML, which truncates tags to 3 + \"+N\"), de-duplicates across pages, and drops campaign IDs already in the sheet. \n\nThrows if a run finds zero campaigns, which means the site layout changed."
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.campaign_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "52c46fd6-409a-4023-9149-f02a290cf854",
+      "name": "RETRIEVE CAMPAIGN DETAIL PAGE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1184,
+        -16
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "notes": "One request per NEW campaign only, 1 per second. A page that still fails after retries is skipped, not written, so tomorrow's run picks it up again."
+    },
+    {
+      "parameters": {
+        "jsCode": "// The detail page's flight payload carries a full `campaign` object (dates, studio, links)\n// that the listing card does not show.\nconst decodeFlightRows = (html) => {\n  const chunks = [...html.matchAll(/self\\.__next_f\\.push\\(\\[1,\"((?:[^\"\\\\]|\\\\.)*)\"\\]\\)/g)];\n  const flight = chunks.map(m => JSON.parse('\"' + m[1] + '\"')).join('');\n  const utf8Bytes = (cp) => cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;\n  const rows = {};\n  let pos = 0;\n  while (pos < flight.length) {\n    const colon = flight.indexOf(':', pos);\n    if (colon < 0) break;\n    const id = flight.slice(pos, colon);\n    // \"id:T<hex byte length>,<text>\" rows carry raw text with no trailing newline\n    const textRow = flight.slice(colon + 1).match(/^T([0-9a-f]+),/);\n    if (textRow) {\n      let bytes = parseInt(textRow[1], 16);\n      let end = colon + 1 + textRow[0].length;\n      while (bytes > 0 && end < flight.length) {\n        const cp = flight.codePointAt(end);\n        bytes -= utf8Bytes(cp);\n        end += cp > 0xffff ? 2 : 1;\n      }\n      pos = end;\n      continue;\n    }\n    let newline = flight.indexOf('\\n', colon);\n    if (newline < 0) newline = flight.length;\n    const payload = flight.slice(colon + 1, newline);\n    if (/^[0-9a-f]+$/.test(id) && (payload[0] === '[' || payload[0] === '{')) {\n      try { rows[id] = JSON.parse(payload); } catch (e) { /* not a JSON row */ }\n    }\n    pos = newline + 1;\n  }\n  return rows;\n};\n\nconst findCampaign = (node, id) => {\n  if (!node || typeof node !== 'object') return null;\n  if (node.campaign && typeof node.campaign === 'object' && node.campaign.id === id) return node.campaign;\n  for (const value of Object.values(node)) {\n    const found = findCampaign(value, id);\n    if (found) return found;\n  }\n  return null;\n};\n\nconst linkList = (links) => Object.entries(links || {})\n  .filter(([, url]) => typeof url === 'string' && url)\n  .map(([site, url]) => site + ': ' + url)\n  .join('\\n');\n\n// \"2026-09-22 21:00:00+00\" -> \"2026-09-22 21:00\" (column header says UTC)\nconst utc = (value) => typeof value === 'string' ? value.replace(/:\\d{2}(\\.\\d+)?\\+00$/, '') : '';\nconst text = (value) => typeof value === 'string' && !value.startsWith('$') ? value : '';\n\nconst firstSeen = $now.toFormat('yyyy-MM-dd HH:mm');\nconst out = [];\nlet parsed = 0;\n\nfor (let i = 0; i < $input.all().length; i++) {\n  const listing = $('EXTRACT NEW CAMPAIGNS FROM LISTING').itemMatching(i).json;\n  const detail = findCampaign(Object.values(decodeFlightRows($input.all()[i].json.data || '')), listing.campaign_id) || {};\n  if (detail.id) parsed++;\n  out.push({\n    json: {\n      campaign_id: listing.campaign_id,\n      first_seen_at: firstSeen,\n      game_name: listing.game_name || text(detail.game_title),\n      campaign_title: listing.campaign_title || text(detail.title),\n      campaign_url: listing.campaign_url,\n      image_url: listing.image_url || text(detail.thumbnail_url),\n      tags: listing.tags,\n      start_date_utc: utc(detail.start_date),\n      end_date_utc: utc(detail.end_date),\n      description: text(detail.description),\n      developers: (detail.developers || []).join(', '),\n      publishers: (detail.publishers || []).join(', '),\n      store_links: linkList(detail.store_links),\n      igdb_url: text(detail.igdb_url),\n      social_links: linkList(detail.social_links),\n      trailer_url: text(detail.trailer),\n      background_image_url: text(detail.background_image),\n      uses_ai_generated_content: detail.id ? (detail.uses_ai_generated_content ? 'yes' : 'no') : '',\n      ai_disclosure: text(detail.ai_disclosure),\n      details_found: detail.id ? 'yes' : 'no',\n    },\n    pairedItem: { item: i },\n  });\n}\n\nif (out.length > 0 && parsed === 0) {\n  throw new Error('No campaign details could be read from any detail page. The page structure has probably changed; the parser in this node needs updating.');\n}\n\nreturn out;\n"
+      },
+      "id": "c8faa23b-e752-44d5-b6fe-c5b3d8b7ea6d",
+      "name": "BUILD SHEET ROWS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        -32
+      ],
+      "notes": "Merges each listing card with its detail page (dates, studio, links). \n\nRows whose detail data could not be read keep the listing fields and get details_found = no. \n\nThrows only if no detail page parses at all (site layout changed)."
+    },
+    {
+      "parameters": {},
+      "id": "fdcd4f29-7140-41c6-90e0-2cdc4e06a132",
+      "name": "SKIP CAMPAIGN UNTIL NEXT RUN",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        240
+      ],
+      "notes": "Detail page failed after 3 tries. Nothing is written for this campaign, so it is still \"new\" tomorrow and gets retried then. Check this node's input in the execution log to see which ones were skipped."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1xzbhK55Pn518rbPr9Dp1N_EyF6L7A_qW2SAxFtu7rCI",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Jestr Campaigns Monitoring",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xzbhK55Pn518rbPr9Dp1N_EyF6L7A_qW2SAxFtu7rCI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Campaigns List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xzbhK55Pn518rbPr9Dp1N_EyF6L7A_qW2SAxFtu7rCI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "campaign_id": "={{ $json.campaign_id }}",
+            "game_name": "={{ $json.game_name }}",
+            "description": "={{ $json.description }}",
+            "tags": "={{ $json.tags }}",
+            "campaign_title": "={{ $json.campaign_title }}",
+            "campaign_url": "={{ $json.campaign_url }}",
+            "campaign_start_date_utc": "={{ $json.start_date_utc }}",
+            "campaign_end_date_utc": "={{ $json.end_date_utc }}",
+            "publishers": "={{ $json.publishers }}",
+            "developers": "={{ $json.developers }}",
+            "stores_links": "={{ $json.store_links }}",
+            "igdb_url": "={{ $json.igdb_url }}",
+            "social_links": "={{ $json.social_links }}",
+            "uses_ai_generated_content": "={{ $json.uses_ai_generated_content }}",
+            "ai_disclosure": "={{ $json.ai_disclosure }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "campaign_id",
+              "displayName": "campaign_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "game_name",
+              "displayName": "game_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "campaign_title",
+              "displayName": "campaign_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "campaign_url",
+              "displayName": "campaign_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "campaign_start_date_utc",
+              "displayName": "campaign_start_date_utc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "campaign_end_date_utc",
+              "displayName": "campaign_end_date_utc",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publishers",
+              "displayName": "publishers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "developers",
+              "displayName": "developers",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stores_links",
+              "displayName": "stores_links",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "igdb_url",
+              "displayName": "igdb_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "social_links",
+              "displayName": "social_links",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "uses_ai_generated_content",
+              "displayName": "uses_ai_generated_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_disclosure",
+              "displayName": "ai_disclosure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1936,
+        -32
+      ],
+      "id": "5685066d-4042-4187-9d23-ffe87c727e18",
+      "name": "APPEND IN JESTR CAMPAIGNS MONITORING",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n\n",
+        "height": 280,
+        "width": 332,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -368,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "ae050af8-4aba-4629-851a-ed53574de377",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 280,
+        "width": 508,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        48,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "d94786ae-2509-4e9a-9cc8-bebdb65eff0a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "df3afaae-1733-41b0-9c2b-f61d50dc4bee",
+      "name": "Sticky Note73"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n\n",
+        "height": 552,
+        "width": 332,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "4424edaa-238d-4f01-9517-1b5b5f06f2f2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 276,
+        "width": 332,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1808,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "485c2723-11ea-485d-a4d0-49731d5a21b1",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 272,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1440,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "863942d1-eea5-47e6-8e44-a004b0c0896f",
+      "name": "Sticky Note74"
+    },
+    {
+      "parameters": {
+        "content": "## Jestr Campaigns Monitoring\n\n**Purpose:**\n- Scraped https://www.jestr.gg/campaigns and the details of each campaign.\n\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "218ce77d-d840-4ac4-928a-e9646a0d1625",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (Jestr Campaigns Monitoring)**:\nhttps://docs.google.com/spreadsheets/d/1xzbhK55Pn518rbPr9Dp1N_EyF6L7A_qW2SAxFtu7rCI/edit?gid=961522677#gid=961522677\n\n",
+        "height": 168,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "3350f187-41b8-45ae-bd2b-fee82859f618",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- Runs every day at 7:00AM BST OR 2:00PM PHT\n\n- Reads the campaign_ids already in AI Automation: Jestr Campaigns Monitoring (Campaigns List tab)\n\n- Fetches the listing pages on jestr.gg/campaigns. It follows the next page link until there's isn't one, with a cap of 25 pages and 1 second between requests.\n\n- Pull each campaign's data from the page's embedded data rather than the visible text, because the visible cards only show 3 tags plus +N. it skipps any campaign already in the sheet.\n\n- Opens each new campaign's page for extra details, one per second.\n\n- Adds one row per new campaign. Existing rows are never edited.\n  ",
+        "height": 356,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        304
+      ],
+      "typeVersion": 1,
+      "id": "6f93a78f-9637-488b-a9d5-ed129deb5faf",
+      "name": "Sticky Note69"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "EVERY DAY AT 7:00AM BST OR 2:00PM PHT": {
+      "main": [
+        [
+          {
+            "node": "READ CAMPAIGNS ALREADY LOGGED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "READ CAMPAIGNS ALREADY LOGGED": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE CAMPAIGN LISTING PAGES",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE CAMPAIGN LISTING PAGES": {
+      "main": [
+        [
+          {
+            "node": "EXTRACT NEW CAMPAIGNS FROM LISTING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXTRACT NEW CAMPAIGNS FROM LISTING": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE CAMPAIGN DETAIL PAGE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE CAMPAIGN DETAIL PAGE": {
+      "main": [
+        [
+          {
+            "node": "BUILD SHEET ROWS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SKIP CAMPAIGN UNTIL NEXT RUN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUILD SHEET ROWS": {
+      "main": [
+        [
+          {
+            "node": "APPEND IN JESTR CAMPAIGNS MONITORING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "21cf39b4-8271-4259-b37a-e6baf999724a",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [
+    {
+      "id": "50710708-be80-4b6a-b2bd-9dd66d0b4b24",
+      "nodeIds": [
+        "d512db69-f8aa-493d-aa97-5bd4b93f4f0e",
+        "19ecc697-36dc-4e5e-a81f-8dc9f34d0ef6",
+        "f3304b03-58f5-4aea-8309-3e708969e2d5",
+        "d94786ae-2509-4e9a-9cc8-bebdb65eff0a",
+        "df3afaae-1733-41b0-9c2b-f61d50dc4bee"
+      ],
+      "name": "FIND NEW CAMPAIGNS"
+    },
+    {
+      "id": "01d2536d-4918-4787-ad12-b05e0efc8532",
+      "nodeIds": [
+        "52c46fd6-409a-4023-9149-f02a290cf854",
+        "c8faa23b-e752-44d5-b6fe-c5b3d8b7ea6d",
+        "fdcd4f29-7140-41c6-90e0-2cdc4e06a132",
+        "5685066d-4042-4187-9d23-ffe87c727e18",
+        "4424edaa-238d-4f01-9517-1b5b5f06f2f2",
+        "485c2723-11ea-485d-a4d0-49731d5a21b1",
+        "863942d1-eea5-47e6-8e44-a004b0c0896f"
+      ],
+      "name": "ENRICH AND SAVE"
+    }
+  ],
+  "id": "fpZu3eNisYCYonjh",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    },
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    }
+  ]
+}
