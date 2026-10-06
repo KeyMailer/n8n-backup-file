@@ -1,0 +1,3067 @@
+{
+  "name": "Attendee Exclusion and Master List",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nreturn [{\n  json: item.body\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        -288
+      ],
+      "id": "990ef4f0-59e0-464f-bc7d-4dd9d656d459",
+      "name": "GET BODY FIELD",
+      "notesInFlow": true,
+      "notes": "Get only the body field from the webhook"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.actionType }}",
+                    "rightValue": "run-exclusion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fcd1d04c-a218-48ff-9493-e115afd546e0"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Run Exclusion"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "73b0c818-06e7-47ab-bd1e-8fd8e31fb2d4",
+                    "leftValue": "={{ $json.actionType }}",
+                    "rightValue": "update-master-list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Update Master List"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -432,
+        -304
+      ],
+      "id": "355176dd-eeb6-446f-8932-3ea0dd20642e",
+      "name": "IDENTIFY THE ACTION TYPE"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "97caa337-b9ab-4ec3-a65b-223706c8cd2d",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "0d12cd63-1caf-4ed0-97ab-59d1cacb37d5",
+              "name": "job_role_exclusion_match",
+              "value": "={{ $json.job_role_exclusion_match == true ? \"x\" : \"\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1376,
+        -3008
+      ],
+      "id": "fa644eb7-e4cf-4cce-8490-5dd9566d98b2",
+      "name": "FINAL JOB ROLE EXCLUSION"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QBCdaUSrPRyOGXcN",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Exclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/QBCdaUSrPRyOGXcN"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        -3008
+      ],
+      "id": "4d9e4f69-3cac-4a19-aeac-b2197803d6a2",
+      "name": "GET: AEML - JOB ROLE EXCLUSION"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QBCdaUSrPRyOGXcN",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Exclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/QBCdaUSrPRyOGXcN"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        -3424
+      ],
+      "id": "004ac02c-ba70-4f29-baa3-08dfb6bdb8b4",
+      "name": "FILTERED: GET: AEML - JOB ROLE EXCLUSION"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "SnJPfJHUb1klgDbj",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Inclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/SnJPfJHUb1klgDbj"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        -3632
+      ],
+      "id": "d79b9ef6-1b60-4bbc-8ada-8752e8f40196",
+      "name": "FILTERED: GET: AEML - JOB ROLE INCLUSION"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "afSrVXmsG4RQckMK",
+          "mode": "list",
+          "cachedResultName": "AEML - Previous Exclusions",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/afSrVXmsG4RQckMK"
+        },
+        "filters": {
+          "conditions": []
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        -2624
+      ],
+      "id": "8393af85-15a3-4e78-9d45-df5acae18764",
+      "name": "GET: AEML - PREVIOUS EXCLUSIONS"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8a090e40-2420-4e84-858f-3eb3feecd932",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "adb59945-6ee7-43b2-b33d-e2be28577b1b",
+              "name": "previous_event_exclusion_match_name",
+              "value": "={{ $json.match_name }}",
+              "type": "boolean"
+            },
+            {
+              "id": "348df70b-2cd0-4565-8194-ddb05a94fd13",
+              "name": "tom_exclusion_match",
+              "value": "={{ $json.Tom && \"x\" }}",
+              "type": "string"
+            },
+            {
+              "id": "ee5db193-dccf-4ec1-99a7-a3f7a77724a0",
+              "name": "ines_exclusion_match",
+              "value": "={{ $json.Ines && \"x\" }}",
+              "type": "string"
+            },
+            {
+              "id": "09213671-169b-4fb3-9438-c10776677b04",
+              "name": "luke_exclusion_match",
+              "value": "={{ $json.Luke && \"x\" }}",
+              "type": "string"
+            },
+            {
+              "id": "b92dc201-0d26-4c1f-bc24-b884fd21c921",
+              "name": "rica_exclusion_match",
+              "value": "={{ $json.Rica && \"x\" }}",
+              "type": "string"
+            },
+            {
+              "id": "96888555-740b-439b-a80b-e8a23747c060",
+              "name": "rohan_exclusion_match",
+              "value": "={{ $json.Rohan && \"x\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        -2320
+      ],
+      "id": "d336b79c-9df2-48e6-a167-0e333590ca8f",
+      "name": "FINAL PREVIOUS EVENT EXCLUSION"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.sheet_url }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.gid }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        -592
+      ],
+      "id": "118f88c1-12f8-4a61-9054-c40ff8333914",
+      "name": "RETRIEVE USER SHEET PROVIDED V2",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Job Role Exclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "job_role",
+              "lookupValue": "={{ $json.job_role }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        -160
+      ],
+      "id": "36f340c1-34b3-40af-85a2-1b547c285024",
+      "name": "JOB EXCL: FILTER BY JOB ROLE",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      },
+      "notes": "if there's a match return the matching data. otherwise, { }"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 598205534,
+          "mode": "list",
+          "cachedResultName": "Previous Exclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=598205534"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "name",
+              "lookupValue": "={{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        560
+      ],
+      "id": "df60f0e4-8a1a-473c-9453-a15d10f73dfb",
+      "name": "PREVIOUS EVENT EXCL: FILTER BY NAME",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      },
+      "notes": "if there's a match return the matching data. otherwise, { }"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1168,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "d3b64070-5b1c-477c-9c7d-c0cee3578c73",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "aeml",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://neightn-booking.indie-demo.com"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1072,
+        -288
+      ],
+      "id": "a065830f-ce13-4b1d-83dc-ded7e86f58a2",
+      "name": "WEBHOOK",
+      "webhookId": "f155dce6-f545-4b46-9e80-1c074dce54b1"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -848,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "4903ead0-4a11-4cea-b9e4-0cf6eb7dd348",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 292,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -528,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "235a0614-0457-4c40-b333-fc25a4ef87b4",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Respond to Webhook\n",
+        "height": 292,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -528,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "08dd1128-3e0c-45d9-ad41-9a9675d917f3",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"Action type not found.\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -432,
+        48
+      ],
+      "id": "3c561fc4-8053-4605-999b-25aa70e0d0fc",
+      "name": "ACTION TYPE NOT FOUND"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -208,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "ba009ace-9fd2-4267-89b4-e7ef4429e585",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - Run Once for All Items\nconst results = [];\n\nfor (const item of $input.all()) {\n  const data = item.json;\n  const sheetUrl = data.sheetUrl || '';\n\n  // Extract gid from the URL (matches ?gid=0, &gid=123, #gid=0, etc.)\n  const gidMatch = sheetUrl.match(/[?&#]gid=(\\d+)/);\n  const gid = gidMatch ? gidMatch[1] : null;\n\n  results.push({\n    json: {\n      action_type: data.actionType || null,\n      sheet_url: sheetUrl,\n      gid: gid,\n      event_name: data.eventName\n      \n    },\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        -288
+      ],
+      "id": "e4e3b09e-dad8-456b-8ca7-3e15938ec864",
+      "name": "UPDATE MASTERLIST: EXTRACT GID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the previous node\nconst previousItems = $input.all();\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        -288
+      ],
+      "id": "9163650e-e08c-4bda-82cf-d70c7443157b",
+      "name": "UPDATE MASTER LIST: RETRIEVE PREVIOUS NODE"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -656
+      ],
+      "typeVersion": 1,
+      "id": "14bc401b-f5b0-44d9-b2a6-933fd02eb4db",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "# JOB ROL EXCLUSION - MASTER LIST ↓",
+        "height": 80,
+        "width": 2464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "56fcdc1b-9aa2-4d88-ae98-6474b269670d",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "b4272bd6-8fb4-4e45-9b7a-2f4d7cab5d22",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('RETRIEVE USER SHEET PROVIDED V2').all();\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -176
+      ],
+      "id": "dc0d5b1b-20b7-4e66-b68e-94a2f3ad7bc4",
+      "name": "UM: RETRIEVE USER SHEET PROVIDED NODE V1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "629af52b-1c01-43d4-b5ba-b647ae3aa2c0",
+              "leftValue": "={{ $json.Exclusions }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        752,
+        -176
+      ],
+      "id": "2e2c7528-7ab8-467f-b009-7083df1bee8b",
+      "name": "UM: FILTER EXCLUSION FIELD V1",
+      "notes": "filter, kept only if Exclusion is not empty.\n\njob_role and initial_categorization = exclusion\n\nthey put the exclusion of job role and categorization in exclusion column"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 244,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        944,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "0b71c0b5-0ce0-4a13-bddc-8e0ddcd14db5",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        -176
+      ],
+      "id": "bb08c4f4-adbf-4e70-ab8e-d6bbf341d27c",
+      "name": "UM JOB ROLE EXCL: LOOP"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1264,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "0a658ef3-6b5e-4bbe-a2eb-e627349e35b9",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "f8b384b7-d290-436f-b627-9dc131315b0a",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Check if any item actually has data (not empty {})\nconst hasData = items.some(\n  item => item.json && Object.keys(item.json).length > 0\n);\n\n// Previous node returned {} (or nothing)\nif (!hasData) {\n  return [{ json: { job_role_match: false } }];\n}\n\n// Previous node returned data: keep it and add the flag\nreturn items.map(item => ({\n  json: {\n    ...item.json,\n    job_role_match: true,\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -160
+      ],
+      "id": "77541806-7d9f-4ed4-86ff-8564651f9969",
+      "name": "UM JOB EXCL: VALIDATE PREVIOUS NODE",
+      "notes": "check if the previous node return a data\n\nif yes, set the job_role_match: true\n\nif it return { }, set the job_role_match false"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d482e523-8522-4c9e-848d-267c614c2dc0",
+              "leftValue": "={{ $json.job_role_match }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2000,
+        -160
+      ],
+      "id": "df9fcdaf-ab81-476a-938b-c9b2600846c9",
+      "name": "UM JOB ROLE EXCL: VALIDATE MATCH"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1904,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "c65bd971-226b-4d3a-83bd-e90c457db134",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2224,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "78c5a06f-58cd-44cf-8c1b-e5098e5c2711",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8963b394-0eca-4a68-9382-3625aa243346",
+              "name": "job_role",
+              "value": "={{ $('UM JOB ROLE EXCL: LOOP').item.json.job_role }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2320,
+        -144
+      ],
+      "id": "059c12ef-bec0-4c52-8a89-326f7764a72b",
+      "name": "UM JOB EXCL: RETRIEVE LOOP DATA",
+      "notes": "retrieve only the job role since that's the only field matter "
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2544,
+        -224
+      ],
+      "typeVersion": 1,
+      "id": "214740f7-cc22-4269-8f72-4957d32708fa",
+      "name": "Sticky Note111"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Job Role Exclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_role": "={{ $json.job_role }}"
+          },
+          "matchingColumns": [
+            "job_role"
+          ],
+          "schema": [
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2640,
+        -144
+      ],
+      "id": "f9d98bc5-a654-484d-9b2d-46d3d547bd66",
+      "name": "APPEND: NEW EXCLUDED JOB ROLE",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# PREVIOUS EVENT EXCLUSION - MASTER LIST ↓",
+        "height": 80,
+        "width": 2464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "2776fe71-c80e-4558-a2bd-fe5f247e027f",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "772f671b-d257-4279-965f-4e2e50039e4e",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('RETRIEVE USER SHEET PROVIDED V2').all();\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        544
+      ],
+      "id": "f4874926-32df-4cec-8f92-9810c6b0b409",
+      "name": "UM: RETRIEVE USER SHEET PROVIDED NODE V3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const reviewers = ['Tom', 'Luke', 'Ines', 'Rica', 'Rohan'];\n\nreturn $input.all().filter(item =>\n  reviewers.some(name => String(item.json[name] ?? '').trim() !== '')\n);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        544
+      ],
+      "id": "51e4261f-79af-459f-88ea-91828e5f854d",
+      "name": "UM: FILTER USERS FIELD",
+      "notes": "return only the data if tom, luke, ines, rica, rohan is not empty (x)\n\nThis keeps any row where at least one of the five columns is not empty."
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 244,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        944,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "135b14fe-cab3-4f94-bfcb-8a3be152582c",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        544
+      ],
+      "id": "ad5d25da-e2cd-428f-ad03-0c9ac65b321b",
+      "name": "UM PREVIOUS EVENT EXCL: LOOP"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1264,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "a4a10e4b-bffe-47b6-aebe-0054eea80ce0",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "004055f1-a733-4b69-b141-5a5df3b9f943",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Check if any item actually has data (not empty {})\nconst hasData = items.some(\n  item => item.json && Object.keys(item.json).length > 0\n);\n\n// Previous node returned {} (or nothing)\nif (!hasData) {\n  return [{ json: { name_match: false } }];\n}\n\n// Previous node returned data: keep it and add the flag\nreturn items.map(item => ({\n  json: {\n    ...item.json,\n    name_match: true,\n  },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        560
+      ],
+      "id": "656237ba-7e58-4920-92ed-84f3f668a8e7",
+      "name": "UM PREVIOUS EVENT EXCL: VALIDATE PREVIOUS NODE",
+      "notes": "check if the previous node return a data\n\nif yes, set the name_match: true\n\nif it return { }, set the name_match: false"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1904,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "2f6de18c-fab0-4c60-b712-6e23d6ba6380",
+      "name": "Sticky Note49"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d482e523-8522-4c9e-848d-267c614c2dc0",
+              "leftValue": "={{ $json.name_match }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2000,
+        560
+      ],
+      "id": "9b9b3443-af00-43a6-a14e-c43d147df7d2",
+      "name": "UM PREVIOUS EVENT EXCL: VALIDATE MATCH"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2224,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "2f0cd09c-978c-42b4-844e-90d3b3437a76",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8963b394-0eca-4a68-9382-3625aa243346",
+              "name": "event_name",
+              "value": "={{ $('UPDATE MASTER LIST: RETRIEVE PREVIOUS NODE').item.json.event_name }}",
+              "type": "string"
+            },
+            {
+              "id": "5b5d9340-9f71-43a3-9df3-73d69c2ca71e",
+              "name": "name",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "637f6952-bd07-4495-a36b-951f6e52920d",
+              "name": "job_role",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.job_role }}",
+              "type": "string"
+            },
+            {
+              "id": "ddfecbf4-08a1-4141-843d-39ea6d7331b7",
+              "name": "company",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "78e9c362-b555-4687-8bf2-4eaa09beb2e7",
+              "name": "Tom",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.Tom }}",
+              "type": "string"
+            },
+            {
+              "id": "2e153aa3-3282-4ca8-ab8f-47e3d2043f0a",
+              "name": "Luke",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.Luke }}",
+              "type": "string"
+            },
+            {
+              "id": "c35c404f-f9af-4ca8-b91f-d202be540449",
+              "name": "Ines",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.Ines }}",
+              "type": "string"
+            },
+            {
+              "id": "74fad253-9ce9-4e7a-a502-db1420113fc6",
+              "name": "Rica",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.Rica }}",
+              "type": "string"
+            },
+            {
+              "id": "2e6b74b7-15cf-4216-9d9e-43d0cd60e9e5",
+              "name": "Rohan",
+              "value": "={{ $('UM PREVIOUS EVENT EXCL: LOOP').item.json.Rohan }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2320,
+        576
+      ],
+      "id": "a52c0661-63bb-43bb-9623-0969a9d060cd",
+      "name": "UM PREVIOUS EVENT EXCL: RETRIEVE LOOP DATA",
+      "notes": "retrieve the\n- event name\n- name\n- job role\n- company\n- tom\n- ines\n- luke\n- rica\n- rohan"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2544,
+        496
+      ],
+      "typeVersion": 1,
+      "id": "a390b5ea-bd46-4fd7-8a54-1798cd6186d8",
+      "name": "Sticky Note113"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 598205534,
+          "mode": "list",
+          "cachedResultName": "Previous Exclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=598205534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event": "={{ $json.event_name }}",
+            "name": "={{ $json.name }}",
+            "job_role": "={{ $json.job_role }}",
+            "company": "={{ $json.company }}",
+            "Tom": "={{ $json.Tom }}",
+            "Luke": "={{ $json.Luke }}",
+            "Ines": "={{ $json.Ines }}",
+            "Rica": "={{ $json.Rica }}",
+            "Rohan": "={{ $json.Rohan }}"
+          },
+          "matchingColumns": [
+            "categorization"
+          ],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "duplicate_status",
+              "displayName": "duplicate_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tom",
+              "displayName": "Tom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ines",
+              "displayName": "Ines",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Luke",
+              "displayName": "Luke",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rica",
+              "displayName": "Rica",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Rohan",
+              "displayName": "Rohan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2640,
+        576
+      ],
+      "id": "9d90e679-f55d-415e-9eb1-b5e5a48fa841",
+      "name": "APPEND: NEW EXCLUDED PREVIOUS EVENT",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Respond to Webhook\n",
+        "height": 292,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1264,
+        176
+      ],
+      "typeVersion": 1,
+      "id": "0425500c-3146-4b10-8377-3eb9a279763b",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        -1408
+      ],
+      "typeVersion": 1,
+      "id": "dd4bc36e-f01f-4366-952c-ec937ff0cb79",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node - Run Once for All Items\nconst results = [];\n\nfor (const item of $input.all()) {\n  const data = item.json;\n  const sheetUrl = data.sheetUrl || '';\n\n  // Extract gid from the URL (matches ?gid=0, &gid=123, #gid=0, etc.)\n  const gidMatch = sheetUrl.match(/[?&#]gid=(\\d+)/);\n  const gid = gidMatch ? gidMatch[1] : null;\n\n  results.push({\n    json: {\n      action_type: data.actionType || null,\n      sheet_url: sheetUrl,\n      gid: gid,\n      filter_by_job_role_inclusion: data.filterByJobRoleInclusion\n      \n    },\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -1344
+      ],
+      "id": "1f46dbd3-22d4-449b-bdf7-988833531439",
+      "name": "RUN EXCL: EXTRACT GID"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from the previous node\nconst previousItems = $input.all();\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -1344
+      ],
+      "id": "08169cb6-d97b-4bd7-a147-ac6c27fcc486",
+      "name": "RUN EXCL: RETRIEVE PREVIOUS NODE"
+    },
+    {
+      "parameters": {
+        "content": "# UPDATE USER PROVIDED SHEET ↓",
+        "height": 80,
+        "width": 1424,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -2112
+      ],
+      "typeVersion": 1,
+      "id": "d1dd87ed-96eb-4f4d-8438-822ec16f64cb",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.sheet_url }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.gid }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        816,
+        -4144
+      ],
+      "id": "84256875-1ead-4704-96fd-bc2d7f516c65",
+      "name": "RETRIEVE USER SHEET PROVIDED V1",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.sheet_url }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.gid }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Exclusions": "={{ $json.job_role_exclusion_match }}",
+            "Tom": "={{ $json.tom_exclusion_match }}",
+            "Ines": "={{ $json.ines_exclusion_match }}",
+            "Luke": "={{ $json.luke_exclusion_match }}",
+            "Rica": "={{ $json.rica_exclusion_match }}",
+            "Rohan": "={{ $json.rohan_exclusion_match }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Exclusions",
+              "displayName": "Exclusions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tom",
+              "displayName": "Tom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Luke",
+              "displayName": "Luke",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ines",
+              "displayName": "Ines",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rica",
+              "displayName": "Rica",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rohan",
+              "displayName": "Rohan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Initial Categorization",
+              "displayName": "Initial Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        -1088
+      ],
+      "id": "bfe448a4-2955-4978-8eab-28e03729844e",
+      "name": "FILTER OFF: UPDATE USER PROVIDED SHEET V2",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1952,
+        -1088
+      ],
+      "id": "050ab6fd-f0ae-47fa-a640-fa6890f9695f",
+      "name": "FILTER OFF: WAIT 2 SECONDS",
+      "webhookId": "818d1e08-027e-4716-8c60-f548c3cfdae9"
+    },
+    {
+      "parameters": {
+        "content": "# “Filter off” means the user didn’t enable the filter, so we retrieve the data with the filter turned off. ↓",
+        "height": 80,
+        "width": 1424,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -1280
+      ],
+      "typeVersion": 1,
+      "id": "a052defd-952d-40f1-9c71-c30486b321f4",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1616,
+        -1568
+      ],
+      "typeVersion": 1,
+      "id": "4d8e7432-9798-42cb-ba4f-b6741205c536",
+      "name": "Sticky Note115"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.sheet_url }}",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.gid }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Exclusions": "={{ $json.job_role_exclusion_match }}",
+            "Tom": "={{ $json.tom_exclusion_match }}",
+            "Ines": "={{ $json.ines_exclusion_match }}",
+            "Luke": "={{ $json.luke_exclusion_match }}",
+            "Rica": "={{ $json.rica_exclusion_match }}",
+            "Rohan": "={{ $json.rohan_exclusion_match }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Exclusions",
+              "displayName": "Exclusions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tom",
+              "displayName": "Tom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Luke",
+              "displayName": "Luke",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ines",
+              "displayName": "Ines",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rica",
+              "displayName": "Rica",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rohan",
+              "displayName": "Rohan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Initial Categorization",
+              "displayName": "Initial Categorization",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1696,
+        -1488
+      ],
+      "id": "1807c3aa-4c50-410d-8042-a3f86b503ab0",
+      "name": "FILTER ON: UPDATE USER PROVIDED SHEET V1",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1968,
+        -1488
+      ],
+      "id": "013d9186-ce4b-45ba-b887-18e165e48071",
+      "name": "FILTER ON: WAIT 2 SECONDS",
+      "webhookId": "818d1e08-027e-4716-8c60-f548c3cfdae9"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1376,
+        -1904
+      ],
+      "id": "3ea1f2e8-b715-49ec-a642-582e2f662285",
+      "name": "RUN EXCL: RESPOND TO WEBHOOK 200"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1360,
+        288
+      ],
+      "id": "94f512b1-fa60-47da-b23d-3760c728c65d",
+      "name": "UM: RESPOND TO WEBHOOK 200"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Respond to Webhook\n",
+        "height": 292,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        -2000
+      ],
+      "typeVersion": 1,
+      "id": "a4ea847f-6bf4-457a-921c-ab6e4b88d609",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "content": "# PREVIOUS EVENT EXCLUSION  ↓",
+        "height": 80,
+        "width": 832,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -2800
+      ],
+      "typeVersion": 1,
+      "id": "6e77a719-6a92-4c15-b2dc-f6027bbc2e1c",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -2688
+      ],
+      "typeVersion": 1,
+      "id": "0de2a354-9ae6-4c1c-90d9-354c0f9326e8",
+      "name": "Sticky Note51"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 832,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -2400
+      ],
+      "typeVersion": 1,
+      "id": "ba3ee8d0-767b-4ac7-9dbc-a0cde8078007",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('RETRIEVE USER SHEET PROVIDED V1').all();\nreturn data;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -2320
+      ],
+      "id": "e68c2249-7801-4525-bd2e-24134c598a79",
+      "name": "RUN EXCL: RETRIEVE USER SHEET PROVIDED NODE V2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Data from the previous-previous node\nconst exclusionData = $('GET: AEML - PREVIOUS EXCLUSIONS').all().map(item => item.json);\n\n// 2. Data from the immediately previous node\nconst previousData = $input.all().map(item => item.json);\n\nconst excluders = ['Tom', 'Ines', 'Luke', 'Rica', 'Rohan'];\n\n// Normalize names so casing/spacing differences don't break the match\nconst normalize = (name) => (name || '').trim().toLowerCase();\n\nconst results = previousData.map(row => {\n  const match = exclusionData.find(ex => normalize(ex.name) === normalize(row.name));\n\n  const matchName = !!match;\n\n  const output = {\n    row_number: row.row_number,\n    name: row.name,\n    match_name: matchName\n  };\n\n  // Add one field per excluder, only set when there's an \"X\"\n  excluders.forEach(person => {\n    const val = match ? match[person] : null;\n    output[person] = (val && val.toString().trim().toUpperCase() === 'X') ? 'X' : null;\n  });\n\n  return { json: output };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -2320
+      ],
+      "id": "86834f85-737b-46ef-ad62-080d3089f3f9",
+      "name": "RUN EXCL: MATCH PREVIOUS EVENT EXCLUSIONS",
+      "notes": "retrieve the GET: AEML - PREVIOUS EXCLUSIONS\n\nretrieve the previous node\n\ncheck if there's a matching name\n\nif yes, match_name: true, otherwise false\n\nretrieve also who excluded them"
+    },
+    {
+      "parameters": {
+        "content": "# “Filter on” means the user enable the filter, so we retrieve the data with the filter turned on. ↓",
+        "height": 80,
+        "width": 1424,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -1680
+      ],
+      "typeVersion": 1,
+      "id": "ff374b03-0140-45b4-b5b9-1fe1951118e4",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        -3088
+      ],
+      "typeVersion": 1,
+      "id": "9aa1106a-c79a-472f-a298-b51ddea06aa6",
+      "name": "Sticky Note57"
+    },
+    {
+      "parameters": {
+        "content": "# JOB ROLE EXCLUSIONS ↓",
+        "height": 80,
+        "width": 1424,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -3920
+      ],
+      "typeVersion": 1,
+      "id": "9f44ba28-14a7-419a-99a6-d6de95f058ca",
+      "name": "Sticky Note58"
+    },
+    {
+      "parameters": {
+        "content": "# JOB ROLE EXCLUSIONS (NO FILTER = NO JOB ROLE INCLUSION) ↓",
+        "height": 80,
+        "width": 832,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -3200
+      ],
+      "typeVersion": 1,
+      "id": "1549c1eb-2d26-4920-85b5-88d3e2224bbb",
+      "name": "Sticky Note59"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -3088
+      ],
+      "typeVersion": 1,
+      "id": "fc9876f9-788e-4e55-bbf0-69949f1859d0",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Exclusion list of job roles comes from the immediately previous node\nconst exclusionItems = $input.all();\n\n// Pull the original user sheet data from the \"RETRIEVE USER SHEET PROVIDED\" node\nconst userSheetItems = $('RETRIEVE USER SHEET PROVIDED V1').all();\n\n// Build a normalized array of exclusion job roles (trimmed, lowercased, deduped)\nconst exclusionRoles = [\n  ...new Set(\n    exclusionItems\n      .map(item => (item.json.job_role || '').trim().toLowerCase())\n      .filter(role => role !== '')\n  )\n];\n\n// Walk through the user sheet and flag partial matches\nreturn userSheetItems.map(item => {\n  const jobRole = (item.json.job_role || '').trim().toLowerCase();\n\n  let isMatch = false;\n  if (jobRole !== '') {\n    isMatch = exclusionRoles.some(exclRole => jobRole.includes(exclRole));\n  }\n\n  return {\n    json: {\n      ...item.json,\n      job_role_exclusion_match: isMatch\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -3008
+      ],
+      "id": "bb33ed72-ceb7-4412-a5bf-2354a489d121",
+      "name": "MATCH JOB ROLE EXCL LOGIC",
+      "notes": "check if job_role from RETRIEVE USER SHEET PROVIDED\n\nis match with\n\njob_role from previous node.\n\nif yes, set the job_role_exclusion_match: true, otherwise, false."
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1040,
+        -3088
+      ],
+      "typeVersion": 1,
+      "id": "573af5b8-abf0-4d0d-ad0b-8694419d7ed8",
+      "name": "Sticky Note60"
+    },
+    {
+      "parameters": {
+        "content": "# JOB ROLE EXCLUSIONS (WITH FILTER = JOB ROLE INCLUSION) ↓",
+        "height": 80,
+        "width": 832,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -3808
+      ],
+      "typeVersion": 1,
+      "id": "48902b4d-27d3-4cfd-a79d-4c40fe46c0fe",
+      "name": "Sticky Note61"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 456,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -3696
+      ],
+      "typeVersion": 1,
+      "id": "c3539f15-65be-43ea-860d-331b5717bede",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Exclusion list of job roles comes from the immediately previous node\nconst exclusionItems = $input.all();\n\n// Pull the original user sheet data from the \"FILTERED: RETRIEVE USER SHEET PROVIDED\" node\nconst userSheetItems = $('RETRIEVE USER SHEET PROVIDED V1').all();\n\n// Pull the job role inclusion master list\nconst inclusionItems = $('FILTERED: GET: AEML - JOB ROLE INCLUSION').all();\n\n// Build a normalized array of exclusion job roles (trimmed, lowercased, deduped)\nconst exclusionRoles = [\n  ...new Set(\n    exclusionItems\n      .map(item => (item.json.job_role || '').trim().toLowerCase())\n      .filter(role => role !== '')\n  )\n];\n\n// Build a normalized array of inclusion job roles (trimmed, lowercased, deduped)\nconst inclusionRoles = [\n  ...new Set(\n    inclusionItems\n      .map(item => (item.json.job_role || '').trim().toLowerCase())\n      .filter(role => role !== '')\n  )\n];\n\n// Walk through the user sheet and flag partial matches\nreturn userSheetItems.map(item => {\n  const jobRole = (item.json.job_role || '').trim().toLowerCase();\n\n  let isMatch = false;\n  if (jobRole !== '') {\n    isMatch = exclusionRoles.some(exclRole => jobRole.includes(exclRole));\n  }\n\n  // Inclusion master list always overrides exclusion, even on a match\n  let isIncluded = false;\n  if (jobRole !== '') {\n    isIncluded = inclusionRoles.some(inclRole => jobRole.includes(inclRole));\n  }\n\n  if (isIncluded) {\n    isMatch = false;\n  }\n\n  return {\n    json: {\n      ...item.json,\n      job_role_exclusion_match: isMatch\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        -3424
+      ],
+      "id": "9b77144f-e95d-4f45-b835-ba4a880e668e",
+      "name": "FILTER ON: MATCH JOB ROLE EXCL LOGIC",
+      "notes": "check if job_role from RETRIEVE USER SHEET PROVIDED\n\nis match with\n\njob_role from previous node.\n\nif yes, set the job_role_exclusion_match: true, otherwise, false.\n\n\ncheck if the job_role from RETRIEVE USER SHEET PROVIDED is match with job_role from previous node. however, check the FILTERED: GET: AEML - JOB ROLE INCLUSION if there's a matching job_role as well meaning.\n\ne.g.,\nSHEET PROVIDED: CEO\nJOB EXCLUSION: CEO > TRUE\nJOB INCLUSION: CEO > FALSE\n\nfinal result is false since CEO exist on inclusion so we override it\n"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "97caa337-b9ab-4ec3-a65b-223706c8cd2d",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "0d12cd63-1caf-4ed0-97ab-59d1cacb37d5",
+              "name": "job_role_exclusion_match",
+              "value": "={{ $json.job_role_exclusion_match == true ? \"x\" : \"\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1360,
+        -3424
+      ],
+      "id": "0de8e431-16b5-49a1-b370-49543ebb2db2",
+      "name": "FILTER ON: FINAL JOB ROLE EXCL"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 512,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1040,
+        -3504
+      ],
+      "typeVersion": 1,
+      "id": "fe00a523-cc28-442d-b543-df0df06b6d46",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -4208
+      ],
+      "typeVersion": 1,
+      "id": "89444cd5-e33b-430b-8632-140f076c4956",
+      "name": "Sticky Note63"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ebd2dc14-4969-4272-b44e-bd6b4677be4e",
+              "leftValue": "={{ $json.filter_by_job_role_inclusion }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        -3024
+      ],
+      "id": "15b2fd6f-8c14-4eee-9b13-d98583d2ce23",
+      "name": "VALIDATE JOB ROLE FILTER EXCL"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ebd2dc14-4969-4272-b44e-bd6b4677be4e",
+              "leftValue": "={{ $json.filter_by_job_role_inclusion }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        -1344
+      ],
+      "id": "b05fa048-930c-4d77-b9f1-dbaf1dccc86a",
+      "name": "VALIDATE FILTER"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3ce4385e-ef9f-4eca-87e3-bbc134b9dd98",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "1e36a8e5-b02f-4b37-bb9e-d3513f10b44e",
+              "name": "job_role_exclusion_match",
+              "value": "={{ $json.job_role_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "c77cdba6-2314-445c-9b35-24995a2043e7",
+              "name": "tom_exclusion_match",
+              "value": "={{ $json.tom_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "6e390170-c5a0-4e35-91a1-43ba224c7044",
+              "name": "ines_exclusion_match",
+              "value": "={{ $json.ines_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "e642639f-fce6-4a9d-a1e3-08d2e2607bfd",
+              "name": "luke_exclusion_match",
+              "value": "={{ $json.luke_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "216bf892-e525-4eb9-b836-b88f22a3bcae",
+              "name": "rica_exclusion_match",
+              "value": "={{ $json.rica_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "52917edc-9d7b-4941-9f3a-e58b6d654e50",
+              "name": "rohan_exclusion_match",
+              "value": "={{ $json.rohan_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "f28c665b-0151-4c59-b21e-392d10f308a9",
+              "name": "sheet_url",
+              "value": "={{ $('VALIDATE FILTER').item.json.sheet_url }}",
+              "type": "string"
+            },
+            {
+              "id": "ef727c74-a95e-434b-913b-5e7e89ca9cc2",
+              "name": "gid",
+              "value": "={{ $('VALIDATE FILTER').item.json.gid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1072,
+        -1504
+      ],
+      "id": "50acc721-b251-4b86-9a7e-ca3bc2a9b266",
+      "name": "FILTER ON: MERGE DATA",
+      "notes": "append the sheet url and gid"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1392,
+        -1504
+      ],
+      "id": "fae9dd40-c0b9-4ddc-8f29-7e18a4a90abe",
+      "name": "FILTER ON: LOOP "
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pull all items from both upstream nodes (names must match exactly)\nconst jobRole   = $('FILTER ON: FINAL JOB ROLE EXCL').all().map(i => i.json);\nconst prevEvent = $('FINAL PREVIOUS EVENT EXCLUSION').all().map(i => i.json);\n\n// Merge by row_number (full outer join: keeps rows that exist in either node)\nconst merged = new Map();\nfor (const row of [...prevEvent, ...jobRole]) {\n  const key = row.row_number;\n  merged.set(key, { ...(merged.get(key) || {}), ...row });\n}\n\nreturn [...merged.values()]\n  .sort((a, b) => a.row_number - b.row_number)\n  .map(row => ({ json: row }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -1504
+      ],
+      "id": "cff99629-02ea-42d3-8917-0bc696609af5",
+      "name": "FILTER ON: MERGE DATA LOGIC",
+      "notes": "FILTER ON: FINAL JOB ROLE EXCL\nFINAL PREVIOUS EVENT EXCLUSION\n\nmerge by row number"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pull all items from both upstream nodes (names must match exactly)\nconst jobRole   = $('FINAL JOB ROLE EXCLUSION').all().map(i => i.json);\nconst prevEvent = $('FINAL PREVIOUS EVENT EXCLUSION').all().map(i => i.json);\n\n// Merge by row_number (full outer join: keeps rows that exist in either node)\nconst merged = new Map();\nfor (const row of [...prevEvent, ...jobRole]) {\n  const key = row.row_number;\n  merged.set(key, { ...(merged.get(key) || {}), ...row });\n}\n\nreturn [...merged.values()]\n  .sort((a, b) => a.row_number - b.row_number)\n  .map(row => ({ json: row }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -1104
+      ],
+      "id": "297d9a49-9606-4cf1-a893-7c06acff5e9b",
+      "name": "FILTER OFF: MERGE DATA LOGIC",
+      "notes": "FILTER ON: FINAL JOB ROLE EXCL\nFINAL PREVIOUS EVENT EXCLUSION\n\nmerge by row number"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3ce4385e-ef9f-4eca-87e3-bbc134b9dd98",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "1e36a8e5-b02f-4b37-bb9e-d3513f10b44e",
+              "name": "job_role_exclusion_match",
+              "value": "={{ $json.job_role_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "c77cdba6-2314-445c-9b35-24995a2043e7",
+              "name": "tom_exclusion_match",
+              "value": "={{ $json.tom_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "6e390170-c5a0-4e35-91a1-43ba224c7044",
+              "name": "ines_exclusion_match",
+              "value": "={{ $json.ines_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "e642639f-fce6-4a9d-a1e3-08d2e2607bfd",
+              "name": "luke_exclusion_match",
+              "value": "={{ $json.luke_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "216bf892-e525-4eb9-b836-b88f22a3bcae",
+              "name": "rica_exclusion_match",
+              "value": "={{ $json.rica_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "52917edc-9d7b-4941-9f3a-e58b6d654e50",
+              "name": "rohan_exclusion_match",
+              "value": "={{ $json.rohan_exclusion_match }}",
+              "type": "string"
+            },
+            {
+              "id": "f28c665b-0151-4c59-b21e-392d10f308a9",
+              "name": "sheet_url",
+              "value": "={{ $('VALIDATE FILTER').item.json.sheet_url }}",
+              "type": "string"
+            },
+            {
+              "id": "ef727c74-a95e-434b-913b-5e7e89ca9cc2",
+              "name": "gid",
+              "value": "={{ $('VALIDATE FILTER').item.json.gid }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1072,
+        -1104
+      ],
+      "id": "8c72036a-c10d-4b6c-929f-cced49c85e89",
+      "name": "FILTER OFF: MERGE DATA",
+      "notes": "append the sheet url and gid"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1392,
+        -1104
+      ],
+      "id": "2e762595-a672-45d6-968f-67c4e3fdab68",
+      "name": "FILTER OFF: LOOP"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        -1408
+      ],
+      "typeVersion": 1,
+      "id": "3cc08fb2-0816-4c48-8616-071f03c3c7b2",
+      "name": "Sticky Note64"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -1568
+      ],
+      "typeVersion": 1,
+      "id": "9867a9ca-fb69-45f0-87b2-d276ea0dc490",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 244,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1296,
+        -1568
+      ],
+      "typeVersion": 1,
+      "id": "d7aa0f40-7da8-4144-8eef-9854e911b80b",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 544,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        -1168
+      ],
+      "typeVersion": 1,
+      "id": "b42d4332-adb0-4121-be74-245479eefd09",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 244,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1296,
+        -1168
+      ],
+      "typeVersion": 1,
+      "id": "72759cd7-073c-4113-ac95-77e68f99e404",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 524,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1616,
+        -1168
+      ],
+      "typeVersion": 1,
+      "id": "d5e4a33c-d411-418a-860b-962fd28efc32",
+      "name": "Sticky Note116"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET BODY FIELD": {
+      "main": [
+        [
+          {
+            "node": "IDENTIFY THE ACTION TYPE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IDENTIFY THE ACTION TYPE": {
+      "main": [
+        [
+          {
+            "node": "RUN EXCL: EXTRACT GID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPDATE MASTERLIST: EXTRACT GID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ACTION TYPE NOT FOUND",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AEML - JOB ROLE EXCLUSION": {
+      "main": [
+        [
+          {
+            "node": "MATCH JOB ROLE EXCL LOGIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTERED: GET: AEML - JOB ROLE EXCLUSION": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: MATCH JOB ROLE EXCL LOGIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: AEML - PREVIOUS EXCLUSIONS": {
+      "main": [
+        []
+      ]
+    },
+    "JOB EXCL: FILTER BY JOB ROLE": {
+      "main": [
+        [
+          {
+            "node": "UM JOB EXCL: VALIDATE PREVIOUS NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREVIOUS EVENT EXCL: FILTER BY NAME": {
+      "main": [
+        [
+          {
+            "node": "UM PREVIOUS EVENT EXCL: VALIDATE PREVIOUS NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WEBHOOK": {
+      "main": [
+        [
+          {
+            "node": "GET BODY FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE MASTERLIST: EXTRACT GID": {
+      "main": [
+        [
+          {
+            "node": "UPDATE MASTER LIST: RETRIEVE PREVIOUS NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE MASTER LIST: RETRIEVE PREVIOUS NODE": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE USER SHEET PROVIDED V2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UM: RETRIEVE USER SHEET PROVIDED NODE V3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "UM: RETRIEVE USER SHEET PROVIDED NODE V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM: RETRIEVE USER SHEET PROVIDED NODE V1": {
+      "main": [
+        [
+          {
+            "node": "UM: FILTER EXCLUSION FIELD V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM: FILTER EXCLUSION FIELD V1": {
+      "main": [
+        [
+          {
+            "node": "UM JOB ROLE EXCL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM JOB ROLE EXCL: LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "JOB EXCL: FILTER BY JOB ROLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM JOB EXCL: VALIDATE PREVIOUS NODE": {
+      "main": [
+        [
+          {
+            "node": "UM JOB ROLE EXCL: VALIDATE MATCH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM JOB ROLE EXCL: VALIDATE MATCH": {
+      "main": [
+        [
+          {
+            "node": "UM JOB ROLE EXCL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UM JOB EXCL: RETRIEVE LOOP DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM JOB EXCL: RETRIEVE LOOP DATA": {
+      "main": [
+        [
+          {
+            "node": "APPEND: NEW EXCLUDED JOB ROLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: NEW EXCLUDED JOB ROLE": {
+      "main": [
+        [
+          {
+            "node": "UM JOB ROLE EXCL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM: RETRIEVE USER SHEET PROVIDED NODE V3": {
+      "main": [
+        [
+          {
+            "node": "UM: FILTER USERS FIELD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM: FILTER USERS FIELD": {
+      "main": [
+        [
+          {
+            "node": "UM PREVIOUS EVENT EXCL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM PREVIOUS EVENT EXCL: LOOP": {
+      "main": [
+        [
+          {
+            "node": "UM: RESPOND TO WEBHOOK 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL: FILTER BY NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM PREVIOUS EVENT EXCL: VALIDATE PREVIOUS NODE": {
+      "main": [
+        [
+          {
+            "node": "UM PREVIOUS EVENT EXCL: VALIDATE MATCH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM PREVIOUS EVENT EXCL: VALIDATE MATCH": {
+      "main": [
+        [
+          {
+            "node": "UM PREVIOUS EVENT EXCL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UM PREVIOUS EVENT EXCL: RETRIEVE LOOP DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UM PREVIOUS EVENT EXCL: RETRIEVE LOOP DATA": {
+      "main": [
+        [
+          {
+            "node": "APPEND: NEW EXCLUDED PREVIOUS EVENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "APPEND: NEW EXCLUDED PREVIOUS EVENT": {
+      "main": [
+        [
+          {
+            "node": "UM PREVIOUS EVENT EXCL: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RUN EXCL: EXTRACT GID": {
+      "main": [
+        [
+          {
+            "node": "RUN EXCL: RETRIEVE PREVIOUS NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RUN EXCL: RETRIEVE PREVIOUS NODE": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE USER SHEET PROVIDED V1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VALIDATE JOB ROLE FILTER EXCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: AEML - PREVIOUS EXCLUSIONS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RUN EXCL: RETRIEVE USER SHEET PROVIDED NODE V2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VALIDATE FILTER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RETRIEVE USER SHEET PROVIDED V1": {
+      "main": [
+        []
+      ]
+    },
+    "FILTER OFF: UPDATE USER PROVIDED SHEET V2": {
+      "main": [
+        [
+          {
+            "node": "FILTER OFF: WAIT 2 SECONDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER OFF: WAIT 2 SECONDS": {
+      "main": [
+        [
+          {
+            "node": "FILTER OFF: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER ON: UPDATE USER PROVIDED SHEET V1": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: WAIT 2 SECONDS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER ON: WAIT 2 SECONDS": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: LOOP ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RUN EXCL: RETRIEVE USER SHEET PROVIDED NODE V2": {
+      "main": [
+        [
+          {
+            "node": "RUN EXCL: MATCH PREVIOUS EVENT EXCLUSIONS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RUN EXCL: MATCH PREVIOUS EVENT EXCLUSIONS": {
+      "main": [
+        [
+          {
+            "node": "FINAL PREVIOUS EVENT EXCLUSION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MATCH JOB ROLE EXCL LOGIC": {
+      "main": [
+        [
+          {
+            "node": "FINAL JOB ROLE EXCLUSION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER ON: MATCH JOB ROLE EXCL LOGIC": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: FINAL JOB ROLE EXCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VALIDATE JOB ROLE FILTER EXCL": {
+      "main": [
+        [
+          {
+            "node": "FILTERED: GET: AEML - JOB ROLE INCLUSION",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "FILTERED: GET: AEML - JOB ROLE EXCLUSION",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GET: AEML - JOB ROLE EXCLUSION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VALIDATE FILTER": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: MERGE DATA LOGIC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FILTER OFF: MERGE DATA LOGIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER ON: MERGE DATA LOGIC": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER ON: MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "FILTER ON: LOOP ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER ON: LOOP ": {
+      "main": [
+        [
+          {
+            "node": "RUN EXCL: RESPOND TO WEBHOOK 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FILTER ON: UPDATE USER PROVIDED SHEET V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER OFF: MERGE DATA LOGIC": {
+      "main": [
+        [
+          {
+            "node": "FILTER OFF: MERGE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER OFF: MERGE DATA": {
+      "main": [
+        [
+          {
+            "node": "FILTER OFF: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FILTER OFF: LOOP": {
+      "main": [
+        [
+          {
+            "node": "RUN EXCL: RESPOND TO WEBHOOK 200",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FILTER OFF: UPDATE USER PROVIDED SHEET V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true,
+    "errorWorkflow": "HrRA6Gjil21fGmZd"
+  },
+  "versionId": "a631bccc-7059-4cef-8c52-c5500ab0f7e0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [],
+  "id": "pn87gCMRMMcxxeZv",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}

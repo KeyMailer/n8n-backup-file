@@ -1,0 +1,1369 @@
+{
+  "name": "Attendee Exclusion and Master List - Update Data Tables",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Job Role Exclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        -1008
+      ],
+      "id": "681c8774-4ca1-4988-92fd-bd2b77749208",
+      "name": "GET: JOB ROLE EXCL",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QBCdaUSrPRyOGXcN",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Exclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/QBCdaUSrPRyOGXcN"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        -768
+      ],
+      "id": "64e018f3-3285-4b09-980e-d7380694ec7b",
+      "name": "GET: JOB  ROLE EXCL DATA TABLE"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 598205534,
+          "mode": "list",
+          "cachedResultName": "Previous Exclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=598205534"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        416
+      ],
+      "id": "112f6102-2468-49ff-a7fd-ead736cc7004",
+      "name": "GET: PREVIOUS EVENT EXCL",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "afSrVXmsG4RQckMK",
+          "mode": "list",
+          "cachedResultName": "AEML - Previous Exclusions",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/afSrVXmsG4RQckMK"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        704
+      ],
+      "id": "3983f883-6a54-4dc6-9744-ff1289608449",
+      "name": "GET: PREVIOUS EVENT EXCL DATA TABLE"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE",
+          "mode": "list",
+          "cachedResultName": "AI Automation: AEML Master List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 877585475,
+          "mode": "list",
+          "cachedResultName": "Job Role Inclusions",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit#gid=877585475"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -304
+      ],
+      "id": "2c6a2171-555b-41eb-9ceb-daa9e76d9340",
+      "name": "GET: JOB ROLE INCL",
+      "credentials": {
+        "googleApi": {
+          "id": "XqqqH5CYZRp3Zzdd",
+          "name": "km-tin-dynamic-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "SnJPfJHUb1klgDbj",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Inclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/SnJPfJHUb1klgDbj"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        -32
+      ],
+      "id": "687ad8b6-4cfe-48e8-bdb8-06585cecdad7",
+      "name": "GET: JOB  ROLE INCL DATA TABLE"
+    },
+    {
+      "parameters": {
+        "content": "# JOB ROLE EXCLUSION",
+        "height": 80,
+        "width": 1248,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -1248
+      ],
+      "typeVersion": 1,
+      "id": "0c9ffad0-04fc-4992-a11b-09e32ed9571c",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 568,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -1136
+      ],
+      "typeVersion": 1,
+      "id": "a278ea19-d37f-4bb2-b21d-5c753d9f829c",
+      "name": "Sticky Note68"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 336,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        -1008
+      ],
+      "typeVersion": 1,
+      "id": "4c3dd5fb-cd01-45db-abdf-a93d813b5bf3",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 564,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        -1152
+      ],
+      "typeVersion": 1,
+      "id": "0fc39103-c897-4878-ad16-6a7539743862",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 516,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        -1104
+      ],
+      "typeVersion": 1,
+      "id": "87594f13-8212-40a6-bace-b42281430cbc",
+      "name": "Sticky Note111"
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "job_role",
+              "field2": "job_role"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        -928
+      ],
+      "id": "dad6b66c-d22d-453d-8e48-110e4655a7c4",
+      "name": "JOB ROLE EXCL COMPARE DATA",
+      "notes": "INPUT A - MEANING THE DATA EXIST IN GOOGLE SHEET MASTER LIST. HOWEVER, IT DIDN'T EXIST YET IN DATA TABLE. SO WE INSERT THE DATA FROM SHEET TO DATA TABLE.\n\n\nINPUT B - MEANING THE DATA EXIST IN DATA TABLE. HOWEVER, IT DIDN'T EXIST IN GOOGLE SHEET. SO WE REMOVE THE DATA FROM DATA TABLE. (THE DATA IS EXIST BEFORE IN SHEET HOWEVER MAYBE USER REMOVE THAT SO WE REMOVE THAT AS WELL IN DATA TABLE)"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        -1072
+      ],
+      "id": "63ca0a6a-b3c0-43ae-acb0-85b17bb5942d",
+      "name": "JOB ROLE EXCL: LOOP V1"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1008,
+        -752
+      ],
+      "id": "8842abe9-bf6a-4ca0-a98e-276c532e8eb4",
+      "name": "JOB ROLE EXCL: LOOP V2"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QBCdaUSrPRyOGXcN",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Exclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/QBCdaUSrPRyOGXcN"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -736
+      ],
+      "id": "94889563-d504-4437-b9aa-839ae97602fb",
+      "name": "DELETE ROW: AEML - JOB ROLE EXCL"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "QBCdaUSrPRyOGXcN",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Exclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/QBCdaUSrPRyOGXcN"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_role": "={{ $json.job_role }}"
+          },
+          "matchingColumns": [
+            "job_role"
+          ],
+          "schema": [
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -1056
+      ],
+      "id": "a3506c37-5eed-43eb-a467-9eb3a0e98a46",
+      "name": "INSERT ROW: AEML - JOB ROLE EXCL"
+    },
+    {
+      "parameters": {
+        "content": "# JOB ROLE INCLUSION",
+        "height": 80,
+        "width": 1248,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -496
+      ],
+      "typeVersion": 1,
+      "id": "c6abf368-f75b-474a-9c9e-7e4d633d93a3",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 568,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "f8c2fc2b-49f0-427f-b961-55217f17f733",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 336,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "6625cfaa-5e69-4c3e-affa-2c976cf92d4d",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 564,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "ba7e24ff-8836-406e-8356-da9fd1b6da4f",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 516,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "2da52ea9-b0bc-4450-b637-e88d753c2b9d",
+      "name": "Sticky Note112"
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "job_role",
+              "field2": "job_role"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        -176
+      ],
+      "id": "f10f9206-165c-4860-ac05-b0b6f1b25d9b",
+      "name": "JOB ROLE INCL COMPARE DATA",
+      "notes": "INPUT A - MEANING THE DATA EXIST IN GOOGLE SHEET MASTER LIST. HOWEVER, IT DIDN'T EXIST YET IN DATA TABLE. SO WE INSERT THE DATA FROM SHEET TO DATA TABLE.\n\n\nINPUT B - MEANING THE DATA EXIST IN DATA TABLE. HOWEVER, IT DIDN'T EXIST IN GOOGLE SHEET. SO WE REMOVE THE DATA FROM DATA TABLE. (THE DATA IS EXIST BEFORE IN SHEET HOWEVER MAYBE USER REMOVE THAT SO WE REMOVE THAT AS WELL IN DATA TABLE)"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        -288
+      ],
+      "id": "09d73211-df3d-4a48-922e-7e40be7ed9b9",
+      "name": "JOB ROLE INCL: LOOP V1"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "79c58b21-aff8-4809-8dfd-ee31562f203c",
+      "name": "JOB ROLE INCL: LOOP V2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "SnJPfJHUb1klgDbj",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Inclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/SnJPfJHUb1klgDbj"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_role": "={{ $json.job_role }}"
+          },
+          "matchingColumns": [
+            "job_role"
+          ],
+          "schema": [
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        -272
+      ],
+      "id": "891b9fd3-34e8-43dc-9cfd-bf8148168a15",
+      "name": "INSERT ROW: AEML - JOB ROLE INCL"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "SnJPfJHUb1klgDbj",
+          "mode": "list",
+          "cachedResultName": "AEML - Job Role Inclusion",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/SnJPfJHUb1klgDbj"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        32
+      ],
+      "id": "bfc3a381-43b7-412f-9545-efb8a298d191",
+      "name": "DELETE ROW: AEML - JOB ROLE INCL"
+    },
+    {
+      "parameters": {
+        "content": "# PREVIOUS EVENT EXCLUSIONS",
+        "height": 80,
+        "width": 1248,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "22812832-307e-41f0-9a6d-068f0d7d10bb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 568,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "82c232b6-0453-4b6b-8727-4befbb4c6905",
+      "name": "Sticky Note71"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 336,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "ebaba76e-3561-4d39-97a6-b9c32de39d80",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 564,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "31002d29-af6c-4f5c-b437-cf998f07b555",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 516,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "d66761ed-934b-4ff5-b35b-8ceab23297fb",
+      "name": "Sticky Note114"
+    },
+    {
+      "parameters": {
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "name",
+              "field2": "name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.compareDatasets",
+      "typeVersion": 2.3,
+      "position": [
+        704,
+        528
+      ],
+      "id": "4b7d9cc1-8542-4123-a9c1-7674c38eda78",
+      "name": "PREVIOUS EVENT EXCL COMPARE DATA",
+      "notes": "INPUT A - MEANING THE DATA EXIST IN GOOGLE SHEET MASTER LIST. HOWEVER, IT DIDN'T EXIST YET IN DATA TABLE. SO WE INSERT THE DATA FROM SHEET TO DATA TABLE.\n\n\nINPUT B - MEANING THE DATA EXIST IN DATA TABLE. HOWEVER, IT DIDN'T EXIST IN GOOGLE SHEET. SO WE REMOVE THE DATA FROM DATA TABLE. (THE DATA IS EXIST BEFORE IN SHEET HOWEVER MAYBE USER REMOVE THAT SO WE REMOVE THAT AS WELL IN DATA TABLE)"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        448
+      ],
+      "id": "b3c4f592-2deb-49c1-bee1-055235650616",
+      "name": "PREVIOUS EVENT EXCL: LOOP V1"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        736
+      ],
+      "id": "1b646fe9-3fb0-4418-b093-85c2acc40706",
+      "name": "PREVIOUS EVENT EXCL: LOOP V2"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "afSrVXmsG4RQckMK",
+          "mode": "list",
+          "cachedResultName": "AEML - Previous Exclusions",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/afSrVXmsG4RQckMK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event": "={{ $json.event }}",
+            "name": "={{ $json.name }}",
+            "job_role": "={{ $json.job_role }}",
+            "company": "={{ $json.company }}",
+            "Tom": "={{ $json.Tom }}",
+            "Ines": "={{ $json.Ines }}",
+            "Luke": "={{ $json.Luke }}",
+            "Rica": "={{ $json.Rica }}",
+            "Rohan": "={{ $json.Rohan }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "duplicate_status",
+              "displayName": "duplicate_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Tom",
+              "displayName": "Tom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ines",
+              "displayName": "Ines",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Luke",
+              "displayName": "Luke",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Rica",
+              "displayName": "Rica",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Rohan",
+              "displayName": "Rohan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        464
+      ],
+      "id": "7b2291b2-0fa4-4e8e-9cc5-97a47b846d0e",
+      "name": "INSERT ROW: AEML - PREVIOUS EVENT EXCL"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "afSrVXmsG4RQckMK",
+          "mode": "list",
+          "cachedResultName": "AEML - Previous Exclusions",
+          "cachedResultUrl": "/projects/Md2RpBvGMfCgtBMR/datatables/afSrVXmsG4RQckMK"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        752
+      ],
+      "id": "14888f93-22b9-44e5-8453-6dbaa82e1526",
+      "name": "DELETE ROW: AEML - PREVIOUS EVENT EXCL"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 424,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -720,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "2918bfb8-9da4-450d-8018-f47f698e83f3",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 18 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -624,
+        96
+      ],
+      "id": "4f2badfd-eaf1-43a7-97e7-255a6c8f42c4",
+      "name": "EVERYDAY AT 6PM PHT",
+      "notes": "6:00:00 PM every day.\n\n6PM - PHT\n1AM - BST"
+    },
+    {
+      "parameters": {
+        "content": "## Attendee Exclusion and Master List - Update Data Tables\n\n**Purpose:**\n- The purpose of this workflow is to update the Data Table master list by syncing the data from the Google Sheets master list to the Data Table master list.",
+        "height": 192,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "0397598d-b1de-4d51-9a82-add585bfb080",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- Runs every day at 6:00 PM PHT / 11:00 AM BST. OR User sync it manually.\n\n- Retrieves the four master lists from Google Sheets.\n\n- Compares the Google Sheets master lists against the Data Table master list.\n\n- If there are new records or changes, the workflow inserts or updates the corresponding records in the Data Table\n\n- If a record exists in the Data Table but no longer exists in the Google Sheets master lists, the workflow removes it from the Data Table\n\n- Google Sheets serves as the source of truth and is always treated as the most up-to-date version of the master lists.\n",
+        "height": 340,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "80a2c160-413b-409e-a858-40ad2faf4888",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets Master List**:\nhttps://docs.google.com/spreadsheets/d/1MHxgcQ3-jG5yhGQSfIUaPSp0bgqq85HX1nssHky_saE/edit?gid=0#gid=0",
+        "height": 168,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1200,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "e79baf6b-e734-432b-83ff-ef90606f37e7",
+      "name": "Sticky Note58"
+    },
+    {
+      "parameters": {
+        "path": "data-sync",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "https://neightn-booking.indie-demo.com"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -624,
+        272
+      ],
+      "id": "4f83d48c-9bf8-46a8-96a7-e9ea7f893a8d",
+      "name": "WEBHOOK",
+      "webhookId": "7c0d41a8-a054-4d74-8618-2b81dde3cb9c"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        384,
+        1056
+      ],
+      "id": "fc6dec1e-98f7-43d6-b5da-c85636cc87dc",
+      "name": "RESPOND TO WEBHOOK"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Respond to Webhook\n",
+        "height": 292,
+        "width": 284,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        288,
+        944
+      ],
+      "typeVersion": 1,
+      "id": "cf00f3c6-5985-49af-82bc-d53ffc6683ff",
+      "name": "Sticky Note115"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET: JOB ROLE EXCL": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE EXCL COMPARE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: JOB  ROLE EXCL DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE EXCL COMPARE DATA",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "GET: PREVIOUS EVENT EXCL": {
+      "main": [
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL COMPARE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: PREVIOUS EVENT EXCL DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL COMPARE DATA",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "GET: JOB ROLE INCL": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE INCL COMPARE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: JOB  ROLE INCL DATA TABLE": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE INCL COMPARE DATA",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "JOB ROLE EXCL COMPARE DATA": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE EXCL: LOOP V1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "node": "JOB ROLE EXCL: LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JOB ROLE EXCL: LOOP V1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "INSERT ROW: AEML - JOB ROLE EXCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JOB ROLE EXCL: LOOP V2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "DELETE ROW: AEML - JOB ROLE EXCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE ROW: AEML - JOB ROLE EXCL": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE EXCL: LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT ROW: AEML - JOB ROLE EXCL": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE EXCL: LOOP V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JOB ROLE INCL COMPARE DATA": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE INCL: LOOP V1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "node": "JOB ROLE INCL: LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JOB ROLE INCL: LOOP V1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "INSERT ROW: AEML - JOB ROLE INCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JOB ROLE INCL: LOOP V2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "DELETE ROW: AEML - JOB ROLE INCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT ROW: AEML - JOB ROLE INCL": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE INCL: LOOP V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE ROW: AEML - JOB ROLE INCL": {
+      "main": [
+        [
+          {
+            "node": "JOB ROLE INCL: LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREVIOUS EVENT EXCL COMPARE DATA": {
+      "main": [
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL: LOOP V1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL: LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREVIOUS EVENT EXCL: LOOP V1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "INSERT ROW: AEML - PREVIOUS EVENT EXCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PREVIOUS EVENT EXCL: LOOP V2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "DELETE ROW: AEML - PREVIOUS EVENT EXCL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT ROW: AEML - PREVIOUS EVENT EXCL": {
+      "main": [
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL: LOOP V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE ROW: AEML - PREVIOUS EVENT EXCL": {
+      "main": [
+        [
+          {
+            "node": "PREVIOUS EVENT EXCL: LOOP V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EVERYDAY AT 6PM PHT": {
+      "main": [
+        [
+          {
+            "node": "GET: JOB ROLE EXCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: JOB  ROLE EXCL DATA TABLE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: JOB ROLE INCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: JOB  ROLE INCL DATA TABLE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: PREVIOUS EVENT EXCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: PREVIOUS EVENT EXCL DATA TABLE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WEBHOOK": {
+      "main": [
+        [
+          {
+            "node": "GET: JOB ROLE EXCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: JOB  ROLE EXCL DATA TABLE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: JOB ROLE INCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: JOB  ROLE INCL DATA TABLE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: PREVIOUS EVENT EXCL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: PREVIOUS EVENT EXCL DATA TABLE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RESPOND TO WEBHOOK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "37762b8c-45a8-40ee-b1de-56364ae8f531",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [],
+  "id": "K1YxuVsBYe0Lawcd",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
