@@ -32,3 +32,7 @@ This document outlines the updates made to the existing automation workflow and 
 ## 04 / 05 - Validate Product link / Post Deployment fixes
 
 - validate if product link is visible or not. if not reject it.
+
+## 06 - CATALOGUE PRODUCTS
+
+- fixed the CATALOGUE PRODUCTS node to handle product name properly
