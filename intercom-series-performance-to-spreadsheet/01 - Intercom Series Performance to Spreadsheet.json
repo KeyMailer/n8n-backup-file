@@ -1,0 +1,934 @@
+{
+  "name": "Intercom Series Performance to Spreadsheet",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 6 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "fb1799a8-c784-4aa0-9bda-099f2ae35f23",
+      "name": "EVERY MONDAY AT 6:00 AM BST OR 1:00 PM PHT",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "export_after_unix",
+              "name": "export_after_unix",
+              "type": "number",
+              "value": "={{ Math.floor($now.startOf(\"week\").minus({ weeks: 1, days: 80 }).toSeconds()) }}"
+            },
+            {
+              "id": "week_start_unix",
+              "name": "week_start_unix",
+              "type": "number",
+              "value": "={{ Math.floor($now.startOf(\"week\").minus({ weeks: 1 }).toSeconds()) }}"
+            },
+            {
+              "id": "week_end_unix",
+              "name": "week_end_unix",
+              "type": "number",
+              "value": "={{ Math.floor($now.startOf(\"week\").toSeconds()) - 1 }}"
+            },
+            {
+              "id": "week_start_date",
+              "name": "week_start_date",
+              "type": "string",
+              "value": "={{ $now.startOf(\"week\").minus({ weeks: 1 }).toISODate() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "66ad5fa6-5da5-4db3-83a9-337073c31ac4",
+      "name": "COMPUTE REPORTING WEEK",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        304,
+        192
+      ],
+      "notes": "Previous Monday 00:00 to Sunday 23:59:59 in the workflow timezone. Read by the export request and by the row builder."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1ze4ENNZJEIlLgRwosIpjUpwtpQy6akQ-w6kd72BP-_M",
+          "cachedResultName": "AI Automation: Test Sheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1952792867",
+          "cachedResultName": "RAW Data Log"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "SERIAL_NUMBER"
+            }
+          }
+        }
+      },
+      "id": "2fd37425-0f52-42d0-9f9a-44a0ce59fb64",
+      "name": "READ ROWS ALREADY LOGGED",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        592,
+        192
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "Duplicate guard. Dates come back as serial numbers so the check works whatever display format the Date column uses. alwaysOutputData keeps the run alive on an empty sheet; nothing downstream reads fields from this node except the row builder, which tolerates an empty item."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.intercom.io/export/content/data",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Intercom-Version",
+              "value": "2.16"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ created_at_after: $(\"COMPUTE REPORTING WEEK\").first().json.export_after_unix, created_at_before: $(\"COMPUTE REPORTING WEEK\").first().json.week_end_unix }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "99a33e89-ce24-4f24-958b-82cd9916c319",
+      "name": "REQUEST INTERCOM EXPORT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        816,
+        192
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "intercomApi": {
+          "id": "wlgMrlAFTSVnO66r",
+          "name": "km-intercom-access-token"
+        }
+      },
+      "notes": "Content Data Export: the only Intercom API that carries Series email stats. A 429 means another export job is pending in the workspace (limit is one); the retries ride that out."
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "id": "57bdcfe0-547a-4011-85cb-7b699f36abaf",
+      "name": "WAIT 30S FOR EXPORT",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        192
+      ],
+      "webhookId": "cc03cf5b-bb31-4d6e-9427-51899b2a85ed"
+    },
+    {
+      "parameters": {
+        "url": "={{ \"https://api.intercom.io/export/content/data/\" + $(\"REQUEST INTERCOM EXPORT\").first().json.job_identifier }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Intercom-Version",
+              "value": "2.16"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "23db867c-b660-4f54-9fe2-f7c65a611010",
+      "name": "CHECK EXPORT STATUS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1280,
+        192
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "intercomApi": {
+          "id": "wlgMrlAFTSVnO66r",
+          "name": "km-intercom-access-token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "completed"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ready"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "no_data"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "no sends this week"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $runIndex >= 30 }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "gave up polling"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "pending"
+                  },
+                  {
+                    "leftValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "rightValue": "in_progress"
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "still running"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "failed or canceled"
+        }
+      },
+      "id": "99c4521f-b14d-41d1-8507-a20c6ebb26d6",
+      "name": "EXPORT READY?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        144
+      ],
+      "notes": "Polls every 30s. Gives up after 30 checks (~15 min) instead of looping forever."
+    },
+    {
+      "parameters": {},
+      "id": "de69aef7-1f09-47be-8f16-b44d1474ac71",
+      "name": "NO SERIES EMAILS SENT THIS WEEK",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        160
+      ],
+      "notes": "Intercom answered no_data: nothing was sent in the window, so there is nothing to log. Ends the run successfully."
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Intercom export job {{ $json.job_identifier }} did not complete (last status: {{ $json.status }}). Nothing was written to RAW Data Log; rerun the workflow manually."
+      },
+      "id": "d00edda1-9482-4927-a222-dccea52f175f",
+      "name": "FAIL: EXPORT DID NOT FINISH",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.download_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/octet-stream"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "701f7890-faad-46c0-bca8-3ac90dbd55b0",
+      "name": "DOWNLOAD EXPORT ACHIVE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1904,
+        -144
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tr3jBhGwWyfgFytg",
+          "name": "km-intercom-access-token"
+        }
+      },
+      "notes": "Intercom requires Accept: application/octet-stream here. Uses the header-auth copy of the Intercom token, which is the setup the probe workflow proved works for this endpoint."
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst out = [];\nfor (let i = 0; i < items.length; i++) {\n  const buf = await this.helpers.getBinaryDataBuffer(i, 'data');\n  // 50 4b = \"PK\", the ZIP signature\n  if (!(buf[0] === 0x50 && buf[1] === 0x4b)) {\n    throw new Error('Intercom export is not a ZIP archive (first bytes ' + buf.subarray(0, 4).toString('hex') + ')');\n  }\n  out.push({\n    json: items[i].json,\n    binary: { data: { ...items[i].binary.data, fileName: 'intercom-export.zip', fileExtension: 'zip', mimeType: 'application/zip' } },\n  });\n}\nreturn out;"
+      },
+      "id": "b8b4577f-062b-45a7-91be-c4aba29692f4",
+      "name": "LABEL ACHIVE AS .ZIP",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        -144
+      ],
+      "notes": "Intercom serves the ZIP as \"<job>.bin\" and the Compression node picks the format from the extension. No native node edits binary metadata, hence Code."
+    },
+    {
+      "parameters": {},
+      "id": "77db3052-72cf-464e-9437-e6a5488d8ccd",
+      "name": "UNZIP EXPORT",
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        2496,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const week = $('COMPUTE REPORTING WEEK').first().json;\nconst startMs = week.week_start_unix * 1000;\nconst endMs = (week.week_end_unix + 1) * 1000;\nconst inWeek = ts => { const t = Date.parse(ts); return t >= startMs && t < endMs; };\nconst bin = $input.first().binary || {};\n\n// RFC 4180 parser: titles can contain commas, quotes and line breaks\nfunction parseCsv(src) {\n  const rows = [];\n  let row = [];\n  let field = '';\n  let inQuotes = false;\n  for (let i = 0; i < src.length; i++) {\n    const ch = src[i];\n    if (inQuotes) {\n      if (ch === '\"') {\n        if (src[i + 1] === '\"') { field += '\"'; i++; } else { inQuotes = false; }\n      } else {\n        field += ch;\n      }\n    } else if (ch === '\"') {\n      inQuotes = true;\n    } else if (ch === ',') {\n      row.push(field); field = '';\n    } else if (ch === '\\n' || ch === '\\r') {\n      if (ch === '\\r' && src[i + 1] === '\\n') { i++; }\n      row.push(field); rows.push(row); row = []; field = '';\n    } else {\n      field += ch;\n    }\n  }\n  if (field !== '' || row.length > 0) { row.push(field); rows.push(row); }\n  return rows.filter(r => !(r.length === 1 && r[0] === ''));\n}\n\n// Unzipped files are named <stat>_<timestamp>.csv; a stat with no records is simply absent\nasync function readTable(prefix) {\n  const key = Object.keys(bin).find(k => (bin[k].fileName || '').startsWith(prefix));\n  if (!key) return null;\n  const table = parseCsv((await this.helpers.getBinaryDataBuffer(0, key)).toString('utf-8').replace(/^﻿/, ''));\n  return { header: table[0] || [], rows: table.slice(1) };\n}\n\nconst receipts = await readTable.call(this, 'receipt_');\nif (!receipts) {\n  throw new Error('Intercom export has no receipt_*.csv. Files: ' + Object.keys(bin).map(k => bin[k].fileName).join(', '));\n}\nconst col = name => receipts.header.indexOf(name);\nconst required = ['receipt_id', 'content_type', 'content_id', 'content_title', 'series_id', 'series_title', 'received_at'];\nconst missing = required.filter(name => col(name) === -1);\nif (missing.length > 0) {\n  throw new Error('receipt CSV is missing columns: ' + missing.join(', ') + '. Intercom may have changed the export format.');\n}\n\n// Every Series email seen in the lookback window; receipt_id -> email key for the event files\nconst emails = {};\nconst emailOfReceipt = {};\nfor (const r of receipts.rows) {\n  if (r[col('content_type')] !== 'email') continue;\n  const seriesId = r[col('series_id')];\n  if (!seriesId || seriesId === '-1') continue;\n  const seriesTitle = r[col('series_title')].trim();\n  if (/test/i.test(seriesTitle)) continue;\n\n  const key = seriesId + '|' + r[col('content_id')];\n  emailOfReceipt[r[col('receipt_id')]] = key;\n  if (!emails[key]) {\n    emails[key] = {\n      seriesId, seriesTitle, message: r[col('content_title')].trim(),\n      sent: 0, opened: new Set(), clicked: new Set(), replied: new Set(), unsubscribed: new Set(), bounced: new Set(),\n    };\n  }\n  if (inWeek(r[col('received_at')])) emails[key].sent++;\n}\n\n// Engagement is counted when it happened (Intercom UI behaviour), once per delivered email\nasync function countEvents(prefix, stat) {\n  const table = await readTable.call(this, prefix);\n  if (!table) return;\n  const receiptCol = table.header.indexOf('receipt_id');\n  const timeCol = table.header.findIndex(h => h.endsWith('_at'));\n  for (const r of table.rows) {\n    const key = emailOfReceipt[r[receiptCol]];\n    if (key && inWeek(r[timeCol])) emails[key][stat].add(r[receiptCol]);\n  }\n}\nawait countEvents.call(this, 'open_', 'opened');\nawait countEvents.call(this, 'click_', 'clicked');\nawait countEvents.call(this, 'reply_', 'replied');\nawait countEvents.call(this, 'unsubscribe_', 'unsubscribed');\nawait countEvents.call(this, 'hard_bounce_', 'bounced');\nawait countEvents.call(this, 'soft_bounce_', 'bounced');\n\nconst hasActivity = e => e.sent + e.opened.size + e.clicked.size + e.replied.size + e.unsubscribed.size + e.bounced.size > 0;\nconst all = Object.values(emails);\n\n// Stale-export guard: a normal week always has some Series activity\nif (!all.some(hasActivity)) {\n  throw new Error('No Series email activity found inside the ' + week.week_start_date + ' week (' + all.length + ' emails in the lookback). The export looks like it covers a different period; nothing was written.');\n}\n\n// A series that had any activity this week gets a row for every one of its emails, zeros included\nconst activeSeries = new Set(all.filter(hasActivity).map(e => e.seriesId));\n\n// Duplicate guard: skip Series ID + message pairs already logged for this week's Date\nconst [y, m, d] = week.week_start_date.split('-').map(Number);\nconst dateSerial = Date.UTC(y, m - 1, d) / 86400000 + 25569;\nconst alreadyLogged = new Set(\n  $('READ ROWS ALREADY LOGGED').all()\n    .map(item => item.json)\n    .filter(row => row.Date === dateSerial || row.Date === week.week_start_date)\n    .map(row => String(row['Series ID'] ?? '').trim() + '|' + String(row['Series Name'] ?? '').trim())\n);\n\nconst pct = (n, total) => (total > 0 ? (n / total * 100) : 0).toFixed(2) + '%';\n\nreturn all\n  .filter(e => activeSeries.has(e.seriesId))\n  .filter(e => !alreadyLogged.has(e.seriesId + '|' + e.message))\n  .sort((a, b) => (a.seriesTitle + ' ' + a.message).localeCompare(b.seriesTitle + ' ' + b.message))\n  .map(e => ({\n    json: {\n      'Date': week.week_start_date,\n      'Series ID': e.seriesId,\n      'Series Name': e.message,\n      'Total sent': e.sent,\n      'Open rate': pct(e.opened.size, e.sent),\n      'Opened': e.opened.size,\n      'Click rate': pct(e.clicked.size, e.sent),\n      'Clicked': e.clicked.size,\n      'Reply rate': pct(e.replied.size, e.sent),\n      'Replied': e.replied.size,\n      'Unsubscribe rate': pct(e.unsubscribed.size, e.sent),\n      'Unsubscribed': e.unsubscribed.size,\n      'Bounce rate': pct(e.bounced.size, e.sent),\n      'Bounced': e.bounced.size,\n    },\n  }));\n"
+      },
+      "id": "ca38b65a-bed4-4c53-a166-2718a24b813c",
+      "name": "BUILD RAW DATA LOG ROWS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2784,
+        -144
+      ],
+      "notes": "Multi-source aggregation (receipts + event CSVs + existing sheet rows), hence Code. Matches the Intercom UI's Performance Summary: Total sent = emails sent in the week; opened/clicked/replied/unsubscribed/bounced = distinct delivered emails with that event inside the week, whenever the email was sent (so rates can exceed 100%). \n\nEvery email of a series with any activity gets a row, zeros included. Series with 'test' in the title are skipped. Known gap: events on emails sent more than ~80 days earlier cannot be attributed (90-day export cap), typically +/-1 versus the UI.\n\nhandle the duplication"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1ze4ENNZJEIlLgRwosIpjUpwtpQy6akQ-w6kd72BP-_M",
+          "cachedResultName": "AI Automation: Test Sheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "1952792867",
+          "cachedResultName": "RAW Data Log"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Series ID",
+              "displayName": "Series ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Series Name",
+              "displayName": "Series Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total sent",
+              "displayName": "Total sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Open rate",
+              "displayName": "Open rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Opened",
+              "displayName": "Opened",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Click rate",
+              "displayName": "Click rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Clicked",
+              "displayName": "Clicked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Reply rate",
+              "displayName": "Reply rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Replied",
+              "displayName": "Replied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unsubscribe rate",
+              "displayName": "Unsubscribe rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unsubscribed",
+              "displayName": "Unsubscribed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bounce rate",
+              "displayName": "Bounce rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bounced",
+              "displayName": "Bounced",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {
+          "cellFormat": "USER_ENTERED",
+          "handlingExtraData": "ignoreIt"
+        }
+      },
+      "id": "69ff8ffc-b7cb-47cf-b598-92d9b66b5fd1",
+      "name": "APPEND TO RAW DATA LOG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3040,
+        -144
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      },
+      "notes": "USER_ENTERED so \"48.12%\" lands as a percent number and \"2026-09-21\" as a real date, keeping the dashboard formulas numeric."
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 296,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "56d9bfe8-bbec-48c7-875b-7ffabb579bfc",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        208,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "2fa4d880-bc6c-40ac-8c99-d8c9230a6824",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 940,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "8a8c4a94-67cc-403e-89ca-d0e938a18457",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 324,
+        "width": 312,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1504,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "bac70bc9-94e6-41ca-92da-6171147cf2bf",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node",
+        "height": 548,
+        "width": 316,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1856,
+        96
+      ],
+      "typeVersion": 1,
+      "id": "87b6c1ad-1320-4e2c-8e59-4f3d5afd88ad",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Intercom Series Performance to Spreadsheet\n\n**Purpose:**\n- This automation extracts weekly email series performance data from Intercom and appends it to the RAW Data Log in the LeadGen Tracking spreadsheet.\n\n- The workflow retrieves performance data for Live production series, excludes test series, and calculates the required metrics for the previous week using Intercom’s export data. It maps metrics such as total sent, opens, clicks, replies, unsubscribes, and bounces into the spreadsheet.\n\n- The automation also includes duplicate prevention, proper formatting for dates, counts, and percentages, and retry handling when an Intercom export is already running. This replaces the current manual process of exporting and copying data for each series individually.\n\n\n\n",
+        "height": 400,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        128
+      ],
+      "typeVersion": 1,
+      "id": "a3825f03-f180-4f25-8f30-4df1dce0d2de",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets (production)**:\nhttps://docs.google.com/spreadsheets/d/1lZwtfLJExPRbAFZRS8nNljvUMNdCoeyplXTacKBKdVg/edit?gid=1483665533#gid=1483665533\n\n",
+        "height": 168,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "50601cfe-a531-4e26-ab41-a9cb78de0e35",
+      "name": "Sticky Note70"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\nThis will run every monday, :\n- 6:00 AM BST OR 1:00 PM PHT\n\n- If a series had any activity that week, all its email get a row, including zero rows.\n\n- Series with no activity at all week get no rows.\n\n- Series with test in the title are skipped\nAvoid naming the series with \"test\" in it, e.g., \"Testimonial,\" \"Latest,\" etc.\n \n- Series are not filtered by live status (the api doesn’t expose it). In practice only live series have weekly activity.\n\n- No duplicates: before appending, it skips any row where date + series id + series name already exists, so re-runs are safe.\n\n  ",
+        "height": 420,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        768
+      ],
+      "typeVersion": 1,
+      "id": "698195be-5c49-4035-ba0c-736e95c03352",
+      "name": "Sticky Note71"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "EVERY MONDAY AT 6:00 AM BST OR 1:00 PM PHT": {
+      "main": [
+        [
+          {
+            "node": "COMPUTE REPORTING WEEK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "COMPUTE REPORTING WEEK": {
+      "main": [
+        [
+          {
+            "node": "READ ROWS ALREADY LOGGED",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "READ ROWS ALREADY LOGGED": {
+      "main": [
+        [
+          {
+            "node": "REQUEST INTERCOM EXPORT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REQUEST INTERCOM EXPORT": {
+      "main": [
+        [
+          {
+            "node": "WAIT 30S FOR EXPORT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 30S FOR EXPORT": {
+      "main": [
+        [
+          {
+            "node": "CHECK EXPORT STATUS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CHECK EXPORT STATUS": {
+      "main": [
+        [
+          {
+            "node": "EXPORT READY?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXPORT READY?": {
+      "main": [
+        [
+          {
+            "node": "DOWNLOAD EXPORT ACHIVE",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NO SERIES EMAILS SENT THIS WEEK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FAIL: EXPORT DID NOT FINISH",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WAIT 30S FOR EXPORT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FAIL: EXPORT DID NOT FINISH",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOWNLOAD EXPORT ACHIVE": {
+      "main": [
+        [
+          {
+            "node": "LABEL ACHIVE AS .ZIP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LABEL ACHIVE AS .ZIP": {
+      "main": [
+        [
+          {
+            "node": "UNZIP EXPORT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UNZIP EXPORT": {
+      "main": [
+        [
+          {
+            "node": "BUILD RAW DATA LOG ROWS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUILD RAW DATA LOG ROWS": {
+      "main": [
+        [
+          {
+            "node": "APPEND TO RAW DATA LOG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "timezone": "Asia/Manila",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "22ae9fa2-beb5-41c7-b33f-ed9ce80303da",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [
+    {
+      "id": "fa6c43a2-46f7-44dd-b0de-34a54853ac4b",
+      "nodeIds": [
+        "701f7890-faad-46c0-bca8-3ac90dbd55b0",
+        "b8b4577f-062b-45a7-91be-c4aba29692f4",
+        "77db3052-72cf-464e-9437-e6a5488d8ccd"
+      ],
+      "name": "UNPACK EXPORT",
+      "description": "Downloads the intercom export ZIP and unzips it into one binary per CSV."
+    },
+    {
+      "id": "78f43bb2-a1ec-40c8-beb9-abf48aa48d19",
+      "nodeIds": [
+        "ca38b65a-bed4-4c53-a166-2718a24b813c",
+        "69ff8ffc-b7cb-47cf-b598-92d9b66b5fd1"
+      ],
+      "name": "WRITE TO SHEET",
+      "description": "Rebuilds each series per email table for the week and appends the new rows."
+    }
+  ],
+  "id": "yCirN1co1usdD22L",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    },
+    {
+      "updatedAt": "2026-01-20T10:01:15.439Z",
+      "createdAt": "2026-01-20T10:01:15.439Z",
+      "id": "b5XajD9gUphtMiHm",
+      "name": "Production"
+    }
+  ]
+}
