@@ -1,0 +1,1159 @@
+{
+  "name": "Intercom and AC Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Intercom & AC Enrichment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        0
+      ],
+      "id": "9e014182-d79d-4eda-8faa-b09d9b8994ab",
+      "name": "RETRIEVE DATA",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        -704
+      ],
+      "id": "3b06483f-0286-4eb2-8ea0-632f26aeea41",
+      "name": "INTERCOM: LOOP"
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItems = $('INTERCOM: LOOP').all(); // the 10 rows in this batch\nconst intercomItems = $input.all();          // previous node: 10 Intercom results\n\n// Safety check: if counts differ, index matching isn't reliable\nif (loopItems.length !== intercomItems.length) {\n  throw new Error(\n    `Item count mismatch: loop=${loopItems.length}, intercom=${intercomItems.length}`\n  );\n}\n\nreturn intercomItems.map((item, i) => {\n  const row = loopItems[i].json;\n  const contact = item.json?.data?.[0] ?? null;\n\n  const externalId = contact?.external_id ?? null;\n  const isPublisher = typeof externalId === 'string' && externalId.startsWith('p_');\n\n  return {\n    json: {\n      row_number: row.row_number,\n      name: row.name,\n      company: row.company,\n      intercom_found: isPublisher,\n      intercom_external_id: externalId,\n      intercom_email: contact?.email ?? null,\n      intercom_name: contact?.name ?? null,\n      platform_source: \"intercom\",\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -688
+      ],
+      "id": "7323a6cd-757c-46e9-a7a4-0dff7eeac95e",
+      "name": "INTERCOM LOGIC",
+      "notes": "retrieve the data from previous previous node called INTERCOM: LOOP (row_number, name, company) \n\nretrieve the previous node\n\ncheck if the external_id begins with p_. if yes set the intercom_found to true, otherwise false.\n\nreturn {\nrow_number\nname\ncompany\nintercom_found\nintercom_external_id\nintercom_email\nintercom_name\n}"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "78ea52f7-3585-4522-bfa8-9b1b92176306",
+      "name": "AC: LOOP"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/organizations?search={{ $json.company }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        16
+      ],
+      "id": "41c89d31-8c54-4ee8-8f39-aad5271ba16e",
+      "name": "AC: SEARCH COMPANY",
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "Gffzskt10H2YxYgx",
+          "name": "active-campaign-eduardo"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const loopItems = $('AC: LOOP').all();   // the 10 rows in this batch\nconst acItems = $input.all();            // previous node: 10 ActiveCampaign results\n\n// Safety check: if counts differ, index matching isn't reliable\nif (loopItems.length !== acItems.length) {\n  throw new Error(\n    `Item count mismatch: loop=${loopItems.length}, activecampaign=${acItems.length}`\n  );\n}\n\n// Normalize for comparison: lowercase, strip punctuation and common company suffixes\nconst normalize = (str) =>\n  (str ?? '')\n    .toString()\n    .toLowerCase()\n    .replace(/[.,]/g, '')\n    .replace(/\\b(ltd|limited|inc|llc|gmbh|ou|co|corp|corporation|publishing)\\b/g, '')\n    .replace(/\\s+/g, ' ')\n    .trim();\n\n// Pick the closest organization to the company name\nconst findClosestOrg = (orgs, company) => {\n  if (!Array.isArray(orgs) || orgs.length === 0 || !company) return null;\n\n  const target = company.toString().toLowerCase().trim();\n  const targetNorm = normalize(company);\n\n  // 1. Exact match (case insensitive)\n  const exact = orgs.find((o) => (o.name ?? '').toLowerCase().trim() === target);\n  if (exact) return exact;\n\n  // 2. Exact match after normalizing suffixes (e.g. \"Exient Publishing Limited\" -> \"exient\")\n  const normExact = orgs.find((o) => normalize(o.name) === targetNorm);\n  if (normExact) return normExact;\n\n  // 3. Contains match either way, prefer the shortest name (closest in length)\n  const partial = orgs\n    .filter((o) => {\n      const n = (o.name ?? '').toLowerCase();\n      return n.includes(target) || (n.length > 0 && target.includes(n));\n    })\n    .sort((a, b) => a.name.length - b.name.length);\n\n  return partial[0] ?? null;\n};\n\nreturn acItems.map((item, i) => {\n  const row = loopItems[i].json;\n  const orgs = item.json?.organizations ?? [];\n  const org = findClosestOrg(orgs, row.company);\n\n  return {\n    json: {\n      row_number: row.row_number,\n      name: row.name,\n      company: row.company,\n      activecampaign_found: !!org,\n      ac_org_id: org?.id ?? null,\n      platform_source: \"activecampaign\",\n    },\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        16
+      ],
+      "id": "4b664208-cacd-4fcf-b3b9-97d645c2b1de",
+      "name": "ACTIVECAMPAIGN LOGIC",
+      "notes": "retrieve the previous previous node called AC: LOOP (row number, name, company)\n\nretrieve the previous node data\n\nprevious node data might return a lot of organization [ ], so what i did is compare the company from AC: LOOP to name field in previous node. name = company\n\nreturn only the exact match, case insensitive.\n\n\nreturn {\nrow_number\nname\ncompany\nactivecampaign_found\nac_org_id\n}\n\n"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/organizations/{{ $json.ac_org_id }}/contacts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        16
+      ],
+      "id": "8b532398-8c28-493a-a189-344c81da3330",
+      "name": "AC: CHECK THE CONTACT OF ORGANIZATION",
+      "alwaysOutputData": true,
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "2zgZp83VavQKuFe2",
+          "name": "ActiveCampaign account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://keymailer.api-us1.com/api/3/contacts/{{ $json.contact }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "activeCampaignApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2464,
+        16
+      ],
+      "id": "13981bf6-c0a9-45be-90f5-3c29010f1e68",
+      "name": "AC: CONTACT DETAILS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "activeCampaignApi": {
+          "id": "2zgZp83VavQKuFe2",
+          "name": "ActiveCampaign account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input: array of objects, each with an \"accountContacts\" array\n// Output: flat array of { account, contact }\n\nconst input = $input.all().map(i => i.json);\n\n// If the whole array arrives as a single item, unwrap it\nconst data = input.length === 1 && Array.isArray(input[0]) ? input[0] : input;\n\nconst flattened = data.flatMap(item =>\n  (item.accountContacts || []).map(ac => ({\n    json: {\n      account: ac.account,\n      contact: ac.contact,\n    },\n  }))\n);\n\nreturn flattened;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        16
+      ],
+      "id": "6f613065-bc0d-47c4-bda6-b177bc274ee0",
+      "name": "AC: FLATTEN OUTPUT",
+      "alwaysOutputData": true,
+      "notes": "flatten the previous node data\n\ne.g,\n\n[\n  {\n    \"accountContacts\": [\n      {\n        \"account\": \"14008\",\n        \"contact\": \"10605\",\n        \"jobTitle\": \"CEO\",\n        \"createdTimestamp\": \"2023-11-08T05:31:02-06:00\",\n        \"updatedTimestamp\": \"2026-02-03T08:53:22-06:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/10446/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/10446/contact\"\n        },\n        \"id\": \"10446\"\n      }\n    ]\n  },\n  {\n    \"accountContacts\": [\n      {\n        \"account\": \"11382\",\n        \"contact\": \"9069\",\n        \"jobTitle\": \"Business Development Manager\",\n        \"createdTimestamp\": \"2023-04-12T12:34:58-05:00\",\n        \"updatedTimestamp\": \"2024-09-17T03:46:15-05:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/8952/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/8952/contact\"\n        },\n        \"id\": \"8952\"\n      },\n      {\n        \"account\": \"11382\",\n        \"contact\": \"13763\",\n        \"jobTitle\": null,\n        \"createdTimestamp\": \"2024-07-25T09:25:48-05:00\",\n        \"updatedTimestamp\": \"2024-07-25T09:25:48-05:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/13487/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/13487/contact\"\n        },\n        \"id\": \"13487\"\n      },\n      {\n        \"account\": \"11382\",\n        \"contact\": \"19651\",\n        \"jobTitle\": \"Chief Commercial Officer\",\n        \"createdTimestamp\": \"2025-08-08T11:08:12-05:00\",\n        \"updatedTimestamp\": \"2026-02-03T08:55:17-06:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/18931/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/18931/contact\"\n        },\n        \"id\": \"18931\"\n      },\n      {\n        \"account\": \"11382\",\n        \"contact\": \"19652\",\n        \"jobTitle\": \"Senior Business Development\",\n        \"createdTimestamp\": \"2025-08-08T11:08:12-05:00\",\n        \"updatedTimestamp\": \"2025-08-08T11:13:06-05:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/18932/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/18932/contact\"\n        },\n        \"id\": \"18932\"\n      },\n      {\n        \"account\": \"11382\",\n        \"contact\": \"24954\",\n        \"jobTitle\": \"President\",\n        \"createdTimestamp\": \"2026-03-27T04:07:00-05:00\",\n        \"updatedTimestamp\": \"2026-03-27T04:07:00-05:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/24016/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/24016/contact\"\n        },\n        \"id\": \"24016\"\n      }\n    ]\n  },\n  {\n    \"accountContacts\": [\n      {\n        \"account\": \"18090\",\n        \"contact\": \"23086\",\n        \"jobTitle\": \"Senior Marketing Manager - Trumer Brewery\",\n        \"createdTimestamp\": \"2026-01-16T07:41:20-06:00\",\n        \"updatedTimestamp\": \"2026-01-16T07:41:20-06:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/22208/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/22208/contact\"\n        },\n        \"id\": \"22208\"\n      },\n      {\n        \"account\": \"18090\",\n        \"contact\": \"23087\",\n        \"jobTitle\": \"Marketing Services Manager\",\n        \"createdTimestamp\": \"2026-01-16T07:41:20-06:00\",\n        \"updatedTimestamp\": \"2026-01-16T07:41:20-06:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/22209/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/22209/contact\"\n        },\n        \"id\": \"22209\"\n      }\n    ]\n  },\n  {\n    \"accountContacts\": [\n      {\n        \"account\": \"21950\",\n        \"contact\": \"28261\",\n        \"jobTitle\": \"\",\n        \"createdTimestamp\": \"2026-09-25T06:53:08-05:00\",\n        \"updatedTimestamp\": \"2026-09-25T06:53:08-05:00\",\n        \"links\": {\n          \"account\": \"https://keymailer.api-us1.com/api/3/accountContacts/27252/account\",\n          \"contact\": \"https://keymailer.api-us1.com/api/3/accountContacts/27252/contact\"\n        },\n        \"id\": \"27252\"\n      }\n    ]\n  }\n]\n\nto\n\naccount = org id\ncontact = user id"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Previous node (AC contacts). Handles one item per contact,\n//    or a single item containing the whole array.\nconst prevItems = $input.all();\nlet records = [];\nfor (const item of prevItems) {\n  const j = item.json;\n  if (Array.isArray(j)) records.push(...j);\n  else records.push(j);\n}\n\n// 2. ACTIVECAMPAIGN LOGIC node\nconst logicItems = $('ACTIVECAMPAIGN LOGIC').all();\nlet logicRows = [];\nfor (const item of logicItems) {\n  const j = item.json;\n  if (Array.isArray(j)) logicRows.push(...j);\n  else logicRows.push(j);\n}\n\n// Helpers\nconst norm = (s) => (s || '').toString().toLowerCase().replace(/\\s+/g, ' ').trim();\nconst str = (v) => (v === null || v === undefined || v === '' ? null : String(v));\n\n// 3. Build lookup: \"first last\" -> [{ contact, orgIds:Set }]\nconst byName = new Map();\nfor (const rec of records) {\n  const contact = rec.contact || rec;\n  const fullName = norm(`${contact.firstName || ''} ${contact.lastName || ''}`);\n  if (!fullName) continue;\n\n  // Collect every account/org id this contact is tied to\n  const orgIds = new Set();\n  [contact.orgid, contact.organization].forEach((v) => str(v) && orgIds.add(str(v)));\n  (rec.accounts || []).forEach((a) => str(a.id) && orgIds.add(str(a.id)));\n  (rec.accountContacts || []).forEach((ac) => str(ac.account) && orgIds.add(str(ac.account)));\n\n  if (!byName.has(fullName)) byName.set(fullName, []);\n  byName.get(fullName).push({ contact, orgIds });\n}\n\n// 4. Match each logic row: name AND account id must both match\nconst results = logicRows.map((row) => {\n  const candidates = byName.get(norm(row.name)) || [];\n  const rowOrgId = str(row.ac_org_id);\n\n  let match = null;\n  let reason;\n\n  if (candidates.length === 0) {\n    reason = 'name_not_found';\n  } else if (!rowOrgId) {\n    reason = 'no_ac_org_id';\n  } else {\n    const hit = candidates.find((c) => c.orgIds.has(rowOrgId));\n    if (hit) {\n      match = hit.contact;\n      reason = 'matched';\n    } else {\n      reason = 'org_mismatch'; // name exists but under a different company\n    }\n  }\n\n  return {\n    json: {\n      ...row,\n      name_match: !!match,\n      activecampaign_email: match ? match.email : null,\n      match_reason: reason,\n    },\n  };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2784,
+        16
+      ],
+      "id": "29d122b2-5f86-4ac5-b105-256ef8c410bc",
+      "name": "AC: MATCH NAME",
+      "notes": "check if the name from ACTIVECAMPAIGN LOGIC is match with contacts.firstname and lastname of previous node.\n\nbut before that.\n\nmake sure the ac_org_id from ACTIVECAMPAIGN LOGIC is match with accounts.id\n\nif all match.\n\nretrieve the email, name_match: true, match_reason: \"matched\" \n\n-----\n\nif there's no match name return \nname_match: false\nemail: null\nmatch_reason: name_not_found\n\n\n----\n\nif there's a match name however  its from different organization not from organization provided\n\nname_match: false\nemail: null\nmatch_reason: org_mismatch // name exists but under a different company"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "927722d4-0c56-469e-9019-9f90a41a0d11",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "5d59ae9c-0289-4d77-9609-3386c4d93c32",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "3562d336-a0a5-46d6-8323-c9d2b4cf38c2",
+              "name": "company",
+              "value": "={{ $json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "82e09860-14cc-49a9-845c-6310f1e62a91",
+              "name": "intercom_email",
+              "value": "={{ $json.intercom_email }}",
+              "type": "string"
+            },
+            {
+              "id": "7283b9ce-514b-4095-b212-3c5b305f9280",
+              "name": "platform_source",
+              "value": "={{ $json.platform_source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        768,
+        -960
+      ],
+      "id": "1e56f275-d0ba-462c-97a5-2a0e57af8b9d",
+      "name": "INTERCOM FINAL DATA"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c7959c4e-0689-46a1-ae8e-5c7239a95deb",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "3bfc0ba8-473f-408a-b6f6-a9ba9130995a",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "0af5d6e1-c6a9-42b1-8772-a4eb2e6e39e6",
+              "name": "company",
+              "value": "={{ $json.company }}",
+              "type": "string"
+            },
+            {
+              "id": "1a41dada-560d-441f-a50a-3639c657eb1f",
+              "name": "activecampaign_email",
+              "value": "={{ $json.activecampaign_email }}",
+              "type": "string"
+            },
+            {
+              "id": "d0c36fe8-c5c8-4137-92ab-c13dca33c370",
+              "name": "platform_source",
+              "value": "={{ $json.platform_source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        768,
+        -288
+      ],
+      "id": "020982fd-bb8d-40c0-ae66-e1e293940285",
+      "name": "ACTIVECAMPAIGN FINAL DATA"
+    },
+    {
+      "parameters": {
+        "formTitle": "Intercom and AC Enrichment",
+        "formDescription": "Check whether the contact exists in Intercom or ActiveCampaign.",
+        "formFields": {
+          "values": []
+        },
+        "responseMode": "lastNode",
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Find Contact"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "c16901ed-f4d1-4783-affe-2d866842c84b",
+      "name": "TRIGGER",
+      "webhookId": "253505aa-a6b5-4e70-9e3c-065c6fb0d038"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        -688
+      ],
+      "id": "e30601c2-0a8d-458f-be85-d94a21d49c0f",
+      "name": "INTERCOM: WAIT 2 SEC",
+      "webhookId": "e783483b-d262-43d6-984a-021829206476"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        16
+      ],
+      "id": "071c6a6e-c360-4c9d-bec7-43064ffd0e05",
+      "name": "AC: WAIT 2 SEC V1",
+      "webhookId": "c8bdd85a-4afe-4dd1-8233-f61070f18bac"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        16
+      ],
+      "id": "45804461-d7be-4505-a856-c585267b0552",
+      "name": "AC: WAIT 2 SEC V2",
+      "webhookId": "8bb8f556-3cf5-4bbd-bda9-c33a45f35e74"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pull data from both upstream nodes\nconst intercomItems = $('INTERCOM FINAL DATA').all().map(i => i.json);\nconst activecampaignItems = $('ACTIVECAMPAIGN FINAL DATA').all().map(i => i.json);\n\n// Index ActiveCampaign rows by row_number for quick lookup\nconst acByRow = new Map(\n  activecampaignItems.map(item => [item.row_number, item])\n);\n\n// Track which row numbers we've handled\nconst seen = new Set();\nconst merged = [];\n\n// Start with Intercom rows, attach the matching ActiveCampaign row\nfor (const ic of intercomItems) {\n  const ac = acByRow.get(ic.row_number);\n  seen.add(ic.row_number);\n\n  merged.push({\n    json: {\n      row_number: ic.row_number,\n      name: ic.name ?? ac?.name ?? null,\n      company: ic.company ?? ac?.company ?? null,\n      intercom_email: ic.intercom_email ?? null,\n      activecampaign_email: ac?.activecampaign_email ?? null,\n    },\n  });\n}\n\n// Include any ActiveCampaign rows that had no Intercom match\nfor (const ac of activecampaignItems) {\n  if (seen.has(ac.row_number)) continue;\n\n  merged.push({\n    json: {\n      row_number: ac.row_number,\n      name: ac.name ?? null,\n      company: ac.company ?? null,\n      intercom_email: null,\n      activecampaign_email: ac.activecampaign_email ?? null,\n    },\n  });\n}\n\n// Keep output ordered by row number\nmerged.sort((a, b) => a.json.row_number - b.json.row_number);\n\nreturn merged;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        416
+      ],
+      "id": "1317a3c2-71f5-4d54-9ef2-5d82b47ea029",
+      "name": "MERGE BY ROW_NUMBER"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        768,
+        416
+      ],
+      "id": "fb909418-1a95-43e7-9b30-d835ddeb0b63",
+      "name": "LOOP"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA",
+          "mode": "list",
+          "cachedResultName": "AI Automation: Intercom & AC Enrichment",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "List",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "intercom_email": "={{ $json.intercom_email }}",
+            "ac_email": "={{ $json.activecampaign_email }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "job_role",
+              "displayName": "job_role",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "intercom_email",
+              "displayName": "intercom_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ac_email",
+              "displayName": "ac_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1088,
+        432
+      ],
+      "id": "128c6720-e74f-478b-8ca9-551c709b0b17",
+      "name": "UPDATE INTERCOM AND AC EMAIL USING ROW NUMBER",
+      "credentials": {
+        "googleApi": {
+          "id": "3CUnwV1QnCkVSwpD",
+          "name": "justin-service-account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        432
+      ],
+      "id": "0271226c-961d-4d87-b322-46876c1975b8",
+      "name": "WAIT 3 SEC",
+      "webhookId": "c8999fec-6d26-42ac-9e14-4dd484cad22b"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "874e5491-4fea-469f-9b53-6b0777c5a68b",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 264,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        32,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "1b5cd1fc-764c-458b-8452-585bf4e79a09",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 932,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        -752
+      ],
+      "typeVersion": 1,
+      "id": "215ca418-0e90-40e3-915b-f6a3732fe61b",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 492,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -752
+      ],
+      "typeVersion": 1,
+      "id": "caa915f5-9b18-4a5c-bd13-64fb2444a8b8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1200,
+        -752
+      ],
+      "typeVersion": 1,
+      "id": "2c89fd77-0bba-488e-b660-3be90bc4b7a8",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -1040
+      ],
+      "typeVersion": 1,
+      "id": "8a5ffe56-b107-4ed0-b1a1-cc4d514325eb",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "# INTERCOM",
+        "height": 80,
+        "width": 816,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -1152
+      ],
+      "typeVersion": 1,
+      "id": "1c3e36ad-e176-4d02-bc4b-e564c5654a35",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 492,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "6e61e7b8-4ff7-4008-8bdd-216722cf774b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1200,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "c0ac3912-a24f-4baa-94b2-380deaca15a5",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 492,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1520,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "24baedd0-9237-4460-b5df-2e51f43e69b1",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2048,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "58f63505-ba77-4ecb-b51e-3e313b3ed37a",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Action Node\n",
+        "height": 248,
+        "width": 284,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2368,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "39a644e7-05b7-4903-93fc-a5dd3618afd8",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2688,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "a5cdd18d-a796-4261-846b-ee213845b508",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "0df0da88-a061-4c51-831b-8d06ea2e337e",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "# ACTIVECAMPAIGN",
+        "height": 80,
+        "width": 816,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "edfd4d3b-3e4c-4a4f-88a3-36e994cc81ee",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# UPDATING DATA",
+        "height": 80,
+        "width": 816,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "f9520fef-b6fc-437e-b336-f30d322f95ff",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Data Transform Node\n",
+        "height": 256,
+        "width": 288,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "412c7eba-16bd-4c17-b408-adca4610b027",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "## Logic Node\n",
+        "height": 260,
+        "width": 280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "5409b7b6-3b1e-48df-99a4-703606bd383b",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "## Output Node - Save\n",
+        "height": 260,
+        "width": 540,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        992,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "832e13cb-ae0b-4247-9761-ad2d8a7a8744",
+      "name": "Sticky Note111"
+    },
+    {
+      "parameters": {
+        "content": "## Intercom and AC Enrichment\n\n**Purpose:**\n- The purpose of this workflow is to find the user in Intercom and ActiveCampaign. If the user is found, retrieve their email address.\n\n",
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -768,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "604c458b-6365-4bc0-8373-88dd490a7e0d",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "## Important URL\n**Google Sheets**:\nhttps://docs.google.com/spreadsheets/d/1xQujGuSLoKsRzsKF1sTYqNIRriuBtEkmjSOFwHD63tA/edit?gid=2045177282#gid=2045177282\n\n**Trigger(Testing)**:\nhttps://neightn.indie-demo.com/form-test/253505aa-a6b5-4e70-9e3c-065c6fb0d038\n\n\n**Trigger(Production)**:\nhttps://neightn.indie-demo.com/form/253505aa-a6b5-4e70-9e3c-065c6fb0d038\n\n",
+        "height": 408,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -768,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "391cd21d-9eea-4b67-8eb8-955ceade6660",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "content": "## Documentation\n- The workflow runs when the user clicks the button in the trigger.\n- It retrieves the data from the Google Sheet.\n- It checks whether the user and company exist in Intercom. - If found, it retrieves the user’s email address.\n- It checks whether the company exists in ActiveCampaign, then retrieves the associated users and checks for a match with the data in the Google Sheet. If a match is found, it retrieves the user’s email address.\n- It updates the Google Sheet using the row number and appends the Intercom and ActiveCampaign email addresses.",
+        "height": 324,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -768,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "3f12595d-5aec-4954-9484-46931f9105bf",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.intercom.io/contacts/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "intercomApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": {\n    \"operator\": \"AND\",\n    \"value\": [\n{\n        \"field\": \"name\",\n        \"operator\": \"=\",\n        \"value\": \"{{ $json.name }}\"\n      },\n      {\n        \"field\": \"custom_attributes.Publishers\",\n        \"operator\": \"~\",\n        \"value\": \"{{ $json.company }}\"\n      },\n      {\n        \"field\": \"custom_attributes.Developers\",\n        \"operator\": \"~\",\n        \"value\": \"{{ $json.company }}\"\n      }\n    ]\n  }\n}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -688
+      ],
+      "id": "15ff2403-936a-4246-bc65-c709c11fbe89",
+      "name": "INTERCOM: SEARCH NAME AND COMPANY",
+      "notesInFlow": true,
+      "credentials": {
+        "intercomApi": {
+          "id": "wlgMrlAFTSVnO66r",
+          "name": "km-intercom-access-token"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "check if the name from sheet is equal to name field in intercom\n\ncheck if the company from sheet is equal to custom_attributes.Publishers field in intercom\n\ncheck if the company from sheet is equal to custom_attributes.Developers field in intercom"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RETRIEVE DATA": {
+      "main": [
+        [
+          {
+            "node": "MERGE BY ROW_NUMBER",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AC: LOOP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "INTERCOM: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: LOOP": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM FINAL DATA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INTERCOM: WAIT 2 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM LOGIC": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: LOOP": {
+      "main": [
+        [
+          {
+            "node": "ACTIVECAMPAIGN FINAL DATA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AC: SEARCH COMPANY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: SEARCH COMPANY": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 2 SEC V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: CHECK THE CONTACT OF ORGANIZATION": {
+      "main": [
+        [
+          {
+            "node": "AC: WAIT 2 SEC V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: CONTACT DETAILS": {
+      "main": [
+        [
+          {
+            "node": "AC: MATCH NAME",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: FLATTEN OUTPUT": {
+      "main": [
+        [
+          {
+            "node": "AC: CONTACT DETAILS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: MATCH NAME": {
+      "main": [
+        [
+          {
+            "node": "AC: LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER": {
+      "main": [
+        [
+          {
+            "node": "RETRIEVE DATA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: WAIT 2 SEC": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM: SEARCH NAME AND COMPANY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: WAIT 2 SEC V1": {
+      "main": [
+        [
+          {
+            "node": "ACTIVECAMPAIGN LOGIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AC: WAIT 2 SEC V2": {
+      "main": [
+        [
+          {
+            "node": "AC: FLATTEN OUTPUT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MERGE BY ROW_NUMBER": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LOOP": {
+      "main": [
+        [],
+        [
+          {
+            "node": "UPDATE INTERCOM AND AC EMAIL USING ROW NUMBER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE INTERCOM AND AC EMAIL USING ROW NUMBER": {
+      "main": [
+        [
+          {
+            "node": "WAIT 3 SEC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WAIT 3 SEC": {
+      "main": [
+        [
+          {
+            "node": "LOOP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INTERCOM: SEARCH NAME AND COMPANY": {
+      "main": [
+        [
+          {
+            "node": "INTERCOM LOGIC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ACTIVECAMPAIGN LOGIC": {
+      "main": [
+        [
+          {
+            "node": "AC: CHECK THE CONTACT OF ORGANIZATION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "HrRA6Gjil21fGmZd",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "versionId": "919f120c-5131-43e1-8711-0a0355461a0b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "f7f0c9e93cc1d21450d0ac53e03c96386e7955af12da3506dd2a4747fb35fd69"
+  },
+  "nodeGroups": [],
+  "id": "jP96Y1nOjlZiWlkL",
+  "tags": [
+    {
+      "updatedAt": "2025-12-15T14:10:19.680Z",
+      "createdAt": "2025-12-15T14:10:19.680Z",
+      "id": "QdUe6YUR8urhBgR4",
+      "name": "Justin Peligro"
+    }
+  ]
+}
