@@ -21,3 +21,9 @@
 ### Handle UK Time
 
 - Fix the formatting of the event_start_time_uk field because it displays 0:30 AM instead of 12:30 AM for midnight.
+
+## 05
+
+### NORMALISES INVITEE ORGS Node
+
+- add new node called NORMALISES INVITEE ORGS to handle if there's a \n in orgs input
