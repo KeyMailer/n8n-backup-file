@@ -3,3 +3,7 @@
 ## 01 - Original Workflow
 
 ---
+
+### ADD INTERCOM URL IN BUILD RAW DATA LOG ROWS
+
+- add intercom url in build raw data log rows node - series/id
